@@ -1,0 +1,10 @@
+import re
+f=open('supabase/functions/quotation/index.ts', 'r', encoding='utf-8')
+content=f.read()
+f.close()
+content=content.replace(r'\`', '`')
+content=content.replace(r'\${', '${')
+f=open('supabase/functions/quotation/index.ts', 'w', encoding='utf-8')
+f.write(content)
+f.close()
+print('fixed')
