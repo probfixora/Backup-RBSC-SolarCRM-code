@@ -427,37 +427,118 @@ const Sidebar = ({ onLogout }) => {
             }}
           />
 
-          {/* Drawer panel */}
+          {/* Bottom Sheet Drawer panel */}
           <aside style={{
-            position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 160,
-            width: '260px',
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 160,
             background: 'var(--sidebar-bg)',
-            border: '1px solid var(--color-border)',
-            borderLeft: 'none',
-            borderRadius: '0 var(--radius-xl) var(--radius-xl) 0',
+            borderTop: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0',
             boxShadow: 'var(--shadow-xl)',
             display: 'flex', flexDirection: 'column',
-            animation: 'slideInLeft 0.25s cubic-bezier(0.16,1,0.3,1) both',
+            animation: 'slideInUp 0.3s cubic-bezier(0.16,1,0.3,1) both',
+            maxHeight: '90vh',
           }}>
-            {/* Close button */}
-            <button
-              onClick={() => setMobileOpen(false)}
-              style={{
-                position: 'absolute', top: '12px', right: '12px',
-                background: 'var(--surface-2)', border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-sm)', width: '28px', height: '28px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: 'var(--text-3)',
-                transition: 'all 0.15s ease',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-3)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface-2)'; }}
-              title="Close menu"
-            >
-              <i className="ti ti-x" style={{ fontSize: '14px' }} />
-            </button>
+            {/* Grab Handle */}
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center', paddingTop: '12px', paddingBottom: '4px' }}>
+              <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'var(--color-border)' }} />
+            </div>
 
-            <SidebarContent />
+            {/* Profile Info Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px' }}>
+              <div style={{
+                width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+                background: roleColor,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '18px', fontWeight: 700, color: '#fff',
+              }}>
+                {initials}
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-1)' }}>{userName}</h4>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: 'var(--text-3)', textTransform: 'capitalize' }}>{roleLabel}</p>
+              </div>
+            </div>
+
+            <div style={{ height: '1px', background: 'var(--color-border)', margin: '0 20px' }} />
+
+            {/* Scrollable Menu Area */}
+            <div style={{ padding: '16px 14px', overflowY: 'auto' }}>
+              <p className="nav-section-label" style={{ paddingLeft: '8px', marginBottom: '8px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>MENU</p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                {groups.map(({ items }, gi) => (
+                  <React.Fragment key={gi}>
+                    {items.map((item) => {
+                      const isActive  = !item.external && location.pathname === item.path;
+                      const iconCls   = ICONS[item.name] || 'ti ti-point';
+                      return (
+                        <button
+                          key={item.name}
+                          onClick={() => handleNav(item)}
+                          className={`nav-item${isActive ? ' active' : ''}`}
+                          style={{ padding: '12px 14px' }}
+                        >
+                          {item.name === 'Tracking' ? (
+                            <MapPin style={{ width: '20px', height: '20px', flexShrink: 0, opacity: 0.85 }} />
+                          ) : (
+                            <i className={iconCls} style={{ fontSize: '20px', width: '24px', textAlign: 'center', flexShrink: 0 }} />
+                          )}
+                          <span style={{ flex: 1, fontSize: '15px' }}>{item.name}</span>
+                          {item.external && (
+                            <i className="ti ti-external-link" style={{ fontSize: '14px', opacity: 0.45, flexShrink: 0 }} />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </div>
+
+              <div style={{ height: '1px', background: 'var(--color-border)', margin: '20px 8px' }} />
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <button
+                  onClick={() => { navigate('/profile'); setMobileOpen(false); }}
+                  className={`nav-item${location.pathname === '/profile' ? ' active' : ''}`}
+                  style={{ padding: '12px 14px' }}
+                >
+                  <i className="ti ti-user-circle" style={{ fontSize: '20px', width: '24px', textAlign: 'center' }} />
+                  <span style={{ fontSize: '15px' }}>Profile</span>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    const html = document.documentElement;
+                    const isDark = html.getAttribute('data-theme') === 'dark';
+                    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+                    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+                  }}
+                  className="nav-item"
+                  style={{ padding: '12px 14px' }}
+                >
+                  <i className="ti ti-moon" style={{ fontSize: '20px', width: '24px', textAlign: 'center' }} />
+                  <span style={{ fontSize: '15px' }}>Toggle Theme</span>
+                </button>
+
+                <button
+                  onClick={() => { navigate('/support'); setMobileOpen(false); }}
+                  className={`nav-item${location.pathname === '/support' ? ' active' : ''}`}
+                  style={{ padding: '12px 14px' }}
+                >
+                  <i className="ti ti-headset" style={{ fontSize: '20px', width: '24px', textAlign: 'center' }} />
+                  <span style={{ fontSize: '15px' }}>Support</span>
+                </button>
+
+                <button
+                  onClick={onLogout}
+                  className="nav-item"
+                  style={{ padding: '12px 14px', color: 'var(--color-danger)' }}
+                >
+                  <LogOut style={{ width: '20px', height: '20px', flexShrink: 0, opacity: 0.85 }} />
+                  <span style={{ fontSize: '15px', fontWeight: 600 }}>Sign Out</span>
+                </button>
+              </div>
+            </div>
           </aside>
         </>
       )}

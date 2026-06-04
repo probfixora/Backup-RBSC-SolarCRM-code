@@ -244,6 +244,14 @@ img { max-width: 100%; display: block; }
 @keyframes shimmer        { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 @keyframes bounceSpring   { 0% { opacity: 0; transform: scale(0.92); } 60% { transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
 @keyframes meshGlow       { 0% { transform: scale(1) translate(0, 0); } 50% { transform: scale(1.1) translate(2%, 2%); } 100% { transform: scale(1) translate(0, 0); } }
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 @keyframes slideDown      { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes barIn          { from { width: 0; } }
 @keyframes numberIn       { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
