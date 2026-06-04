@@ -334,15 +334,21 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
 
           {/* Left: Branding */}
           <div className="admin-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* Brand Logo (Mobile) */}
-            <img 
-              src={APP_CONFIG.logoPath || '/logo.png'} 
-              alt={APP_CONFIG.companyName} 
+            {/* Logo — replaces brand text on mobile */}
+            <img
+              src={APP_CONFIG.logoPath}
+              alt={APP_CONFIG.companyName}
+              onClick={() => navigate('/')}
               className="admin-brand-logo"
-              style={{ height: '30px', objectFit: 'contain' }} 
+              style={{
+                height: '46px',
+                width: 'auto',
+                objectFit: 'contain',
+                cursor: 'pointer',
+              }}
+              title="Go to dashboard"
             />
-            
-            {/* Brand Text (Desktop) */}
+            {/* Brand Text - shown on desktop */}
             <span className="admin-brand-text" style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
               {APP_CONFIG.companyName}
             </span>

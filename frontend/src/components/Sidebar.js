@@ -28,6 +28,49 @@ const ICONS = {
   'Accounts':            'ti ti-calculator',
   'CRM Tasks':           'ti ti-heart-handshake',
   'Audit Log':           'ti ti-shield-lock',
+  'Support':             'ti ti-headset',
+};
+
+/* ── Mobile bottom nav — role-specific 4 tabs ───────────────────────────── */
+// Home and Account are always tab[0] and tab[3].
+// Middle two tabs are role-tailored.
+const getMobileNav = (role, dashPath) => {
+  const home    = { name: 'Home',       path: dashPath,              icon: 'ti ti-layout-dashboard' };
+  const clients = { name: 'Clients',    path: '/cases',              icon: 'ti ti-users' };
+  const team    = { name: 'Team',       path: '/users',              icon: 'ti ti-users-group' };
+  const finance = { name: 'Finance',    path: '/finance-tracking',   icon: 'ti ti-report-money' };
+  const quote   = { name: 'Quote',      path: '/quotation-form',     icon: 'ti ti-file-plus' };
+  const quotes  = { name: 'Quotes',     path: '/quotations',         icon: 'ti ti-file-invoice' };
+  const newCase = { name: 'New Case',   path: '/create-case',        icon: 'ti ti-circle-plus' };
+  const dispatch= { name: 'Dispatch',   path: '/b2c-dispatch',       icon: 'ti ti-truck-delivery' };
+  const procure = { name: 'Procure',    path: '/procurement-portal', icon: 'ti ti-building-warehouse' };
+  const support = { name: 'Support',    path: '/support',            icon: 'ti ti-headset' };
+  const track   = { name: 'Track',      path: '/track', external: true, icon: 'ti ti-map-pin' };
+  const audit   = { name: 'Audit',      path: '/audit-log',          icon: 'ti ti-shield-lock' };
+
+  const maps = {
+    admin:            [home, team,    clients, audit],
+    sales:            [home, quote,   quotes,  clients],
+    registration:     [home, newCase, clients, support],
+    banking:          [home, finance, clients, support],
+    inventory:        [home, dispatch,clients, support],
+    field_installation:[home, clients,track,   support],
+    electrical:       [home, clients, support, support],
+    subsidy:          [home, clients, support, support],
+    technical:        [home, clients, support, support],
+    accounts:         [home, finance, clients, support],
+    customer_service: [home, clients, support, support],
+    procurement:      [home, procure, clients, support],
+  };
+  // Remove duplicates for roles with only 2 middle tabs
+  const tabs = maps[role] || [home, clients, support, support];
+  // Deduplicate (in case same tab appears twice for simple roles)
+  const seen = new Set();
+  return tabs.filter(t => {
+    if (seen.has(t.path)) return false;
+    seen.add(t.path);
+    return true;
+  });
 };
 
 /* ── Admin navigation structure ─────────────────────────────────────────── */
@@ -176,17 +219,8 @@ const Sidebar = ({ onLogout }) => {
   const [userName, setUserName] = useState(localStorage.getItem('name') || 'User');
   const [userRole, setUserRole] = useState((localStorage.getItem('role') || 'user').toLowerCase());
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [accountDrawerOpen, setAccountDrawerOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
 
   const initials   = userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-
-  const toggleDark = () => {
-    const next = !darkMode;
-    setDarkMode(next);
-    localStorage.setItem('theme', next ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-theme', next ? 'dark' : '');
-  };
   const groups     = userRole === 'admin' ? NAV.admin : getRoleGroups(userRole);
   const roleColor  = ROLE_COLORS[userRole] || '#2563EB';
   const roleLabel  = getRoleLabel(userRole);
@@ -219,10 +253,7 @@ const Sidebar = ({ onLogout }) => {
   }, []);
 
   /* ── Close mobile sidebar on route change ──────────────────────────── */
-  useEffect(() => { 
-    setMobileOpen(false); 
-    setAccountDrawerOpen(false);
-  }, [location.pathname]);
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
   /* ── Listen for custom event from Header to open menu ──────────────── */
   useEffect(() => {
@@ -431,183 +462,72 @@ const Sidebar = ({ onLogout }) => {
         </>
       )}
 
-      {/* ── Mobile Bottom Navigation ─────────────────────────────────────── */}
+      {/* ── Mobile Bottom Navigation — Role-specific 4 tabs ──────────────── */}
       <nav className="mobile-bottom-nav" role="navigation" aria-label="Mobile navigation">
-        {/* Home */}
-        <button
-          onClick={() => navigate(groups[0]?.items[0]?.path || '/admin-dashboard')}
-          className={`mobile-nav-btn ${location.pathname === (groups[0]?.items[0]?.path || '/admin-dashboard') ? 'active' : ''}`}
-          aria-label="Home"
-        >
-          <div className="mobile-nav-icon-wrap"><i className="ti ti-home" style={{ fontSize: '19px' }} /></div>
-          <span className="mobile-nav-label">Home</span>
-        </button>
+        {(() => {
+          const dashPath = groups[0]?.items[0]?.path || '/admin-dashboard';
+          const tabs = getMobileNav(userRole, dashPath);
 
-        {/* Clients */}
-        <button
-          onClick={() => navigate('/cases')}
-          className={`mobile-nav-btn ${location.pathname === '/cases' ? 'active' : ''}`}
-          aria-label="Clients"
-        >
-          <div className="mobile-nav-icon-wrap"><i className="ti ti-users" style={{ fontSize: '19px' }} /></div>
-          <span className="mobile-nav-label">Clients</span>
-        </button>
+          return tabs.map((tab, idx) => {
+            const isLast = idx === tabs.length - 1;
+            // Last tab is always Account (Profile)
+            if (isLast) {
+              const isActive = location.pathname === '/profile';
+              return (
+                <button
+                  key="account"
+                  onClick={() => navigate('/profile')}
+                  className={`mobile-nav-btn ${isActive ? 'active' : ''}`}
+                  aria-label="Account"
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <div
+                    className="mobile-nav-icon-wrap"
+                    style={{
+                      background: isActive ? roleColor : 'transparent',
+                      borderRadius: 'var(--radius-md)',
+                      width: '36px', height: '28px',
+                    }}
+                  >
+                    <span style={{
+                      fontSize: '11px', fontWeight: 800,
+                      color: isActive ? '#fff' : 'currentColor',
+                    }}>
+                      {initials}
+                    </span>
+                  </div>
+                  <span className="mobile-nav-label">Account</span>
+                </button>
+              );
+            }
 
-        {/* Team */}
-        <button
-          onClick={() => navigate('/users')}
-          className={`mobile-nav-btn ${location.pathname === '/users' ? 'active' : ''}`}
-          aria-label="Team"
-        >
-          <div className="mobile-nav-icon-wrap"><i className="ti ti-users-group" style={{ fontSize: '19px' }} /></div>
-          <span className="mobile-nav-label">Team</span>
-        </button>
+            const isActive = tab.external
+              ? false
+              : location.pathname === tab.path;
 
-        {/* Account */}
-        <button
-          onClick={() => setAccountDrawerOpen(true)}
-          className={`mobile-nav-btn ${accountDrawerOpen ? 'active' : ''}`}
-          aria-label="Account"
-        >
-          <div
-            className="mobile-nav-icon-wrap"
-            style={{
-              background: accountDrawerOpen ? roleColor : 'var(--surface-2)',
-              borderRadius: 'var(--radius-md)',
-              width: '32px', height: '32px',
-            }}
-          >
-            <span style={{
-              fontSize: '12px', fontWeight: 800, color: accountDrawerOpen ? '#fff' : 'var(--text-3)',
-            }}>
-              {initials}
-            </span>
-          </div>
-          <span className="mobile-nav-label" style={{ marginTop: '2px' }}>Account</span>
-        </button>
+            return (
+              <button
+                key={tab.path + idx}
+                onClick={() => {
+                  if (tab.external) {
+                    window.open(tab.path, '_blank', 'noopener,noreferrer');
+                  } else {
+                    navigate(tab.path);
+                  }
+                }}
+                className={`mobile-nav-btn ${isActive ? 'active' : ''}`}
+                aria-label={tab.name}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                <div className="mobile-nav-icon-wrap">
+                  <i className={tab.icon} style={{ fontSize: '19px' }} />
+                </div>
+                <span className="mobile-nav-label">{tab.name}</span>
+              </button>
+            );
+          });
+        })()}
       </nav>
-
-      {/* ── Account Drawer (Bottom Sheet) ─────────────────────────────────────── */}
-      {accountDrawerOpen && (
-        <>
-          <div
-            onClick={() => setAccountDrawerOpen(false)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 190,
-              background: 'hsla(222,47%,5%,0.55)',
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)',
-              animation: 'fadeIn 0.2s ease both',
-            }}
-          />
-          <div style={{
-            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 200,
-            background: 'var(--surface)',
-            borderTopLeftRadius: 'var(--radius-2xl)',
-            borderTopRightRadius: 'var(--radius-2xl)',
-            padding: '24px 16px 32px',
-            animation: 'slideUp 0.3s cubic-bezier(0.16,1,0.3,1) both',
-            boxShadow: '0 -10px 40px rgba(0,0,0,0.1)',
-            maxHeight: '85vh',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
-            {/* Header info */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', paddingBottom: '20px', borderBottom: '1px solid var(--border-2)', marginBottom: '16px', flexShrink: 0 }}>
-              <div style={{
-                width: '52px', height: '52px', borderRadius: '50%',
-                background: roleColor, color: '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '18px', fontWeight: 700
-              }}>
-                {initials}
-              </div>
-              <div>
-                <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>{userName}</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-4)', textTransform: 'capitalize', marginTop: '2px' }}>{roleLabel}</div>
-              </div>
-              <button 
-                onClick={() => setAccountDrawerOpen(false)} 
-                style={{ marginLeft: 'auto', background: 'var(--surface-2)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', cursor: 'pointer' }}
-              >
-                <i className="ti ti-x" style={{ fontSize: '16px' }} />
-              </button>
-            </div>
-
-            {/* Other nav items */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
-              {groups.flatMap(g => g.items)
-                .filter(i => !['Dashboard', 'Customers', 'All Customers', 'Team'].includes(i.name))
-                .map(item => {
-                  const iconCls = ICONS[item.name] || 'ti ti-point';
-                  return (
-                    <button
-                      key={item.name}
-                      onClick={() => { handleNav(item); setAccountDrawerOpen(false); }}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 12px',
-                        background: 'none', border: 'none', width: '100%', textAlign: 'left',
-                        fontSize: '15px', fontWeight: 600, color: 'var(--text-2)', borderRadius: 'var(--radius-md)',
-                        fontFamily: 'inherit', cursor: 'pointer'
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                    >
-                      <i className={iconCls} style={{ fontSize: '20px', width: '24px', textAlign: 'center', color: 'var(--text-4)' }} />
-                      <span style={{ flex: 1 }}>{item.name}</span>
-                      {item.external && <i className="ti ti-external-link" style={{ fontSize: '14px', color: 'var(--text-5)' }} />}
-                    </button>
-                  );
-                })
-              }
-              
-              {/* Divider if there are items above */}
-              {groups.flatMap(g => g.items).filter(i => !['Dashboard', 'Customers', 'All Customers', 'Team'].includes(i.name)).length > 0 && (
-                <div style={{ height: '1px', background: 'var(--border-2)', margin: '8px 0' }} />
-              )}
-
-              {/* Fixed Actions */}
-              <button
-                onClick={() => { navigate('/profile'); setAccountDrawerOpen(false); }}
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 12px', background: 'none', border: 'none', width: '100%', textAlign: 'left', fontSize: '15px', fontWeight: 600, color: 'var(--text-2)', borderRadius: 'var(--radius-md)', fontFamily: 'inherit', cursor: 'pointer' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'none'}
-              >
-                <i className="ti ti-user" style={{ fontSize: '20px', width: '24px', textAlign: 'center', color: 'var(--text-4)' }} />
-                <span>Profile Settings</span>
-              </button>
-
-              <button
-                onClick={toggleDark}
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 12px', background: 'none', border: 'none', width: '100%', textAlign: 'left', fontSize: '15px', fontWeight: 600, color: 'var(--text-2)', borderRadius: 'var(--radius-md)', fontFamily: 'inherit', cursor: 'pointer' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'none'}
-              >
-                <i className={darkMode ? "ti ti-sun" : "ti ti-moon"} style={{ fontSize: '20px', width: '24px', textAlign: 'center', color: 'var(--text-4)' }} />
-                <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
-              </button>
-
-              <button
-                onClick={() => { navigate('/support'); setAccountDrawerOpen(false); }}
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 12px', background: 'none', border: 'none', width: '100%', textAlign: 'left', fontSize: '15px', fontWeight: 600, color: 'var(--text-2)', borderRadius: 'var(--radius-md)', fontFamily: 'inherit', cursor: 'pointer' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'none'}
-              >
-                <i className="ti ti-headset" style={{ fontSize: '20px', width: '24px', textAlign: 'center', color: 'var(--text-4)' }} />
-                <span>Help & Support</span>
-              </button>
-
-              <button
-                onClick={() => { onLogout(); setAccountDrawerOpen(false); }}
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 12px', background: 'var(--color-danger-muted)', border: 'none', width: '100%', textAlign: 'left', fontSize: '15px', fontWeight: 600, color: 'var(--color-danger)', borderRadius: 'var(--radius-md)', marginTop: '8px', fontFamily: 'inherit', cursor: 'pointer' }}
-              >
-                <i className="ti ti-logout" style={{ fontSize: '20px', width: '24px', textAlign: 'center', color: 'var(--color-danger)' }} />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          </div>
-        </>
-      )}
     </>
   );
 };
