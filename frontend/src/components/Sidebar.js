@@ -230,20 +230,51 @@ const Sidebar = ({ onLogout }) => {
   const bottomNavPaths = new Set(mobileTabs.map(t => t.path));
 
   // Touch tracking for swipe down to close
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const touchStartY = useRef(0);
   const touchCurrentY = useRef(0);
   
+  const handleCloseMenu = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setMobileOpen(false);
+      setIsClosing(false);
+      setDragY(0);
+    }, 250);
+  };
+
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY;
     touchCurrentY.current = e.touches[0].clientY;
+    setIsDragging(true);
   };
   const handleTouchMove = (e) => {
     touchCurrentY.current = e.touches[0].clientY;
+    const deltaY = touchCurrentY.current - touchStartY.current;
+    if (deltaY > 0) {
+      setDragY(deltaY);
+    }
   };
   const handleTouchEnd = () => {
-    if (touchCurrentY.current - touchStartY.current > 50) {
-      setMobileOpen(false);
+    setIsDragging(false);
+    const deltaY = touchCurrentY.current - touchStartY.current;
+    if (deltaY > 80) {
+      handleCloseMenu();
+    } else {
+      setDragY(0); // snap back
     }
+  };
+
+  // Nav item click handler for bottom sheet to close smoothly
+  const handleNavClick = (item) => {
+    if (item.external) {
+      window.open(item.path, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(item.path);
+    }
+    handleCloseMenu();
   };
 
   /* ── Sync profile from DB on mount ──────────────────────────────────── */
@@ -274,7 +305,11 @@ const Sidebar = ({ onLogout }) => {
   }, []);
 
   /* ── Close mobile sidebar on route change ──────────────────────────── */
-  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => { 
+    setMobileOpen(false); 
+    setIsClosing(false);
+    setDragY(0);
+  }, [location.pathname]);
 
   /* ── Listen for custom event from Header to open menu ──────────────── */
   useEffect(() => {
@@ -438,21 +473,18 @@ const Sidebar = ({ onLogout }) => {
         <>
           {/* Backdrop */}
           <div
-            onClick={() => setMobileOpen(false)}
+            onClick={handleCloseMenu}
             style={{
               position: 'fixed', inset: 0, zIndex: 150,
               background: 'hsla(222,47%,5%,0.55)',
               backdropFilter: 'blur(4px)',
               WebkitBackdropFilter: 'blur(4px)',
-              animation: 'fadeIn 0.2s ease both',
+              animation: isClosing ? 'fadeOut 0.25s ease both' : 'fadeIn 0.25s ease both',
             }}
           />
 
           {/* Bottom Sheet Drawer panel */}
           <aside 
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
             style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 160,
             background: 'var(--sidebar-bg)',
@@ -460,12 +492,18 @@ const Sidebar = ({ onLogout }) => {
             borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0',
             boxShadow: 'var(--shadow-xl)',
             display: 'flex', flexDirection: 'column',
-            animation: 'slideInUp 0.3s cubic-bezier(0.16,1,0.3,1) both',
             maxHeight: '90vh',
+            transform: `translateY(${isClosing ? '100%' : dragY + 'px'})`,
+            transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.16,1,0.3,1)',
+            animation: !isDragging && dragY === 0 && !isClosing ? 'slideInUp 0.35s cubic-bezier(0.16,1,0.3,1) both' : 'none',
           }}>
-            {/* Grab Handle */}
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'center', paddingTop: '12px', paddingBottom: '4px' }}>
-              <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'var(--color-border)' }} />
+            {/* Grab Handle Area (Expanded touch target) */}
+            <div 
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '16px 0 8px 0', cursor: 'grab' }}>
+              <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'var(--text-4)' }} />
             </div>
 
             {/* Profile Info Header */}
@@ -502,7 +540,7 @@ const Sidebar = ({ onLogout }) => {
                       return (
                         <button
                           key={item.name}
-                          onClick={() => handleNav(item)}
+                          onClick={() => handleNavClick(item)}
                           className={`nav-item${isActive ? ' active' : ''}`}
                           style={{ padding: '12px 14px' }}
                         >
@@ -527,7 +565,7 @@ const Sidebar = ({ onLogout }) => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <button
-                  onClick={() => { navigate('/profile'); setMobileOpen(false); }}
+                  onClick={() => handleNavClick({ path: '/profile' })}
                   className={`nav-item${location.pathname === '/profile' ? ' active' : ''}`}
                   style={{ padding: '12px 14px' }}
                 >
@@ -550,7 +588,7 @@ const Sidebar = ({ onLogout }) => {
                 </button>
 
                 <button
-                  onClick={() => { navigate('/support'); setMobileOpen(false); }}
+                  onClick={() => handleNavClick({ path: '/support' })}
                   className={`nav-item${location.pathname === '/support' ? ' active' : ''}`}
                   style={{ padding: '12px 14px' }}
                 >
