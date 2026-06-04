@@ -1269,9 +1269,9 @@ select.input {
   .admin-header-top { gap: 10px; }
   .admin-search-form { display: none !important; }
   .admin-search-form-mobile { display: flex; width: 100%; position: relative; align-items: center; }
-  .admin-header-top { padding: 12px 20px; }
+  .admin-controls { gap: 8px; }
   .admin-brand-text { display: none; }
-  .admin-search-form { display: none; }
+  .admin-brand-logo { display: block; }
   .admin-profile-label { display: none; }
   .header-avatar { padding: 4px !important; }
 
