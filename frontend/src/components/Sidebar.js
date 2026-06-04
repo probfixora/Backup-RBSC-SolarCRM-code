@@ -497,28 +497,32 @@ const Sidebar = ({ onLogout }) => {
             transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.16,1,0.3,1)',
             animation: !isDragging && dragY === 0 && !isClosing ? 'slideInUp 0.35s cubic-bezier(0.16,1,0.3,1) both' : 'none',
           }}>
-            {/* Grab Handle Area (Expanded touch target) */}
+            {/* Draggable Header Area */}
             <div 
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
-              style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '16px 0 8px 0', cursor: 'grab' }}>
-              <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'var(--text-4)' }} />
-            </div>
-
-            {/* Profile Info Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px' }}>
-              <div style={{
-                width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
-                background: roleColor,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '18px', fontWeight: 700, color: '#fff',
-              }}>
-                {initials}
+              style={{ touchAction: 'none' }}
+            >
+              {/* Grab Handle Area (Expanded touch target) */}
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '16px 0 8px 0', cursor: 'grab' }}>
+                <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'var(--text-4)' }} />
               </div>
-              <div>
-                <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-1)' }}>{userName}</h4>
-                <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: 'var(--text-3)', textTransform: 'capitalize' }}>{roleLabel}</p>
+
+              {/* Profile Info Header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '0 20px 16px 20px' }}>
+                <div style={{
+                  width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+                  background: roleColor,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '18px', fontWeight: 700, color: '#fff',
+                }}>
+                  {initials}
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-1)' }}>{userName}</h4>
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: 'var(--text-3)', textTransform: 'capitalize' }}>{roleLabel}</p>
+                </div>
               </div>
             </div>
 
