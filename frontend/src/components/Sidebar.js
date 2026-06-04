@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, MapPin } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
@@ -225,6 +225,27 @@ const Sidebar = ({ onLogout }) => {
   const roleColor  = ROLE_COLORS[userRole] || '#2563EB';
   const roleLabel  = getRoleLabel(userRole);
 
+  const dashPath = groups[0]?.items[0]?.path || '/admin-dashboard';
+  const mobileTabs = getMobileNav(userRole, dashPath);
+  const bottomNavPaths = new Set(mobileTabs.map(t => t.path));
+
+  // Touch tracking for swipe down to close
+  const touchStartY = useRef(0);
+  const touchCurrentY = useRef(0);
+  
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchCurrentY.current = e.touches[0].clientY;
+  };
+  const handleTouchMove = (e) => {
+    touchCurrentY.current = e.touches[0].clientY;
+  };
+  const handleTouchEnd = () => {
+    if (touchCurrentY.current - touchStartY.current > 50) {
+      setMobileOpen(false);
+    }
+  };
+
   /* ── Sync profile from DB on mount ──────────────────────────────────── */
   useEffect(() => {
     const isSimulating = localStorage.getItem('simulating') === 'true';
@@ -428,7 +449,11 @@ const Sidebar = ({ onLogout }) => {
           />
 
           {/* Bottom Sheet Drawer panel */}
-          <aside style={{
+          <aside 
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 160,
             background: 'var(--sidebar-bg)',
             borderTop: '1px solid var(--color-border)',
@@ -462,13 +487,16 @@ const Sidebar = ({ onLogout }) => {
             <div style={{ height: '1px', background: 'var(--color-border)', margin: '0 20px' }} />
 
             {/* Scrollable Menu Area */}
-            <div style={{ padding: '16px 14px', overflowY: 'auto' }}>
+            <div style={{ padding: '16px 14px', overflowY: 'auto', overscrollBehavior: 'contain' }}>
               <p className="nav-section-label" style={{ paddingLeft: '8px', marginBottom: '8px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>MENU</p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                {groups.map(({ items }, gi) => (
+                {groups.map(({ items }, gi) => {
+                  const filteredItems = items.filter(item => !bottomNavPaths.has(item.path));
+                  if (filteredItems.length === 0) return null;
+                  return (
                   <React.Fragment key={gi}>
-                    {items.map((item) => {
+                    {filteredItems.map((item) => {
                       const isActive  = !item.external && location.pathname === item.path;
                       const iconCls   = ICONS[item.name] || 'ti ti-point';
                       return (
@@ -491,7 +519,8 @@ const Sidebar = ({ onLogout }) => {
                       );
                     })}
                   </React.Fragment>
-                ))}
+                  );
+                })}
               </div>
 
               <div style={{ height: '1px', background: 'var(--color-border)', margin: '20px 8px' }} />
@@ -546,11 +575,8 @@ const Sidebar = ({ onLogout }) => {
       {/* ── Mobile Bottom Navigation — Role-specific 4 tabs ──────────────── */}
       <nav className="mobile-bottom-nav" role="navigation" aria-label="Mobile navigation">
         {(() => {
-          const dashPath = groups[0]?.items[0]?.path || '/admin-dashboard';
-          const tabs = getMobileNav(userRole, dashPath);
-
-          return tabs.map((tab, idx) => {
-            const isLast = idx === tabs.length - 1;
+          return mobileTabs.map((tab, idx) => {
+            const isLast = idx === mobileTabs.length - 1;
             // Last tab is always Account (Profile)
             if (isLast) {
               const isActive = location.pathname === '/profile';
