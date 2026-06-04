@@ -117,7 +117,9 @@ export default function AdminWattageMapping() {
         {loading ? (
           <p style={{ color: 'var(--text-4)', fontSize: 13, textAlign: 'center', padding: 24 }}>Loading…</p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, marginBottom: 20 }}>
+          <>
+          <div className="table-wrap hide-on-mobile">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, marginBottom: 20 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>kW</th>
@@ -170,8 +172,85 @@ export default function AdminWattageMapping() {
               {mappings.length === 0 && (
                 <tr><td colSpan={4} style={{ textAlign: 'center', padding: 24, color: 'var(--text-4)' }}>No mappings found</td></tr>
               )}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── MOBILE CARDS ── */}
+          <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+            {mappings.map((m) => (
+              <div
+                key={`mob-${m.id}`}
+                style={{
+                  background: editingId === m.id ? 'var(--surface-2)' : 'var(--surface)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--border)',
+                  boxShadow: 'var(--shadow-card)',
+                  padding: '16px',
+                  display: 'flex', flexDirection: 'column', gap: '12px'
+                }}
+              >
+                {editingId === m.id ? (
+                  <>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', marginBottom: 4 }}>kW</label>
+                        <input type="number" min="1" className="input" value={editKw} onChange={e => setEditKw(e.target.value)} style={{ width: '100%', fontSize: 13, padding: '8px' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', marginBottom: 4 }}>Watts</label>
+                        <input type="number" min="1" className="input" value={editWatt} onChange={e => setEditWatt(e.target.value)} style={{ width: '100%', fontSize: 13, padding: '8px' }} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', marginBottom: 4 }}>Label</label>
+                      <input className="input" value={editLabel} onChange={e => setEditLabel(e.target.value)} style={{ width: '100%', fontSize: 13, padding: '8px' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--border-2)', paddingTop: '10px' }}>
+                      <button onClick={() => setEditingId(null)} className="btn btn-ghost btn-sm" style={{ padding: '6px 12px' }}>
+                        <X size={14} style={{ marginRight: 4 }} /> Cancel
+                      </button>
+                      <button onClick={() => handleUpdate(m.id)} className="btn btn-primary btn-sm" disabled={saving} style={{ padding: '6px 12px' }}>
+                        <Save size={14} style={{ marginRight: 4 }} /> Save
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>kW</span>
+                        <div style={{ fontWeight: 700, color: 'var(--text-1)', fontSize: '15px' }}>{m.kw_value} kW</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Watts</span>
+                        <div style={{ fontWeight: 600, color: 'var(--color-primary)', fontSize: '15px' }}>{Number(m.watt_value).toLocaleString()} W</div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Label</span>
+                      <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>{m.label || '—'}</div>
+                    </div>
+
+                    <div style={{ borderTop: '1px solid var(--border-2)', paddingTop: '10px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                      <button onClick={() => { setEditingId(m.id); setEditKw(String(m.kw_value)); setEditWatt(String(m.watt_value)); setEditLabel(m.label || ''); }}
+                        className="btn btn-ghost btn-sm" style={{ padding: '6px 12px' }}>
+                        <Edit2 size={12} style={{ marginRight: 4 }} /> Edit
+                      </button>
+                      <button onClick={() => handleDelete(m.id, m.kw_value)} className="btn btn-sm" style={{ padding: '6px 12px', background: '#fff1f2', color: '#be123c', border: '1px solid #fecdd3' }}>
+                        <Trash2 size={12} style={{ marginRight: 4 }} /> Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+            {mappings.length === 0 && (
+              <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-4)', padding: '24px 0' }}>No mappings found</p>
+            )}
+          </div>
+          </>
         )}
 
         {/* Add new mapping */}

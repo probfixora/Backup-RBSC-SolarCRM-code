@@ -317,6 +317,209 @@ const FinanceTableRow = ({ caseObj, onSave }) => {
 };
 
 /* ═══════════════════════════════════════════════════════════
+   FINANCE MOBILE CARD — Mobile responsive equivalent of FinanceTableRow
+═══════════════════════════════════════════════════════════ */
+const FinanceMobileCard = ({ caseObj, onSave }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [showExpanded, setShowExpanded] = useState(false);
+  const [formData, setFormData] = useState({
+    paymentType: caseObj.payment_type || '',
+    cashAmount: caseObj.cash_amount || '',
+    paymentMode: caseObj.payment_mode || '',
+    loanAmount: caseObj.loan_amount || '',
+    bankName: caseObj.bank_name || '',
+    financeFormStatus: caseObj.finance_form_status || 'Form Submitted to Bank',
+    financeFinalStatus: caseObj.finance_final_status || 'Pending',
+    financeNotes: caseObj.finance_notes || '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [historyData, setHistoryData] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const pType = (formData.paymentType || '').toLowerCase();
+      let remarks = 'Updated financial details.';
+      if (pType === 'cash' && formData.paymentMode) {
+        remarks = `Cash payment confirmed via ${formData.paymentMode}`;
+      }
+      await edgeFetch(EDGE.workflow, { action: 'update_finance', caseId: (caseObj.id || caseObj.case_id), remarks, ...formData });
+      toast.success('Finance details updated.');
+      setIsEditing(false);
+      onSave();
+    } catch { toast.error('Failed to update finance details'); }
+    finally { setSaving(false); }
+  };
+
+  const loadExpanded = async () => {
+    const next = !showExpanded;
+    setShowExpanded(next);
+    if (next && historyData.length === 0) {
+      setLoadingHistory(true);
+      try {
+        const res = await edgeFetch(EDGE.workflow, { action: 'get_one', caseId: (caseObj.id || caseObj.case_id) });
+        setHistoryData(res.history || []);
+      } catch { toast.error('Failed to load history'); }
+      finally { setLoadingHistory(false); }
+    }
+  };
+
+  const payType = (formData.paymentType || '').toLowerCase();
+  const isApproved = payType === 'loan'
+    ? (formData.financeFormStatus === 'Loan Approved' || formData.financeFormStatus === 'Approved')
+    : (payType === 'cash' && formData.paymentMode && formData.paymentMode.trim() !== '');
+
+  return (
+    <div style={{
+      background: isEditing ? 'var(--surface-2)' : 'var(--surface)',
+      borderRadius: 'var(--radius-lg)',
+      border: '1px solid var(--border)',
+      boxShadow: 'var(--shadow-card)',
+      padding: '16px',
+      display: 'flex', flexDirection: 'column', gap: '12px',
+      transition: 'background 0.2s',
+    }}>
+      {/* Customer Info */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <div style={{ fontWeight: 700, color: 'var(--text-1)', fontSize: '15px', marginBottom: '4px' }}>{caseObj.customer_name}</div>
+          <div style={{ fontSize: '12.5px', color: 'var(--text-4)', display: 'flex', gap: '10px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Phone size={12} /> {caseObj.phone}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Zap size={12} /> {caseObj.load_required || '?'} kW</span>
+          </div>
+        </div>
+        
+        {/* Payment Type */}
+        <div>
+          {isEditing ? (
+            <select name="paymentType" value={formData.paymentType} onChange={handleChange} className="input" style={{ width: '100px', padding: '6px', fontSize: '12px' }}>
+              <option value="">Select…</option>
+              <option value="cash">Cash</option>
+              <option value="loan">Bank Loan</option>
+            </select>
+          ) : (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '5px',
+              padding: '4px 10px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600,
+              background: payType === 'cash' ? '#f0fdf4' : payType === 'loan' ? '#eff6ff' : '#f8fafc',
+              color: payType === 'cash' ? '#16a34a' : payType === 'loan' ? '#2563eb' : '#64748b',
+              border: `1px solid ${payType === 'cash' ? '#bbf7d0' : payType === 'loan' ? '#bfdbfe' : '#e2e8f0'}`,
+            }}>
+              {payType === 'cash' ? <Banknote size={12} /> : payType === 'loan' ? <Building2 size={12} /> : <CreditCard size={12} />}
+              {payType ? payType.toUpperCase() : 'PENDING'}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Amount / Mode */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-2)', paddingTop: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Amount / Mode</span>
+          {isEditing && payType === 'cash' ? (
+            <select name="paymentMode" value={formData.paymentMode} onChange={handleChange} className="input" style={{ width: '130px', padding: '6px', fontSize: '12px' }}>
+              <option value="">Select mode…</option>
+              <option value="Debit Card">Debit Card</option>
+              <option value="Credit Card">Credit Card</option>
+              <option value="UPI">UPI</option>
+              <option value="Physical Cash">Physical Cash</option>
+              <option value="Cheque">Cheque</option>
+            </select>
+          ) : isEditing && payType === 'loan' ? (
+            <input type="number" name="loanAmount" value={formData.loanAmount} onChange={handleChange} className="input" style={{ width: '130px', padding: '6px', fontSize: '12px' }} placeholder="₹ Amount" />
+          ) : payType === 'cash' ? (
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>
+              {formData.paymentMode || <span style={{ color: 'var(--text-4)', fontStyle: 'italic' }}>Mode not set</span>}
+            </span>
+          ) : payType === 'loan' ? (
+            <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)' }}>₹{Number(formData.loanAmount || 0).toLocaleString('en-IN')}</div>
+          ) : (
+            <span style={{ color: 'var(--text-4)', fontSize: '12px' }}>—</span>
+          )}
+        </div>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+          <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Status</span>
+          {payType === 'loan' ? (
+            <StatusPill status={formData.financeFormStatus || 'Pending'} />
+          ) : payType === 'cash' && formData.paymentMode ? (
+            <StatusPill status="Approved" />
+          ) : (
+            <span style={{ color: 'var(--text-4)', fontSize: '12px' }}>—</span>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-2)', paddingTop: '10px' }}>
+        <button onClick={loadExpanded} className="btn btn-ghost btn-sm" style={{ padding: '6px 10px', fontSize: '12px', background: showExpanded ? 'var(--brand-dim)' : 'transparent', color: showExpanded ? 'var(--brand)' : 'var(--text-2)' }}>
+          <Clock size={12} style={{ marginRight: '4px' }} /> {showExpanded ? 'Hide' : payType === 'loan' ? 'Loan Stages' : 'History'}
+        </button>
+        
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {!isEditing && !isApproved && (
+            <button onClick={() => setIsEditing(true)} className="btn btn-secondary btn-sm" style={{ padding: '6px 12px', fontSize: '12px' }}>
+              <Edit3 size={12} style={{ marginRight: '4px' }} /> Edit
+            </button>
+          )}
+          {isEditing && (
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm" style={{ padding: '6px' }}><X size={14} /></button>
+              <button onClick={handleSave} disabled={saving} className="btn btn-primary btn-sm" style={{ padding: '6px 12px', fontSize: '12px' }}>
+                {saving ? '...' : <Save size={12} style={{ marginRight: '4px' }} />} Save
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Expanded Sections */}
+      {showExpanded && payType === 'loan' && (
+        <div style={{ marginTop: '10px', background: '#f0f7ff', borderRadius: '10px' }}>
+          <LoanStageTracker
+            currentStatus={formData.financeFormStatus}
+            caseId={(caseObj.id || caseObj.case_id)}
+            onSave={() => { setShowExpanded(false); onSave(); }}
+          />
+        </div>
+      )}
+
+      {showExpanded && payType !== 'loan' && (
+        <div style={{ marginTop: '10px', padding: '12px', background: '#f8fafc', borderRadius: '10px', border: '1px solid var(--border)' }}>
+          <h4 style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Clock size={13} /> Cash Payment History
+          </h4>
+          {loadingHistory ? (
+            <p style={{ fontSize: '12px', color: 'var(--text-3)' }}>Loading...</p>
+          ) : historyData.filter(h => h.action_type === 'finance_update').length === 0 ? (
+            <p style={{ fontSize: '12px', color: 'var(--text-4)', fontStyle: 'italic' }}>No payment history records found.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {[...historyData]
+                .filter(h => h.action_type === 'finance_update')
+                .reverse()
+                .slice(0, 5)
+                .map((h, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', color: 'var(--text-2)', padding: '8px', background: '#fff', borderRadius: '6px', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-4)' }}>
+                    <span>{new Date(h.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                    <span style={{ fontWeight: 600 }}>{h.updated_by}</span>
+                  </div>
+                  <span>{h.remarks}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════════
    FINANCE TRACKING — Loan Process Center
 ═══════════════════════════════════════════════════════════ */
 const FinanceTracking = ({ onLogout }) => {
@@ -485,20 +688,29 @@ const FinanceTracking = ({ onLogout }) => {
                 <p style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>Cases appear here when they reach Bank & Finance stage.</p>
               </div>
             ) : (
-              <div style={{ background: 'var(--surface)', borderRadius: '14px', border: '1px solid var(--border)', overflow: 'hidden', overflowX: 'auto' }}>
-                <table style={{ width: '100%', minWidth: '860px', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ background: '#f8fafc', borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
-                      {['Customer Info', 'Payment Type', 'Amount / Mode', 'Status', 'Actions'].map(h => (
-                        <th key={h} style={{ padding: '16px 20px', fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cases.map((c) => <FinanceTableRow key={c.id || c.case_id} caseObj={c} onSave={loadData} />)}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                <div className="hide-on-mobile" style={{ background: 'var(--surface)', borderRadius: '14px', border: '1px solid var(--border)', overflow: 'hidden', overflowX: 'auto' }}>
+                  <table style={{ width: '100%', minWidth: '860px', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#f8fafc', borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
+                        {['Customer Info', 'Payment Type', 'Amount / Mode', 'Status', 'Actions'].map(h => (
+                          <th key={h} style={{ padding: '16px 20px', fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cases.map((c) => <FinanceTableRow key={c.id || c.case_id} caseObj={c} onSave={loadData} />)}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* ── MOBILE CARDS ── */}
+                <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px' }}>
+                  {cases.map((c) => (
+                    <FinanceMobileCard key={`mob-${c.id || c.case_id}`} caseObj={c} onSave={loadData} />
+                  ))}
+                </div>
+              </>
             )}
           </>
         )}

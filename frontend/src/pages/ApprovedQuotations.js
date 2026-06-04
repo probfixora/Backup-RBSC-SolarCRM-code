@@ -150,7 +150,7 @@ const ApprovedQuotations = ({ onLogout }) => {
         </div>
 
         {/* ── Table ── */}
-        <div className="table-wrap">
+        <div className="table-wrap hide-on-mobile">
           <div style={{ overflowX: 'auto' }}>
             <table>
               <thead>
@@ -220,6 +220,66 @@ const ApprovedQuotations = ({ onLogout }) => {
           <div className="table-foot">
             {filtered.length} approved customer{filtered.length !== 1 ? 's' : ''}
           </div>
+        </div>
+
+        {/* ── MOBILE CARDS (hidden on desktop via .mobile-only CSS) ── */}
+        <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--color-text-muted)' }}>Loading approved customers…</div>
+          ) : filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--color-text-muted)' }}>
+              <UserCheck style={{ width: '32px', height: '32px', margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
+              No approved customers found
+            </div>
+          ) : filtered.map((q, idx) => (
+            <div
+              key={`mob-${q.id}`}
+              style={{
+                background: 'var(--surface)',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-card)',
+                padding: '16px',
+                display: 'flex', flexDirection: 'column', gap: '10px'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Quotation ID:</span>
+                    <span style={{ fontFamily: 'monospace', fontSize: '11.5px', fontWeight: 700, color: 'var(--color-primary)' }}>
+                      {q.quotation_id}
+                    </span>
+                  </div>
+                </div>
+                <span className="badge badge-green" style={{ fontSize: '10.5px', padding: '3px 8px' }}>
+                  <CheckCircle style={{ width: '10px', height: '10px' }} />
+                  Approved
+                </span>
+              </div>
+
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>
+                  {q.customer_name}
+                </p>
+                <p style={{ fontSize: '12.5px', color: 'var(--text-3)' }}>
+                  {q.customer_mobile || '—'}
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-2)', paddingTop: '10px' }}>
+                <button
+                  id={`upload-btn-mob-${q.id}`}
+                  onClick={() => openModal(q)}
+                  className="btn btn-primary btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <UploadCloud style={{ width: '13px', height: '13px' }} />
+                  Upload Customer
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
 
         <Footer />

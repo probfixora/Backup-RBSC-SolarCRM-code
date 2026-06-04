@@ -341,7 +341,7 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
               onClick={() => navigate('/')}
               className="admin-brand-logo"
               style={{
-                height: '46px',
+                height: '56px',
                 width: 'auto',
                 objectFit: 'contain',
                 cursor: 'pointer',

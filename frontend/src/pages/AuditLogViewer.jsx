@@ -194,7 +194,7 @@ export default function AuditLogViewer({ onLogout }) {
             </div>
           ) : (
             <>
-              <div className="table-wrap">
+              <div className="table-wrap hide-on-mobile">
                 <table>
                   <thead>
                     <tr>
@@ -253,6 +253,64 @@ export default function AuditLogViewer({ onLogout }) {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* ── MOBILE CARDS ── */}
+              <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px', padding: '16px' }}>
+                {filtered.map((log) => {
+                  const { bg, text } = getActionMeta(log.action_type);
+                  return (
+                    <div
+                      key={`mob-${log.id}`}
+                      style={{
+                        background: 'var(--surface)',
+                        borderRadius: 'var(--radius-lg)',
+                        border: '1px solid var(--border)',
+                        boxShadow: 'var(--shadow-card)',
+                        padding: '16px',
+                        display: 'flex', flexDirection: 'column', gap: '8px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Case ID:</span>
+                          <div style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--color-primary)', fontSize: '12px' }}>{log.case_id || '—'}</div>
+                        </div>
+                        <span style={{
+                          padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600,
+                          background: bg, color: text, textTransform: 'capitalize',
+                        }}>
+                          {(log.action_type || '—').replace(/_/g, ' ')}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Dept / By:</span>
+                          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-2)' }}>{DEPT_LABELS[log.department] || log.department || '—'}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{log.updated_by || '—'}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Stage:</span>
+                          <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>{log.stage || log.new_stage || '—'}</div>
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: '12px', color: 'var(--text-3)', background: 'var(--surface-2)', padding: '8px', borderRadius: '6px', marginTop: '4px' }}>
+                        {log.notes || '—'}
+                      </div>
+
+                      <div style={{ textAlign: 'right', marginTop: '4px' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--text-4)' }}>
+                          {log.timestamp ? new Date(log.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {filtered.length === 0 && (
+                  <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-4)', padding: '24px 0' }}>No audit log entries found</p>
+                )}
               </div>
 
               {/* Pagination */}

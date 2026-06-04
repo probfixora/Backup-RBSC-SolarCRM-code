@@ -176,7 +176,7 @@ const Users = ({ onLogout }) => {
         <div className="grid-stack-mobile" style={{ display: 'grid', gridTemplateColumns: profileUser ? '1fr 300px' : '1fr', gap: '16px', alignItems: 'start' }}>
 
           {/* Table */}
-          <div className="table-wrap">
+          <div className="table-wrap hide-on-mobile">
             <table>
               <thead>
                 <tr>
@@ -275,6 +275,72 @@ const Users = ({ onLogout }) => {
               </tbody>
             </table>
             <div className="table-foot">{users.length} member{users.length !== 1 ? 's' : ''} total</div>
+          </div>
+
+          {/* ── MOBILE CARDS (hidden on desktop via .mobile-only CSS) ── */}
+          <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px' }}>
+            {filtered.map((user) => {
+              const rm = getRoleMeta(user.role);
+              const isActive = profileUser?.id === user.id;
+              return (
+                <div
+                  key={`mob-${user.id}`}
+                  onClick={() => setProfileUser(isActive ? null : user)}
+                  style={{
+                    background: 'var(--surface)',
+                    borderRadius: 'var(--radius-lg)',
+                    border: isActive ? '1px solid var(--brand)' : '1px solid var(--border)',
+                    boxShadow: 'var(--shadow-card)',
+                    padding: '16px',
+                    display: 'flex', flexDirection: 'column', gap: '10px',
+                    cursor: 'pointer',
+                    transition: 'box-shadow 0.2s ease, transform 0.15s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '34px', height: '34px', borderRadius: '9px', flexShrink: 0,
+                        background: 'linear-gradient(135deg, #2563EB, #7C3AED)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '12px', fontWeight: 700, color: '#fff',
+                      }}>
+                        {user.name?.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '2px' }}>{user.name}</p>
+                        <p style={{ fontSize: '12px', color: 'var(--text-4)' }}>{user.email}</p>
+                      </div>
+                    </div>
+                    {loggedInRole === 'admin' && (
+                      <button
+                        title="View profile"
+                        className="btn btn-ghost btn-sm"
+                        style={{ padding: '6px' }}
+                      >
+                        <ChevronRight style={{ width: '13px', height: '13px', transform: isActive ? 'rotate(90deg)' : 'none', transition: '0.2s' }} />
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-2)', paddingTop: '10px', marginTop: '2px' }}>
+                     <span style={{
+                        padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 700,
+                        background: rm.bg, color: rm.text, border: `1px solid ${rm.border}`, textTransform: 'capitalize',
+                      }}>
+                        {rm.label}
+                      </span>
+                      <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-3)' }}>
+                        {user.employeeId || 'N/A'}
+                      </span>
+                  </div>
+                </div>
+              );
+            })}
+            {filtered.length === 0 && (
+              <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-4)', padding: '24px 0' }}>
+                {search ? `No members match "${search}"` : 'No team members yet'}
+              </p>
+            )}
           </div>
 
           {/* ── Profile / Admin Panel ── */}

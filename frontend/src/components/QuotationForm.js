@@ -87,8 +87,6 @@ const S = {
   hdr:    { background:'linear-gradient(135deg,#1e3a5f,#2563EB)', borderRadius:12, padding:'22px 28px', marginBottom:20, color:'#fff', display:'flex', alignItems:'center', gap:12 },
   card:   { background:'#fff', borderRadius:12, boxShadow:'0 2px 10px rgba(37,99,235,0.08)', padding:'22px 24px', marginBottom:18, border:'1px solid #e2e8f0' },
   sh:     { fontSize:14, fontWeight:700, color:'#1e3a5f', borderBottom:'2px solid #dbeafe', paddingBottom:8, marginBottom:18, textTransform:'uppercase', letterSpacing:.5 },
-  g2:     { display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 },
-  g3:     { display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16 },
   lbl:    { display:'block', fontSize:12, fontWeight:600, color:'#4b5563', marginBottom:4 },
   inp:    { width:'100%', padding:'9px 12px', border:'1.5px solid #d1d5db', borderRadius:7, fontSize:13, boxSizing:'border-box', outline:'none', background:'#fff', transition:'border-color 0.15s' },
   sel:    { width:'100%', padding:'9px 12px', border:'1.5px solid #d1d5db', borderRadius:7, fontSize:13, boxSizing:'border-box', outline:'none', background:'#fff', cursor:'pointer', transition:'border-color 0.15s' },
@@ -330,7 +328,7 @@ export default function QuotationForm() {
         {/* ── 1. Customer ── */}
         <div style={S.card}>
           <div style={S.sh}>1. Customer Information</div>
-          <div style={{...S.g2, marginBottom:14}}>
+          <div className="grid-2" style={{marginBottom:14}}>
             <F label="Customer Name/ID/Mobile" req>
               <select style={S.sel}
                 value={f.customerMode === 'existing' ? f.customerId : f.customerMode}
@@ -344,7 +342,7 @@ export default function QuotationForm() {
               <input style={S.inp} type="tel" value={f.mobile} onChange={e=>set('mobile',e.target.value)} required readOnly={f.customerMode==='existing'} />
             </F>
           </div>
-          <div style={{...S.g2, marginBottom:14}}>
+          <div className="grid-2" style={{marginBottom:14}}>
             <F label="Customer Name" req>
               <input style={S.inp} value={f.customerName} onChange={e=>set('customerName',e.target.value)} required readOnly={f.customerMode==='existing'} />
             </F>
@@ -352,11 +350,11 @@ export default function QuotationForm() {
               <input style={S.inp} value={f.address} onChange={e=>set('address',e.target.value)} required readOnly={f.customerMode==='existing'} />
             </F>
           </div>
-          <div style={S.g2}>
+          <div className="grid-2">
             <F label="Email ID" req>
               <input style={S.inp} type="email" value={f.email} onChange={e=>set('email',e.target.value)} readOnly={f.customerMode==='existing'} required />
             </F>
-            <div style={S.g2}>
+            <div className="grid-2">
               <F label="Electrical Division" req>
                 <input style={S.inp} value={f.electricalDivision} onChange={e=>set('electricalDivision',e.target.value)} required />
               </F>
@@ -370,7 +368,7 @@ export default function QuotationForm() {
         {/* ── 2. Technical Specs ── */}
         <div style={S.card}>
           <div style={S.sh}>2. Technical Specifications</div>
-          <div style={S.g2}>
+          <div className="grid-2">
             <F label="Electrical Load" req>
               <ManualTypeDropdown
                 options={KW500}
@@ -394,7 +392,7 @@ export default function QuotationForm() {
         {/* ── 3. Panel & Brand ── */}
         <div style={S.card}>
           <div style={S.sh}>3. Panel &amp; Brand Details</div>
-          <div style={{...S.g2, marginBottom:14}}>
+          <div className="grid-2" style={{marginBottom:14}}>
             <F label="Panel Brand" req>
               <ManualTypeDropdown
                 options={BRANDS}
@@ -410,7 +408,7 @@ export default function QuotationForm() {
               <input style={S.ro} value={f.productName} readOnly placeholder="Auto-filled from brand + category" />
             </F>
           </div>
-          <div style={S.g2}>
+          <div className="grid-2">
             <F label="Panel Unit (kW)" req>
               <ManualTypeDropdown
                 options={KW500}
@@ -435,7 +433,7 @@ export default function QuotationForm() {
         {/* ── 4. Warranty & Inverter ── */}
         <div style={S.card}>
           <div style={S.sh}>4. Warranty &amp; Inverter</div>
-          <div style={S.g2}>
+          <div className="grid-2">
             <F label="Panel Warranty">
               <ManualTypeDropdown
                 options={PANEL_WARR}
@@ -478,7 +476,7 @@ export default function QuotationForm() {
         <div style={S.card}>
           <div style={S.sh}>5. System Components &amp; Extras</div>
           {showBat ? (
-            <div style={{...S.g2, marginBottom:14}}>
+            <div className="grid-2" style={{marginBottom:14}}>
               <div>
                 <F label="Battery Brand">
                   <select style={S.sel} value={f.batteryOption} onChange={e=>onBatteryOption(e.target.value)}>
@@ -520,7 +518,7 @@ export default function QuotationForm() {
               ✓ Battery not required for <strong>{f.category}</strong> systems
             </div>
           )}
-          <div style={S.g3}>
+          <div className="grid-3">
             <F label="Structure">
               <ManualTypeDropdown
                 options={STRUCTURES}
@@ -558,7 +556,7 @@ export default function QuotationForm() {
               </div>
             </div>
           </div>
-          <div style={{...S.g2, marginTop:14}}>
+          <div className="grid-2" style={{marginTop:14}}>
             <F label="Earthing">
               <input style={S.inp} value={f.earthing} onChange={e=>set('earthing',e.target.value)} placeholder="e.g. 2.5 Sq MM copper" />
             </F>
@@ -571,7 +569,7 @@ export default function QuotationForm() {
         {/* ── 6. Pricing & Employee ── */}
         <div style={S.card}>
           <div style={S.sh}>6. Final Submission</div>
-          <div style={{...S.g2, marginBottom:14}}>
+          <div className="grid-2" style={{marginBottom:14}}>
             <F label="Product Price Quote (₹)" req>
               <input style={{...S.inp,fontSize:17,fontWeight:700,color:'#16a34a'}} type="number" min="0"
                 placeholder="Enter final price" value={f.productPrice} onChange={e=>set('productPrice',e.target.value)} required />
@@ -585,7 +583,7 @@ export default function QuotationForm() {
               {f.recheckPrice && <p style={{fontSize:12,marginTop:3,color:priceOk?'#16a34a':'#ef4444'}}>{priceOk?'✓ Match':'⚠ No match'}</p>}
             </F>
           </div>
-          <div style={S.g3}>
+          <div className="grid-3">
             <F label="Employee ID">
               <input style={S.ro} value={f.employeeId} readOnly placeholder="Auto-filled" />
             </F>

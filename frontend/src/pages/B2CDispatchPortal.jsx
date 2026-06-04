@@ -93,7 +93,8 @@ export default function B2CDispatchPortal({ onLogout }) {
               <p style={{ color: 'var(--text-4)', fontSize: 13 }}>There are no approved cases waiting for dispatch.</p>
             </div>
           ) : (
-            <div className="table-wrap">
+            <>
+              <div className="table-wrap hide-on-mobile">
               <table>
                 <thead>
                   <tr>
@@ -144,6 +145,66 @@ export default function B2CDispatchPortal({ onLogout }) {
                 </tbody>
               </table>
             </div>
+
+            {/* ── MOBILE CARDS ── */}
+            <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+              {cases.map((c) => (
+                <div
+                  key={`mob-${c.id}`}
+                  style={{
+                    background: 'var(--surface)',
+                    borderRadius: 'var(--radius-lg)',
+                    border: '1px solid var(--border)',
+                    boxShadow: 'var(--shadow-card)',
+                    padding: '16px',
+                    display: 'flex', flexDirection: 'column', gap: '12px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Tracking ID:</span>
+                      <div style={{ fontFamily: 'monospace', fontWeight: 700, color: '#3B82F6', fontSize: '12px' }}>{c.tracking_id}</div>
+                    </div>
+                    <span style={{ padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, background: '#fef3c7', color: '#b45309' }}>
+                      Waiting for Dispatch
+                    </span>
+                  </div>
+
+                  <div>
+                    <div style={{ fontWeight: 700, color: 'var(--text-1)', fontSize: '15px' }}>{c.customer_name}</div>
+                    <div style={{ fontSize: '12.5px', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                      <Package size={12} /> {c.load_required || c.capacity || 'Not specified'}
+                    </div>
+                  </div>
+
+                  <div style={{ borderTop: '1px solid var(--border-2)', paddingTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      onClick={() => handleDispatch(c.id, c.customer_name, c.load_required)}
+                      disabled={processingId === c.id}
+                      style={{
+                        padding: '8px 16px', borderRadius: '8px', border: 'none',
+                        background: processingId === c.id ? '#9CA3AF' : '#8b5cf6',
+                        color: '#fff', fontSize: '13px', fontWeight: 600,
+                        cursor: processingId === c.id ? 'wait' : 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: '8px',
+                        transition: 'background-color 0.2s', width: '100%', justifyContent: 'center'
+                      }}
+                    >
+                      {processingId === c.id ? (
+                        <>
+                          <Loader size={16} className="animate-spin" /> Processing...
+                        </>
+                      ) : (
+                        <>
+                          Send to Installation <ArrowRight size={16} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </>
           )}
         </div>
 
