@@ -476,7 +476,7 @@ const Sidebar = ({ onLogout }) => {
               return (
                 <button
                   key="account"
-                  onClick={() => navigate('/profile')}
+                  onClick={() => setMobileOpen(true)}
                   className={`mobile-nav-btn ${isActive ? 'active' : ''}`}
                   aria-label="Account"
                   aria-current={isActive ? 'page' : undefined}
