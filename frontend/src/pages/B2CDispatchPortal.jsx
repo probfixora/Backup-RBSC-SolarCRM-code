@@ -95,115 +95,101 @@ export default function B2CDispatchPortal({ onLogout }) {
           ) : (
             <>
               <div className="table-wrap hide-on-mobile">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Tracking ID</th>
-                    <th>Customer Name</th>
-                    <th>Required Capacity</th>
-                    <th>Current Status</th>
-                    <th style={{ textAlign: 'right' }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cases.map((c) => (
-                    <tr key={c.id}>
-                      <td style={{ fontFamily: 'monospace', fontWeight: 600, color: '#3B82F6' }}>{c.tracking_id}</td>
-                      <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{c.customer_name}</td>
-                      <td style={{ fontWeight: 500, color: 'var(--text-2)' }}>{c.load_required || c.capacity || 'Not specified'}</td>
-                      <td>
-                        <span style={{ padding: '4px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: '#fef3c7', color: '#b45309' }}>
-                          Waiting for Dispatch
-                        </span>
-                      </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <button
-                          onClick={() => handleDispatch(c.id, c.customer_name, c.load_required)}
-                          disabled={processingId === c.id}
-                          style={{
-                            padding: '8px 16px', borderRadius: '8px', border: 'none',
-                            background: processingId === c.id ? '#9CA3AF' : '#8b5cf6',
-                            color: '#fff', fontSize: '13px', fontWeight: 600,
-                            cursor: processingId === c.id ? 'wait' : 'pointer',
-                            display: 'inline-flex', alignItems: 'center', gap: '8px',
-                            transition: 'background-color 0.2s'
-                          }}
-                        >
-                          {processingId === c.id ? (
-                            <>
-                              <Loader size={16} className="animate-spin" /> Processing...
-                            </>
-                          ) : (
-                            <>
-                              Send to Installation <ArrowRight size={16} />
-                            </>
-                          )}
-                        </button>
-                      </td>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tracking ID</th>
+                      <th>Customer Name</th>
+                      <th>Required Capacity</th>
+                      <th>Current Status</th>
+                      <th style={{ textAlign: 'right' }}>Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* ── MOBILE CARDS ── */}
-            <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-              {cases.map((c) => (
-                <div
-                  key={`mob-${c.id}`}
-                  style={{
-                    background: 'var(--surface)',
-                    borderRadius: 'var(--radius-lg)',
-                    border: '1px solid var(--border)',
-                    boxShadow: 'var(--shadow-card)',
-                    padding: '16px',
-                    display: 'flex', flexDirection: 'column', gap: '12px'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Tracking ID:</span>
-                      <div style={{ fontFamily: 'monospace', fontWeight: 700, color: '#3B82F6', fontSize: '12px' }}>{c.tracking_id}</div>
+                  </thead>
+                  <tbody>
+                    {cases.map((c) => (
+                      <tr key={c.id}>
+                        <td style={{ fontFamily: 'monospace', fontWeight: 600, color: '#3B82F6' }}>{c.tracking_id}</td>
+                        <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{c.customer_name}</td>
+                        <td style={{ fontWeight: 500, color: 'var(--text-2)' }}>{c.load_required || c.capacity || 'Not specified'}</td>
+                        <td>
+                          <span style={{ padding: '4px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: '#fef3c7', color: '#b45309' }}>
+                            Waiting for Dispatch
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            onClick={() => handleDispatch(c.id, c.customer_name, c.load_required)}
+                            disabled={processingId === c.id}
+                            style={{
+                              padding: '8px 16px', borderRadius: '8px', border: 'none',
+                              background: processingId === c.id ? '#9CA3AF' : '#8b5cf6',
+                              color: '#fff', fontSize: '13px', fontWeight: 600,
+                              cursor: processingId === c.id ? 'wait' : 'pointer',
+                              display: 'inline-flex', alignItems: 'center', gap: '8px',
+                              transition: 'background-color 0.2s'
+                            }}
+                          >
+                            {processingId === c.id ? (
+                              <>
+                                <Loader size={16} className="animate-spin" /> Processing...
+                              </>
+                            ) : (
+                              <>
+                                Send to Installation <ArrowRight size={16} />
+                              </>
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {cases.map((c) => (
+                  <div key={c.id} style={{ background: 'var(--surface-2)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--text-1)', fontSize: '15px' }}>{c.customer_name}</div>
+                      <span style={{ padding: '4px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: '#fef3c7', color: '#b45309' }}>
+                        Waiting
+                      </span>
                     </div>
-                    <span style={{ padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, background: '#fef3c7', color: '#b45309' }}>
-                      Waiting for Dispatch
-                    </span>
-                  </div>
-
-                  <div>
-                    <div style={{ fontWeight: 700, color: 'var(--text-1)', fontSize: '15px' }}>{c.customer_name}</div>
-                    <div style={{ fontSize: '12.5px', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                      <Package size={12} /> {c.load_required || c.capacity || 'Not specified'}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'var(--surface)', padding: '12px', borderRadius: '8px' }}>
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Tracking ID</div>
+                        <div style={{ fontFamily: 'monospace', fontWeight: 600, color: '#3B82F6', marginTop: '4px' }}>{c.tracking_id}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Capacity</div>
+                        <div style={{ fontWeight: 500, color: 'var(--text-2)', marginTop: '4px' }}>{c.load_required || c.capacity || 'N/A'}</div>
+                      </div>
                     </div>
-                  </div>
-
-                  <div style={{ borderTop: '1px solid var(--border-2)', paddingTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
                     <button
                       onClick={() => handleDispatch(c.id, c.customer_name, c.load_required)}
                       disabled={processingId === c.id}
                       style={{
-                        padding: '8px 16px', borderRadius: '8px', border: 'none',
+                        padding: '10px 16px', borderRadius: '8px', border: 'none',
                         background: processingId === c.id ? '#9CA3AF' : '#8b5cf6',
-                        color: '#fff', fontSize: '13px', fontWeight: 600,
+                        color: '#fff', fontSize: '14px', fontWeight: 600,
                         cursor: processingId === c.id ? 'wait' : 'pointer',
-                        display: 'inline-flex', alignItems: 'center', gap: '8px',
-                        transition: 'background-color 0.2s', width: '100%', justifyContent: 'center'
+                        display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
+                        transition: 'background-color 0.2s', width: '100%', marginTop: '4px'
                       }}
                     >
                       {processingId === c.id ? (
                         <>
-                          <Loader size={16} className="animate-spin" /> Processing...
+                          <Loader size={18} className="animate-spin" /> Processing...
                         </>
                       ) : (
                         <>
-                          Send to Installation <ArrowRight size={16} />
+                          Send to Installation <ArrowRight size={18} />
                         </>
                       )}
                     </button>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
             </>
           )}
         </div>

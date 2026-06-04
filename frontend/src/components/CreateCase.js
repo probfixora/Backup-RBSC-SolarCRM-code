@@ -80,23 +80,31 @@ const BRAND_PRICE_PER_PANEL = {
 };
 
 const S = {
-  page:   { padding:'32px', fontFamily:'Plus Jakarta Sans, Inter, sans-serif', width: '100%', maxWidth: '1000px', margin: '0 auto' },
-  hdr:    { background:'linear-gradient(135deg, var(--brand), #0f172a)', borderRadius:'var(--radius-lg)', padding:'24px 32px', marginBottom:24, color:'#fff', display:'flex', alignItems:'center', gap:12, boxShadow:'var(--shadow-lg)' },
-  card:   { background:'var(--surface)', borderRadius:'var(--radius-lg)', boxShadow:'var(--shadow-md)', padding:'28px', marginBottom:20, border: '1px solid var(--border)', transition:'transform 0.2s, box-shadow 0.2s' },
-  sh:     { fontSize:15, fontWeight:800, color:'var(--text-1)', borderBottom:'1px solid var(--border-2)', paddingBottom:10, marginBottom:20, letterSpacing:0.5 },
-  g2:     { display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 },
-  g3:     { display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:20 },
-  lbl:    { display:'block', fontSize:12, fontWeight:700, color:'var(--text-2)', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.02em' },
-  inp:    { width:'100%', padding:'12px 16px', border:'1.5px solid var(--border)', borderRadius:'var(--radius-md)', fontSize:14, boxSizing:'border-box', outline:'none', background:'var(--surface-2)', transition:'all 0.2s', color:'var(--text-1)' },
-  sel:    { width:'100%', padding:'12px 16px', border:'1.5px solid var(--border)', borderRadius:'var(--radius-md)', fontSize:14, boxSizing:'border-box', outline:'none', background:'var(--surface-2)', transition:'all 0.2s', color:'var(--text-1)', cursor:'pointer' },
-  ro:     { width:'100%', padding:'12px 16px', border:'1px dashed var(--border)', borderRadius:'var(--radius-md)', fontSize:14, boxSizing:'border-box', background:'rgba(0,0,0,0.02)', color:'var(--text-4)' },
-  info:   { fontSize:13, fontWeight:700, color:'var(--brand)', marginTop:6 },
-  ctr:    { display:'flex', alignItems:'center', gap:10, marginTop:4 },
-  cbtn:   { width:32, height:32, borderRadius:8, border:'none', background:'var(--brand-dim)', color:'var(--brand)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800 },
-  cnum:   { fontSize:16, fontWeight:800, minWidth:32, textAlign:'center', color:'var(--text-1)' },
+  page:   { padding:'20px 14px', fontFamily:'Plus Jakarta Sans, Inter, sans-serif', width: '100%', maxWidth: '1000px', margin: '0 auto' },
+  hdr:    { background:'linear-gradient(135deg, var(--brand), #0f172a)', borderRadius:'var(--radius-lg)', padding:'24px', marginBottom:20, color:'#fff', display:'flex', alignItems:'center', gap:12, boxShadow:'var(--shadow-lg)' },
+  card:   { background:'var(--surface)', borderRadius:'var(--radius-lg)', boxShadow:'var(--shadow-card)', padding:'24px', marginBottom:20, border: '1px solid var(--border)', transition:'transform 0.2s, box-shadow 0.2s' },
+  sh:     { display:'flex', alignItems:'center', gap:12, fontSize:15, fontWeight:800, color:'var(--brand)', borderBottom:'1px solid var(--border-2)', paddingBottom:12, marginBottom:20, letterSpacing:0.5, textTransform:'uppercase' },
+  shNum:  { width:28, height:28, background:'var(--brand-dim)', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--brand)', fontSize:13, fontWeight: 800 },
+  g2:     { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:16 },
+  g3:     { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:16 },
+  lbl:    { display:'block', fontSize:12, fontWeight:700, color:'var(--text-3)', marginBottom:8, textTransform:'uppercase', letterSpacing:0.5 },
+  inp:    { width:'100%', padding:'14px 16px', border:'1px solid var(--border-2)', borderRadius:'var(--radius-md)', fontSize:15, boxSizing:'border-box', outline:'none', background:'var(--surface)', transition:'all 0.2s', color:'var(--text-1)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.02)' },
+  sel:    { width:'100%', padding:'14px 16px', border:'1px solid var(--border-2)', borderRadius:'var(--radius-md)', fontSize:15, boxSizing:'border-box', outline:'none', background:'var(--surface)', cursor:'pointer', transition:'all 0.2s', color:'var(--text-1)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.02)' },
+  ro:     { width:'100%', padding:'14px 16px', border:'1px dashed var(--border-2)', borderRadius:'var(--radius-md)', fontSize:15, boxSizing:'border-box', background:'var(--surface-2)', color:'var(--text-4)' },
+  info:   { fontSize:13, fontWeight:700, color:'var(--brand)', marginTop:8, display:'inline-block', padding:'6px 12px', background:'var(--brand-dim)', borderRadius:6 },
+  ctr:    { display:'flex', alignItems:'center', gap:12, marginTop:4, background:'var(--surface-2)', padding:'6px', borderRadius:'var(--radius-md)', width:'fit-content' },
+  cbtn:   { width:36, height:36, borderRadius:8, border:'none', background:'#f59e0b', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, boxShadow:'0 2px 4px rgba(245,158,11,0.3)' },
+  cnum:   { fontSize:17, fontWeight:800, minWidth:40, textAlign:'center', color:'var(--text-1)' },
   sub:    { width:'100%', padding:'14px', background:'var(--btn-bg)', color:'var(--btn-text)', border:'none', borderRadius:'var(--radius-lg)', fontSize:15, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:10, boxShadow:'var(--shadow-md)', transition:'all 0.2s' },
   req:    { color:'var(--rose)' },
 };
+
+const SectionHeader = ({ num, title }) => (
+  <div style={S.sh}>
+    <div style={S.shNum}>{num}</div>
+    <div>{title}</div>
+  </div>
+);
 
 const Ctr = ({ value, onChange }) => (
   <div style={S.ctr}>
@@ -355,7 +363,7 @@ export default function CreateCase({ onLogout }) {
           <form onSubmit={handleSubmit}>
             {/* ── 1. Customer ── */}
             <div style={S.card}>
-              <div style={S.sh}>1. Customer Information</div>
+              <SectionHeader num="1" title="Customer Information" />
               <div style={{...S.g2, marginBottom:14}}>
                 <F label="Customer Name" req>
                   <input style={S.inp} value={f.customerName} onChange={e=>set('customerName',e.target.value)} required />
@@ -392,7 +400,7 @@ export default function CreateCase({ onLogout }) {
 
             {/* ── 2. Technical Specs ── */}
             <div style={S.card}>
-              <div style={S.sh}>2. Technical Specifications</div>
+              <SectionHeader num="2" title="Technical Specifications" />
               <div style={S.g2}>
                 <F label="Electrical Load" req>
                   <ManualTypeDropdown
@@ -416,7 +424,7 @@ export default function CreateCase({ onLogout }) {
 
             {/* ── 3. Panel & Brand ── */}
             <div style={S.card}>
-              <div style={S.sh}>3. Panel &amp; Brand Details</div>
+              <SectionHeader num="3" title="Panel &amp; Brand Details" />
               <div style={{...S.g2, marginBottom:14}}>
                 <F label="Panel Brand" req>
                   <ManualTypeDropdown
@@ -456,7 +464,7 @@ export default function CreateCase({ onLogout }) {
 
             {/* ── 4. Warranty & Inverter ── */}
             <div style={S.card}>
-              <div style={S.sh}>4. Warranty &amp; Inverter</div>
+              <SectionHeader num="4" title="Warranty &amp; Inverter" />
               <div style={S.g2}>
                 <F label="Panel Warranty">
                   <ManualTypeDropdown
@@ -498,7 +506,7 @@ export default function CreateCase({ onLogout }) {
 
             {/* ── 5. System Components & Extras ── */}
             <div style={S.card}>
-              <div style={S.sh}>5. System Components &amp; Extras</div>
+              <SectionHeader num="5" title="System Components &amp; Extras" />
               {showBat ? (
                 <div style={{...S.g2, marginBottom:14}}>
                   <div>
@@ -591,7 +599,7 @@ export default function CreateCase({ onLogout }) {
 
             {/* ── 6. Pricing ── */}
             <div style={S.card}>
-              <div style={S.sh}>6. Pricing</div>
+              <SectionHeader num="6" title="Pricing" />
               <div style={{...S.g2, marginBottom:14}}>
                 <F label="Final Price Quote (₹)" req>
                   <input style={{...S.inp,fontSize:17,fontWeight:700,color:'#16a34a'}} type="number" min="0"
@@ -610,8 +618,11 @@ export default function CreateCase({ onLogout }) {
 
             {/* ── 7. Document Uploads ── */}
             <div style={{...S.card, padding: 0, overflow: 'hidden'}}>
-              <div style={{padding: '22px 24px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f8fafc'}}>
-                <div style={{...S.sh, borderBottom: 'none', paddingBottom: 0, marginBottom: 0}}>7. Document Upload Gate</div>
+              <div style={{padding: '22px 24px', borderBottom: '1px solid var(--border-2)', backgroundColor: 'var(--surface)'}}>
+                <div style={{...S.sh, borderBottom: 'none', paddingBottom: 0, marginBottom: 0}}>
+                  <div style={S.shNum}>7</div>
+                  <div>Document Upload Gate</div>
+                </div>
               </div>
               <div style={{padding: '22px 24px'}}>
                 <div style={{ marginBottom: '24px', background: 'var(--color-info-light)', border: '1px solid #BFDBFE', borderRadius: 'var(--radius-xl)', padding: '16px', display: 'flex', gap: '12px' }}>

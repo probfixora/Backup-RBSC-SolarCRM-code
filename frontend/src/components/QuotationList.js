@@ -117,169 +117,157 @@ const QuotationList = ({ onLogout }) => {
         </div>
 
         {/* Table */}
-        <div className="table-wrap hide-on-mobile">
-          <div style={{ overflowX: 'auto' }}>
-            <table>
-              <thead>
-                <tr>
-                  <th style={{ whiteSpace: 'nowrap' }}>Quotation ID</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>Customer</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>Date</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>Price</th>
-                  <th style={{ whiteSpace: 'nowrap' }}>Status</th>
-                  <th style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan="7" style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>Loading quotations…</td></tr>
-                ) : filteredQuotations.length === 0 ? (
-                  <tr><td colSpan="7" style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>
-                    <FileText style={{ width: '32px', height: '32px', margin: '0 auto 12px', display: 'block', opacity: 0.4 }} />
-                    No quotations found
-                  </td></tr>
-                ) : filteredQuotations.map(q => (
-                  <tr key={q.id || q._id}>
-                    <td>
-                      <span style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)', whiteSpace: 'nowrap' }}>
-                        {q.quotation_id || q.quotationId}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ whiteSpace: 'nowrap' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '2px' }}>
-                          {q.customer_name || q.customer?.name}
-                        </p>
-                        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                          {q.customer_mobile || q.customer?.mobile}
-                        </p>
-                      </div>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
-                        {new Date(q.created_at || q.createdAt).toLocaleDateString()}
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', whiteSpace: 'nowrap' }}>
-                        ₹{Number(q.product_price || q.otherDetails?.productPrice || 0).toLocaleString()}
-                      </span>
-                    </td>
-                    <td>{getStatusBadge(q.status)}</td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
-                        <a
-                          href={q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`}
-                          target="_blank" rel="noopener noreferrer"
-                          className="btn btn-ghost btn-sm"
-                          style={{ padding: '7px 10px' }}
-                          title="Download PDF"
-                        >
-                          <Download style={{ width: '14px', height: '14px' }} />
-                        </a>
-                        <select
-                          value={q.status === 'Registration Completed' ? 'Approved' : q.status}
-                          onChange={e => handleUpdateStatus(q.id || q._id, e.target.value)}
-                          className="input"
-                          style={{
-                            width: 'auto', padding: '6px 12px', fontSize: '12px',
-                            fontWeight: 600, cursor: 'pointer',
-                          }}
-                        >
-                          <option value="Submitted">Submitted</option>
-                          <option value="Processing">Processing</option>
-                          <option value="Approved">Approved</option>
-                          <option value="Rejected">Rejected</option>
-                        </select>
-                      </div>
-                    </td>
+        <>
+          <div className="table-wrap hide-on-mobile">
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th style={{ whiteSpace: 'nowrap' }}>Quotation ID</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Customer</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Date</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Price</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Status</th>
+                    <th style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="table-foot">{quotations.length} quotation{quotations.length !== 1 ? 's' : ''} total</div>
-        </div>
-
-        {/* ── MOBILE CARDS (hidden on desktop via .mobile-only CSS) ── */}
-        <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--color-text-muted)' }}>Loading quotations…</div>
-          ) : filteredQuotations.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--color-text-muted)' }}>
-              <FileText style={{ width: '32px', height: '32px', margin: '0 auto 12px', display: 'block', opacity: 0.4 }} />
-              No quotations found
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>Loading quotations…</td></tr>
+                  ) : filteredQuotations.length === 0 ? (
+                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>
+                      <FileText style={{ width: '32px', height: '32px', margin: '0 auto 12px', display: 'block', opacity: 0.4 }} />
+                      No quotations found
+                    </td></tr>
+                  ) : filteredQuotations.map(q => (
+                    <tr key={q.id || q._id}>
+                      <td>
+                        <span style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)', whiteSpace: 'nowrap' }}>
+                          {q.quotation_id || q.quotationId}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ whiteSpace: 'nowrap' }}>
+                          <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '2px' }}>
+                            {q.customer_name || q.customer?.name}
+                          </p>
+                          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                            {q.customer_mobile || q.customer?.mobile}
+                          </p>
+                        </div>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+                          {new Date(q.created_at || q.createdAt).toLocaleDateString()}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', whiteSpace: 'nowrap' }}>
+                          ₹{Number(q.product_price || q.otherDetails?.productPrice || 0).toLocaleString()}
+                        </span>
+                      </td>
+                      <td>{getStatusBadge(q.status)}</td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                          <a
+                            href={q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="btn btn-ghost btn-sm"
+                            style={{ padding: '7px 10px' }}
+                            title="Download PDF"
+                          >
+                            <Download style={{ width: '14px', height: '14px' }} />
+                          </a>
+                          <select
+                            value={q.status === 'Registration Completed' ? 'Approved' : q.status}
+                            onChange={e => handleUpdateStatus(q.id || q._id, e.target.value)}
+                            className="input"
+                            style={{
+                              width: 'auto', padding: '6px 12px', fontSize: '12px',
+                              fontWeight: 600, cursor: 'pointer',
+                            }}
+                          >
+                            <option value="Submitted">Submitted</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                          </select>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ) : filteredQuotations.map(q => (
-            <div
-              key={`mob-${q.id || q._id}`}
-              style={{
-                background: 'var(--surface)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border)',
-                boxShadow: 'var(--shadow-card)',
-                padding: '16px',
-                display: 'flex', flexDirection: 'column', gap: '10px'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Quotation ID:</span>
-                    <span style={{ fontFamily: 'monospace', fontSize: '11.5px', fontWeight: 700, color: 'var(--color-primary)' }}>
-                      {q.quotation_id || q.quotationId}
-                    </span>
+            <div className="table-foot">{quotations.length} quotation{quotations.length !== 1 ? 's' : ''} total</div>
+          </div>
+          
+          <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>Loading quotations…</div>
+            ) : filteredQuotations.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <FileText style={{ width: '32px', height: '32px', margin: '0 auto 12px', display: 'block', opacity: 0.4 }} />
+                No quotations found
+              </div>
+            ) : filteredQuotations.map(q => (
+              <div key={q.id || q._id} style={{ background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-1)' }}>
+                      {q.customer_name || q.customer?.name}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                      {q.customer_mobile || q.customer?.mobile}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Date:</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
-                      {new Date(q.created_at || q.createdAt).toLocaleDateString()}
-                    </span>
+                  {getStatusBadge(q.status)}
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'var(--surface-2)', padding: '12px', borderRadius: '8px' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Quotation ID</div>
+                    <div style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)', marginTop: '4px' }}>{q.quotation_id || q.quotationId}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Price</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)', marginTop: '4px' }}>₹{Number(q.product_price || q.otherDetails?.productPrice || 0).toLocaleString()}</div>
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Date</div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>{new Date(q.created_at || q.createdAt).toLocaleDateString()}</div>
                   </div>
                 </div>
-                {getStatusBadge(q.status)}
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <select
+                    value={q.status === 'Registration Completed' ? 'Approved' : q.status}
+                    onChange={e => handleUpdateStatus(q.id || q._id, e.target.value)}
+                    className="input"
+                    style={{
+                      flex: 1, padding: '8px 12px', fontSize: '13px',
+                      fontWeight: 600, cursor: 'pointer',
+                    }}
+                  >
+                    <option value="Submitted">Submitted</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                  <a
+                    href={q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="btn btn-primary"
+                    style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    title="Download PDF"
+                  >
+                    <Download style={{ width: '16px', height: '16px' }} />
+                  </a>
+                </div>
               </div>
-
-              <div>
-                <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>
-                  {q.customer_name || q.customer?.name}
-                </p>
-                <p style={{ fontSize: '12.5px', color: 'var(--text-3)' }}>
-                  {q.customer_mobile || q.customer?.mobile}
-                </p>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', marginTop: '4px' }}>
-                  ₹{Number(q.product_price || q.otherDetails?.productPrice || 0).toLocaleString()}
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-2)', paddingTop: '10px' }}>
-                <a
-                  href={q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="btn btn-ghost btn-sm"
-                  style={{ padding: '7px 10px' }}
-                  title="Download PDF"
-                >
-                  <Download style={{ width: '14px', height: '14px', marginRight: '4px' }} /> PDF
-                </a>
-                <select
-                  value={q.status === 'Registration Completed' ? 'Approved' : q.status}
-                  onChange={e => handleUpdateStatus(q.id || q._id, e.target.value)}
-                  className="input"
-                  style={{
-                    width: 'auto', padding: '6px 12px', fontSize: '12px',
-                    fontWeight: 600, cursor: 'pointer',
-                  }}
-                >
-                  <option value="Submitted">Submitted</option>
-                  <option value="Processing">Processing</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
 
         <Footer />
       </main>

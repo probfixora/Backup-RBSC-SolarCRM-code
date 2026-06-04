@@ -589,7 +589,7 @@ const Dashboard = ({ onLogout, title = 'Dashboard', roleBadge, viewAsUserId, vie
                 <p style={{ color:'var(--color-text-muted)', fontSize:'13px', textAlign:'center', padding:'24px' }}>Not enough history data yet.</p>
               ) : (
                 <div style={{ overflowX:'auto' }}>
-                  <table className="dept-table">
+                  <table className="dept-table hide-on-mobile">
                     <thead>
                       <tr>
                         {['Department','Cases','Avg Days','Delayed'].map(h => (
@@ -622,6 +622,37 @@ const Dashboard = ({ onLogout, title = 'Dashboard', roleBadge, viewAsUserId, vie
                       })}
                     </tbody>
                   </table>
+
+                  <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '100%' }}>
+                    {[...perf].sort((a,b) => a.avgDays - b.avgDays).map((d, i) => {
+                      const maxCases = Math.max(...perf.map(p => p.casesProcessed), 1);
+                      const barW = Math.round((d.casesProcessed / maxCases) * 100);
+                      const dayCls = d.avgDays <= 1 ? 'days-fast' : d.avgDays <= 3 ? 'days-mid' : 'days-slow';
+                      return (
+                        <div key={d.team} style={{ background: 'var(--surface-2)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontWeight: 600, color: 'var(--text-1)', fontSize: 14 }}>
+                              {i === 0 && <span style={{ marginRight: '6px' }}>🥇</span>}{d.team}
+                            </div>
+                            <div style={{ color: d.delayCount > 0 ? 'var(--color-danger)' : 'var(--color-text-muted)', fontWeight: d.delayCount > 0 ? 700 : 600, fontSize: 12 }}>
+                              {d.delayCount} delayed
+                            </div>
+                          </div>
+                          
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 11, color: 'var(--text-4)', marginBottom: '4px', fontWeight: 600 }}>CASES ({d.casesProcessed})</div>
+                              <div className="mini-bar-track" style={{ width: '100%' }}><div className="mini-bar-fill" style={{ width:`${barW}%` }} /></div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: 11, color: 'var(--text-4)', marginBottom: '4px', fontWeight: 600 }}>AVG DAYS</div>
+                              <span className={dayCls} style={{ display: 'inline-block' }}>{d.avgDays} days</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

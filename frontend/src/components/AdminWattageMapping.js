@@ -118,138 +118,126 @@ export default function AdminWattageMapping() {
           <p style={{ color: 'var(--text-4)', fontSize: 13, textAlign: 'center', padding: 24 }}>Loading…</p>
         ) : (
           <>
-          <div className="table-wrap hide-on-mobile">
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, marginBottom: 20 }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>kW</th>
-                <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Watts</th>
-                <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Label</th>
-                <th style={{ textAlign: 'right', padding: '8px 10px' }}></th>
-              </tr>
-            </thead>
-            <tbody>
+            <div className="table-wrap hide-on-mobile" style={{ marginBottom: 20 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>kW</th>
+                    <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Watts</th>
+                    <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Label</th>
+                    <th style={{ textAlign: 'right', padding: '8px 10px' }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mappings.map((m) => (
+                    <tr key={m.id} style={{ borderBottom: '1px solid var(--border-2)' }}>
+                      {editingId === m.id ? (
+                        <>
+                          <td style={{ padding: '8px 10px' }}>
+                            <input type="number" min="1" className="input" value={editKw} onChange={e => setEditKw(e.target.value)} style={{ width: 70, fontSize: 13 }} />
+                          </td>
+                          <td style={{ padding: '8px 10px' }}>
+                            <input type="number" min="1" className="input" value={editWatt} onChange={e => setEditWatt(e.target.value)} style={{ width: 90, fontSize: 13 }} />
+                          </td>
+                          <td style={{ padding: '8px 10px' }}>
+                            <input className="input" value={editLabel} onChange={e => setEditLabel(e.target.value)} style={{ width: 160, fontSize: 13 }} />
+                          </td>
+                          <td style={{ padding: '8px 10px', textAlign: 'right' }}>
+                            <button onClick={() => handleUpdate(m.id)} className="btn btn-primary btn-sm" disabled={saving} style={{ marginRight: 6, padding: '4px 10px' }}>
+                              <Save size={12} /> Save
+                            </button>
+                            <button onClick={() => setEditingId(null)} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px' }}>
+                              <X size={12} />
+                            </button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--text-1)' }}>{m.kw_value} kW</td>
+                          <td style={{ padding: '8px 10px', color: 'var(--color-primary)', fontWeight: 600 }}>{Number(m.watt_value).toLocaleString()} W</td>
+                          <td style={{ padding: '8px 10px', color: 'var(--text-3)' }}>{m.label || '—'}</td>
+                          <td style={{ padding: '8px 10px', textAlign: 'right' }}>
+                            <button onClick={() => { setEditingId(m.id); setEditKw(String(m.kw_value)); setEditWatt(String(m.watt_value)); setEditLabel(m.label || ''); }}
+                              className="btn btn-ghost btn-sm" style={{ padding: '4px 8px', marginRight: 4 }}>
+                              <Edit2 size={12} />
+                            </button>
+                            <button onClick={() => handleDelete(m.id, m.kw_value)} className="btn btn-sm" style={{ padding: '4px 8px', background: '#fff1f2', color: '#be123c', border: '1px solid #fecdd3' }}>
+                              <Trash2 size={12} />
+                            </button>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                  {mappings.length === 0 && (
+                    <tr><td colSpan={4} style={{ textAlign: 'center', padding: 24, color: 'var(--text-4)' }}>No mappings found</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: 20 }}>
+              {mappings.length === 0 && (
+                <div style={{ textAlign: 'center', padding: 24, color: 'var(--text-4)', background: 'var(--surface-2)', borderRadius: 12 }}>
+                  No mappings found
+                </div>
+              )}
               {mappings.map((m) => (
-                <tr key={m.id} style={{ borderBottom: '1px solid var(--border-2)' }}>
+                <div key={m.id} style={{ background: 'var(--surface-2)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {editingId === m.id ? (
                     <>
-                      <td style={{ padding: '8px 10px' }}>
-                        <input type="number" min="1" className="input" value={editKw} onChange={e => setEditKw(e.target.value)} style={{ width: 70, fontSize: 13 }} />
-                      </td>
-                      <td style={{ padding: '8px 10px' }}>
-                        <input type="number" min="1" className="input" value={editWatt} onChange={e => setEditWatt(e.target.value)} style={{ width: 90, fontSize: 13 }} />
-                      </td>
-                      <td style={{ padding: '8px 10px' }}>
-                        <input className="input" value={editLabel} onChange={e => setEditLabel(e.target.value)} style={{ width: 160, fontSize: 13 }} />
-                      </td>
-                      <td style={{ padding: '8px 10px', textAlign: 'right' }}>
-                        <button onClick={() => handleUpdate(m.id)} className="btn btn-primary btn-sm" disabled={saving} style={{ marginRight: 6, padding: '4px 10px' }}>
-                          <Save size={12} /> Save
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-4)' }}>kW</label>
+                          <input type="number" min="1" className="input" value={editKw} onChange={e => setEditKw(e.target.value)} style={{ width: '100%', fontSize: 13 }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-4)' }}>Watts</label>
+                          <input type="number" min="1" className="input" value={editWatt} onChange={e => setEditWatt(e.target.value)} style={{ width: '100%', fontSize: 13 }} />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-4)' }}>Label</label>
+                        <input className="input" value={editLabel} onChange={e => setEditLabel(e.target.value)} style={{ width: '100%', fontSize: 13 }} />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
+                        <button onClick={() => setEditingId(null)} className="btn btn-secondary btn-sm" style={{ padding: '6px 12px' }}>
+                          Cancel
                         </button>
-                        <button onClick={() => setEditingId(null)} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px' }}>
-                          <X size={12} />
+                        <button onClick={() => handleUpdate(m.id)} className="btn btn-primary btn-sm" disabled={saving} style={{ padding: '6px 12px' }}>
+                          <Save size={14} style={{ marginRight: 4 }} /> Save
                         </button>
-                      </td>
+                      </div>
                     </>
                   ) : (
                     <>
-                      <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--text-1)' }}>{m.kw_value} kW</td>
-                      <td style={{ padding: '8px 10px', color: 'var(--color-primary)', fontWeight: 600 }}>{Number(m.watt_value).toLocaleString()} W</td>
-                      <td style={{ padding: '8px 10px', color: 'var(--text-3)' }}>{m.label || '—'}</td>
-                      <td style={{ padding: '8px 10px', textAlign: 'right' }}>
-                        <button onClick={() => { setEditingId(m.id); setEditKw(String(m.kw_value)); setEditWatt(String(m.watt_value)); setEditLabel(m.label || ''); }}
-                          className="btn btn-ghost btn-sm" style={{ padding: '4px 8px', marginRight: 4 }}>
-                          <Edit2 size={12} />
-                        </button>
-                        <button onClick={() => handleDelete(m.id, m.kw_value)} className="btn btn-sm" style={{ padding: '4px 8px', background: '#fff1f2', color: '#be123c', border: '1px solid #fecdd3' }}>
-                          <Trash2 size={12} />
-                        </button>
-                      </td>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-1)' }}>{m.kw_value} kW</div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button onClick={() => { setEditingId(m.id); setEditKw(String(m.kw_value)); setEditWatt(String(m.watt_value)); setEditLabel(m.label || ''); }}
+                            className="btn btn-secondary btn-sm" style={{ padding: '4px 8px' }}>
+                            <Edit2 size={14} />
+                          </button>
+                          <button onClick={() => handleDelete(m.id, m.kw_value)} className="btn btn-sm" style={{ padding: '4px 8px', background: '#fff1f2', color: '#be123c', border: '1px solid #fecdd3' }}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 11, color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Watts</div>
+                          <div style={{ color: 'var(--color-primary)', fontWeight: 700 }}>{Number(m.watt_value).toLocaleString()} W</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Label</div>
+                          <div style={{ color: 'var(--text-2)', fontSize: 13 }}>{m.label || '—'}</div>
+                        </div>
+                      </div>
                     </>
                   )}
-                </tr>
+                </div>
               ))}
-              {mappings.length === 0 && (
-                <tr><td colSpan={4} style={{ textAlign: 'center', padding: 24, color: 'var(--text-4)' }}>No mappings found</td></tr>
-              )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* ── MOBILE CARDS ── */}
-          <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-            {mappings.map((m) => (
-              <div
-                key={`mob-${m.id}`}
-                style={{
-                  background: editingId === m.id ? 'var(--surface-2)' : 'var(--surface)',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--border)',
-                  boxShadow: 'var(--shadow-card)',
-                  padding: '16px',
-                  display: 'flex', flexDirection: 'column', gap: '12px'
-                }}
-              >
-                {editingId === m.id ? (
-                  <>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', marginBottom: 4 }}>kW</label>
-                        <input type="number" min="1" className="input" value={editKw} onChange={e => setEditKw(e.target.value)} style={{ width: '100%', fontSize: 13, padding: '8px' }} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', marginBottom: 4 }}>Watts</label>
-                        <input type="number" min="1" className="input" value={editWatt} onChange={e => setEditWatt(e.target.value)} style={{ width: '100%', fontSize: 13, padding: '8px' }} />
-                      </div>
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', marginBottom: 4 }}>Label</label>
-                      <input className="input" value={editLabel} onChange={e => setEditLabel(e.target.value)} style={{ width: '100%', fontSize: 13, padding: '8px' }} />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--border-2)', paddingTop: '10px' }}>
-                      <button onClick={() => setEditingId(null)} className="btn btn-ghost btn-sm" style={{ padding: '6px 12px' }}>
-                        <X size={14} style={{ marginRight: 4 }} /> Cancel
-                      </button>
-                      <button onClick={() => handleUpdate(m.id)} className="btn btn-primary btn-sm" disabled={saving} style={{ padding: '6px 12px' }}>
-                        <Save size={14} style={{ marginRight: 4 }} /> Save
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>kW</span>
-                        <div style={{ fontWeight: 700, color: 'var(--text-1)', fontSize: '15px' }}>{m.kw_value} kW</div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Watts</span>
-                        <div style={{ fontWeight: 600, color: 'var(--color-primary)', fontSize: '15px' }}>{Number(m.watt_value).toLocaleString()} W</div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Label</span>
-                      <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>{m.label || '—'}</div>
-                    </div>
-
-                    <div style={{ borderTop: '1px solid var(--border-2)', paddingTop: '10px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                      <button onClick={() => { setEditingId(m.id); setEditKw(String(m.kw_value)); setEditWatt(String(m.watt_value)); setEditLabel(m.label || ''); }}
-                        className="btn btn-ghost btn-sm" style={{ padding: '6px 12px' }}>
-                        <Edit2 size={12} style={{ marginRight: 4 }} /> Edit
-                      </button>
-                      <button onClick={() => handleDelete(m.id, m.kw_value)} className="btn btn-sm" style={{ padding: '6px 12px', background: '#fff1f2', color: '#be123c', border: '1px solid #fecdd3' }}>
-                        <Trash2 size={12} style={{ marginRight: 4 }} /> Delete
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-            {mappings.length === 0 && (
-              <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-4)', padding: '24px 0' }}>No mappings found</p>
-            )}
-          </div>
+            </div>
           </>
         )}
 

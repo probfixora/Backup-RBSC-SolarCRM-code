@@ -150,137 +150,128 @@ const ApprovedQuotations = ({ onLogout }) => {
         </div>
 
         {/* ── Table ── */}
-        <div className="table-wrap hide-on-mobile">
-          <div style={{ overflowX: 'auto' }}>
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Customer</th>
-                  <th>Mobile</th>
-                  <th>Quotation ID</th>
-                  <th style={{ textAlign: 'center' }}>Status</th>
-                  <th style={{ textAlign: 'right' }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
+        <>
+          <div className="table-wrap hide-on-mobile">
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
                   <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>
-                      Loading approved customers…
-                    </td>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Mobile</th>
+                    <th>Quotation ID</th>
+                    <th style={{ textAlign: 'center' }}>Status</th>
+                    <th style={{ textAlign: 'right' }}>Action</th>
                   </tr>
-                ) : filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '56px', color: 'var(--color-text-muted)' }}>
-                      <UserCheck style={{ width: '32px', height: '32px', margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
-                      No approved customers found
-                    </td>
-                  </tr>
-                ) : filtered.map((q, idx) => (
-                  <tr key={q.id}>
-                    <td style={{ color: 'var(--text-4)', fontWeight: 500 }}>{idx + 1}</td>
-                    <td>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '2px', whiteSpace: 'nowrap' }}>
-                        {q.customer_name}
-                      </p>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
-                        {q.customer_mobile || '—'}
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ fontFamily: 'monospace', fontSize: '12.5px', fontWeight: 700, color: 'var(--color-primary)', whiteSpace: 'nowrap' }}>
-                        {q.quotation_id}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className="badge badge-green">
-                        <CheckCircle style={{ width: '11px', height: '11px' }} />
-                        Approved
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button
-                        id={`upload-btn-${q.id}`}
-                        onClick={() => openModal(q)}
-                        className="btn btn-primary btn-sm"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <UploadCloud style={{ width: '13px', height: '13px' }} />
-                        Upload Customer
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="table-foot">
-            {filtered.length} approved customer{filtered.length !== 1 ? 's' : ''}
-          </div>
-        </div>
-
-        {/* ── MOBILE CARDS (hidden on desktop via .mobile-only CSS) ── */}
-        <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--color-text-muted)' }}>Loading approved customers…</div>
-          ) : filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--color-text-muted)' }}>
-              <UserCheck style={{ width: '32px', height: '32px', margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
-              No approved customers found
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>
+                        Loading approved customers…
+                      </td>
+                    </tr>
+                  ) : filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '56px', color: 'var(--color-text-muted)' }}>
+                        <UserCheck style={{ width: '32px', height: '32px', margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
+                        No approved customers found
+                      </td>
+                    </tr>
+                  ) : filtered.map((q, idx) => (
+                    <tr key={q.id}>
+                      <td style={{ color: 'var(--text-4)', fontWeight: 500 }}>{idx + 1}</td>
+                      <td>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '2px', whiteSpace: 'nowrap' }}>
+                          {q.customer_name}
+                        </p>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+                          {q.customer_mobile || '—'}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ fontFamily: 'monospace', fontSize: '12.5px', fontWeight: 700, color: 'var(--color-primary)', whiteSpace: 'nowrap' }}>
+                          {q.quotation_id}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span className="badge badge-green">
+                          <CheckCircle style={{ width: '11px', height: '11px' }} />
+                          Approved
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button
+                          id={`upload-btn-${q.id}`}
+                          onClick={() => openModal(q)}
+                          className="btn btn-primary btn-sm"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <UploadCloud style={{ width: '13px', height: '13px' }} />
+                          Upload Customer
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ) : filtered.map((q, idx) => (
-            <div
-              key={`mob-${q.id}`}
-              style={{
-                background: 'var(--surface)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border)',
-                boxShadow: 'var(--shadow-card)',
-                padding: '16px',
-                display: 'flex', flexDirection: 'column', gap: '10px'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Quotation ID:</span>
-                    <span style={{ fontFamily: 'monospace', fontSize: '11.5px', fontWeight: 700, color: 'var(--color-primary)' }}>
-                      {q.quotation_id}
+            <div className="table-foot">
+              {filtered.length} approved customer{filtered.length !== 1 ? 's' : ''}
+            </div>
+          </div>
+          
+          <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>
+                Loading approved customers…
+              </div>
+            ) : filtered.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '56px', color: 'var(--color-text-muted)', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <UserCheck style={{ width: '32px', height: '32px', margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
+                No approved customers found
+              </div>
+            ) : filtered.map((q, idx) => (
+              <div key={q.id} style={{ background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-4)', fontWeight: 700, width: '16px' }}>#{idx + 1}</span>
+                    <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-1)' }}>
+                      {q.customer_name}
                     </span>
                   </div>
+                  <span className="badge badge-green" style={{ padding: '4px 8px' }}>
+                    <CheckCircle style={{ width: '11px', height: '11px' }} />
+                    Approved
+                  </span>
                 </div>
-                <span className="badge badge-green" style={{ fontSize: '10.5px', padding: '3px 8px' }}>
-                  <CheckCircle style={{ width: '10px', height: '10px' }} />
-                  Approved
-                </span>
-              </div>
-
-              <div>
-                <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>
-                  {q.customer_name}
-                </p>
-                <p style={{ fontSize: '12.5px', color: 'var(--text-3)' }}>
-                  {q.customer_mobile || '—'}
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-2)', paddingTop: '10px' }}>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'var(--surface-2)', padding: '12px', borderRadius: '8px' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Mobile</div>
+                    <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>{q.customer_mobile || '—'}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Quotation ID</div>
+                    <div style={{ fontFamily: 'monospace', fontSize: '12.5px', fontWeight: 700, color: 'var(--color-primary)', marginTop: '4px' }}>{q.quotation_id}</div>
+                  </div>
+                </div>
+                
                 <button
-                  id={`upload-btn-mob-${q.id}`}
+                  id={`upload-btn-${q.id}-mob`}
                   onClick={() => openModal(q)}
-                  className="btn btn-primary btn-sm"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  className="btn btn-primary"
+                  style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', width: '100%', marginTop: '4px' }}
                 >
-                  <UploadCloud style={{ width: '13px', height: '13px' }} />
-                  Upload Customer
+                  <UploadCloud style={{ width: '15px', height: '15px' }} />
+                  Upload Customer Documents
                 </button>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
 
         <Footer />
       </main>

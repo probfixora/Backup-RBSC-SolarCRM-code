@@ -83,21 +83,31 @@ const BRAND_PRICE_PER_PANEL = {
 
 // ── Styles & sub-components defined OUTSIDE to prevent re-creation on render ──
 const S = {
-  page:   { maxWidth:960, margin:'0 auto', padding:'20px 14px', fontFamily:'Inter,sans-serif' },
-  hdr:    { background:'linear-gradient(135deg,#1e3a5f,#2563EB)', borderRadius:12, padding:'22px 28px', marginBottom:20, color:'#fff', display:'flex', alignItems:'center', gap:12 },
-  card:   { background:'#fff', borderRadius:12, boxShadow:'0 2px 10px rgba(37,99,235,0.08)', padding:'22px 24px', marginBottom:18, border:'1px solid #e2e8f0' },
-  sh:     { fontSize:14, fontWeight:700, color:'#1e3a5f', borderBottom:'2px solid #dbeafe', paddingBottom:8, marginBottom:18, textTransform:'uppercase', letterSpacing:.5 },
-  lbl:    { display:'block', fontSize:12, fontWeight:600, color:'#4b5563', marginBottom:4 },
-  inp:    { width:'100%', padding:'9px 12px', border:'1.5px solid #d1d5db', borderRadius:7, fontSize:13, boxSizing:'border-box', outline:'none', background:'#fff', transition:'border-color 0.15s' },
-  sel:    { width:'100%', padding:'9px 12px', border:'1.5px solid #d1d5db', borderRadius:7, fontSize:13, boxSizing:'border-box', outline:'none', background:'#fff', cursor:'pointer', transition:'border-color 0.15s' },
-  ro:     { width:'100%', padding:'9px 12px', border:'1.5px solid #e5e7eb', borderRadius:7, fontSize:13, boxSizing:'border-box', background:'#f8fafc', color:'#6b7280' },
-  info:   { fontSize:13, fontWeight:700, color:'#2563eb', marginTop:5 },
-  ctr:    { display:'flex', alignItems:'center', gap:8, marginTop:2 },
-  cbtn:   { width:30, height:30, borderRadius:6, border:'none', background:'linear-gradient(135deg,#2563EB,#1D4ED8)', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 2px 6px rgba(37,99,235,0.3)' },
-  cnum:   { fontSize:16, fontWeight:700, minWidth:28, textAlign:'center' },
-  sub:    { width:'100%', padding:'13px', background:'linear-gradient(135deg,#2563EB,#1D4ED8)', color:'#fff', border:'none', borderRadius:9, fontSize:15, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:4, boxShadow:'0 4px 14px rgba(37,99,235,0.35)', transition:'all 0.15s' },
+  page:   { maxWidth:1000, margin:'0 auto', padding:'20px 14px', fontFamily:'Inter,sans-serif' },
+  hdr:    { background:'linear-gradient(135deg, #1e3a5f, #2563EB)', borderRadius:12, padding:'24px', marginBottom:20, color:'#fff', display:'flex', alignItems:'center', gap:12 },
+  card:   { background:'#fff', borderRadius:12, boxShadow:'0 2px 10px rgba(37,99,235,0.08)', padding:'24px', marginBottom:20, border:'1px solid #e2e8f0' },
+  sh:     { display:'flex', alignItems:'center', gap:12, fontSize:15, fontWeight:800, color:'#1e3a5f', borderBottom:'1px solid #dbeafe', paddingBottom:12, marginBottom:20, textTransform:'uppercase', letterSpacing:0.5 },
+  shNum:  { width:28, height:28, background:'#dbeafe', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', color:'#1d4ed8', fontSize:13, fontWeight: 800 },
+  g2:     { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:16 },
+  g3:     { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:16 },
+  lbl:    { display:'block', fontSize:12, fontWeight:700, color:'#4b5563', marginBottom:8, textTransform:'uppercase', letterSpacing:0.5 },
+  inp:    { width:'100%', padding:'14px 16px', border:'1px solid #d1d5db', borderRadius:8, fontSize:15, boxSizing:'border-box', outline:'none', background:'#fff', transition:'border-color 0.15s' },
+  sel:    { width:'100%', padding:'14px 16px', border:'1px solid #d1d5db', borderRadius:8, fontSize:15, boxSizing:'border-box', outline:'none', background:'#fff', cursor:'pointer', transition:'border-color 0.15s' },
+  ro:     { width:'100%', padding:'14px 16px', border:'1px dashed #e5e7eb', borderRadius:8, fontSize:15, boxSizing:'border-box', background:'#f8fafc', color:'#6b7280' },
+  info:   { fontSize:13, fontWeight:700, color:'#2563eb', marginTop:8, display:'inline-block', padding:'6px 12px', background:'#eff6ff', borderRadius:6 },
+  ctr:    { display:'flex', alignItems:'center', gap:12, marginTop:4, background:'#f8fafc', padding:'6px', borderRadius:8, width:'fit-content' },
+  cbtn:   { width:36, height:36, borderRadius:8, border:'none', background:'#f59e0b', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, boxShadow:'0 2px 4px rgba(245,158,11,0.3)' },
+  cnum:   { fontSize:17, fontWeight:800, minWidth:40, textAlign:'center' },
+  sub:    { width:'100%', padding:'14px', background:'linear-gradient(135deg,#2563EB,#1D4ED8)', color:'#fff', border:'none', borderRadius:9, fontSize:15, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:10, boxShadow:'0 4px 14px rgba(37,99,235,0.35)', transition:'all 0.15s' },
   req:    { color:'#ef4444' },
 };
+
+const SectionHeader = ({ num, title }) => (
+  <div style={S.sh}>
+    <div style={S.shNum}>{num}</div>
+    <div>{title}</div>
+  </div>
+);
 
 const Ctr = ({ value, onChange }) => (
   <div style={S.ctr}>
@@ -327,8 +337,8 @@ export default function QuotationForm() {
       <form onSubmit={handleSubmit}>
         {/* ── 1. Customer ── */}
         <div style={S.card}>
-          <div style={S.sh}>1. Customer Information</div>
-          <div className="grid-2" style={{marginBottom:14}}>
+          <SectionHeader num="1" title="Customer Information" />
+          <div style={{...S.g2, marginBottom:14}}>
             <F label="Customer Name/ID/Mobile" req>
               <select style={S.sel}
                 value={f.customerMode === 'existing' ? f.customerId : f.customerMode}
@@ -342,7 +352,7 @@ export default function QuotationForm() {
               <input style={S.inp} type="tel" value={f.mobile} onChange={e=>set('mobile',e.target.value)} required readOnly={f.customerMode==='existing'} />
             </F>
           </div>
-          <div className="grid-2" style={{marginBottom:14}}>
+          <div style={{...S.g2, marginBottom:14}}>
             <F label="Customer Name" req>
               <input style={S.inp} value={f.customerName} onChange={e=>set('customerName',e.target.value)} required readOnly={f.customerMode==='existing'} />
             </F>
@@ -350,11 +360,11 @@ export default function QuotationForm() {
               <input style={S.inp} value={f.address} onChange={e=>set('address',e.target.value)} required readOnly={f.customerMode==='existing'} />
             </F>
           </div>
-          <div className="grid-2">
+          <div style={S.g2}>
             <F label="Email ID" req>
               <input style={S.inp} type="email" value={f.email} onChange={e=>set('email',e.target.value)} readOnly={f.customerMode==='existing'} required />
             </F>
-            <div className="grid-2">
+            <div style={S.g2}>
               <F label="Electrical Division" req>
                 <input style={S.inp} value={f.electricalDivision} onChange={e=>set('electricalDivision',e.target.value)} required />
               </F>
@@ -367,8 +377,8 @@ export default function QuotationForm() {
 
         {/* ── 2. Technical Specs ── */}
         <div style={S.card}>
-          <div style={S.sh}>2. Technical Specifications</div>
-          <div className="grid-2">
+          <SectionHeader num="2" title="Technical Specifications" />
+          <div style={S.g2}>
             <F label="Electrical Load" req>
               <ManualTypeDropdown
                 options={KW500}
@@ -391,8 +401,8 @@ export default function QuotationForm() {
 
         {/* ── 3. Panel & Brand ── */}
         <div style={S.card}>
-          <div style={S.sh}>3. Panel &amp; Brand Details</div>
-          <div className="grid-2" style={{marginBottom:14}}>
+          <SectionHeader num="3" title="Panel &amp; Brand Details" />
+          <div style={{...S.g2, marginBottom:14}}>
             <F label="Panel Brand" req>
               <ManualTypeDropdown
                 options={BRANDS}
@@ -408,7 +418,7 @@ export default function QuotationForm() {
               <input style={S.ro} value={f.productName} readOnly placeholder="Auto-filled from brand + category" />
             </F>
           </div>
-          <div className="grid-2">
+          <div style={S.g2}>
             <F label="Panel Unit (kW)" req>
               <ManualTypeDropdown
                 options={KW500}
@@ -432,8 +442,8 @@ export default function QuotationForm() {
 
         {/* ── 4. Warranty & Inverter ── */}
         <div style={S.card}>
-          <div style={S.sh}>4. Warranty &amp; Inverter</div>
-          <div className="grid-2">
+          <SectionHeader num="4" title="Warranty &amp; Inverter" />
+          <div style={S.g2}>
             <F label="Panel Warranty">
               <ManualTypeDropdown
                 options={PANEL_WARR}
@@ -474,9 +484,9 @@ export default function QuotationForm() {
 
         {/* ── 5. System Components & Extras ── */}
         <div style={S.card}>
-          <div style={S.sh}>5. System Components &amp; Extras</div>
+          <SectionHeader num="5" title="System Components &amp; Extras" />
           {showBat ? (
-            <div className="grid-2" style={{marginBottom:14}}>
+            <div style={{...S.g2, marginBottom:14}}>
               <div>
                 <F label="Battery Brand">
                   <select style={S.sel} value={f.batteryOption} onChange={e=>onBatteryOption(e.target.value)}>
@@ -518,7 +528,7 @@ export default function QuotationForm() {
               ✓ Battery not required for <strong>{f.category}</strong> systems
             </div>
           )}
-          <div className="grid-3">
+          <div style={S.g3}>
             <F label="Structure">
               <ManualTypeDropdown
                 options={STRUCTURES}
@@ -556,7 +566,7 @@ export default function QuotationForm() {
               </div>
             </div>
           </div>
-          <div className="grid-2" style={{marginTop:14}}>
+          <div style={{...S.g2, marginTop:14}}>
             <F label="Earthing">
               <input style={S.inp} value={f.earthing} onChange={e=>set('earthing',e.target.value)} placeholder="e.g. 2.5 Sq MM copper" />
             </F>
@@ -568,8 +578,8 @@ export default function QuotationForm() {
 
         {/* ── 6. Pricing & Employee ── */}
         <div style={S.card}>
-          <div style={S.sh}>6. Final Submission</div>
-          <div className="grid-2" style={{marginBottom:14}}>
+          <SectionHeader num="6" title="Final Submission" />
+          <div style={{...S.g2, marginBottom:14}}>
             <F label="Product Price Quote (₹)" req>
               <input style={{...S.inp,fontSize:17,fontWeight:700,color:'#16a34a'}} type="number" min="0"
                 placeholder="Enter final price" value={f.productPrice} onChange={e=>set('productPrice',e.target.value)} required />
@@ -583,7 +593,7 @@ export default function QuotationForm() {
               {f.recheckPrice && <p style={{fontSize:12,marginTop:3,color:priceOk?'#16a34a':'#ef4444'}}>{priceOk?'✓ Match':'⚠ No match'}</p>}
             </F>
           </div>
-          <div className="grid-3">
+          <div style={S.g3}>
             <F label="Employee ID">
               <input style={S.ro} value={f.employeeId} readOnly placeholder="Auto-filled" />
             </F>

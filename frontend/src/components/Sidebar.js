@@ -41,7 +41,7 @@ const getMobileNav = (role, dashPath) => {
   const finance = { name: 'Finance',    path: '/finance-tracking',   icon: 'ti ti-report-money' };
   const quote   = { name: 'Quote',      path: '/quotation-form',     icon: 'ti ti-file-plus' };
   const quotes  = { name: 'Quotes',     path: '/quotations',         icon: 'ti ti-file-invoice' };
-  const newCase = { name: 'Create Case', path: '/create-case',        icon: 'ti ti-circle-plus' };
+  const newCase = { name: 'New Case',   path: '/create-case',        icon: 'ti ti-circle-plus' };
   const dispatch= { name: 'Dispatch',   path: '/b2c-dispatch',       icon: 'ti ti-truck-delivery' };
   const procure = { name: 'Procure',    path: '/procurement-portal', icon: 'ti ti-building-warehouse' };
   const support = { name: 'Support',    path: '/support',            icon: 'ti ti-headset' };
@@ -338,7 +338,10 @@ const Sidebar = ({ onLogout }) => {
           onClick={() => navigate('/')}
           title="Go to dashboard"
         >
-          <img src={APP_CONFIG.logoPath} alt={APP_CONFIG.companyName} style={{ height: '30px', width: 'auto', objectFit: 'contain' }} />
+          <img src={APP_CONFIG.logoPath} alt={APP_CONFIG.companyName} style={{ height: '46px', width: 'auto', objectFit: 'contain' }} />
+          <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
+            {APP_CONFIG.companyName}
+          </span>
         </div>
 
         {/* Role badge */}
@@ -625,7 +628,7 @@ const Sidebar = ({ onLogout }) => {
               return (
                 <button
                   key="account"
-                  onClick={() => navigate('/profile')}
+                  onClick={() => setMobileOpen(true)}
                   className={`mobile-nav-btn ${isActive ? 'active' : ''}`}
                   aria-label="Account"
                   aria-current={isActive ? 'page' : undefined}

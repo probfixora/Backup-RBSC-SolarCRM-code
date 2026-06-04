@@ -194,124 +194,118 @@ export default function AuditLogViewer({ onLogout }) {
             </div>
           ) : (
             <>
-              <div className="table-wrap hide-on-mobile">
-                <table>
-                  <thead>
-                    <tr>
-                      <th style={{ width: 150 }}>Timestamp</th>
-                      <th style={{ width: 120 }}>Case ID</th>
-                      <th style={{ width: 160 }}>Action</th>
-                      <th style={{ width: 140 }}>Department</th>
-                      <th style={{ width: 120 }}>By</th>
-                      <th style={{ width: 140 }}>Stage</th>
-                      <th>Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((log) => {
-                      const { bg, text } = getActionMeta(log.action_type);
-                      return (
-                        <tr key={log.id}>
-                          <td style={{ fontSize: 11, color: 'var(--text-4)', whiteSpace: 'nowrap' }}>
-                            {log.timestamp ? new Date(log.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
-                          </td>
-                          <td>
-                            <span style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--color-primary)', fontWeight: 600 }}>
-                              {log.case_id || '—'}
-                            </span>
-                          </td>
-                          <td>
-                            <span style={{
-                              padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600,
-                              background: bg, color: text, textTransform: 'capitalize',
-                              whiteSpace: 'nowrap', display: 'inline-block',
-                            }}>
-                              {(log.action_type || '—').replace(/_/g, ' ')}
-                            </span>
-                          </td>
-                          <td style={{ fontSize: 12, color: 'var(--text-3)' }}>
-                            {DEPT_LABELS[log.department] || log.department || '—'}
-                          </td>
-                          <td style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-2)' }}>
-                            {log.updated_by || '—'}
-                          </td>
-                          <td style={{ fontSize: 12, color: 'var(--text-3)' }}>
-                            {log.stage || log.new_stage || '—'}
-                          </td>
-                          <td style={{ fontSize: 12, color: 'var(--text-3)', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {log.notes || '—'}
+              <>
+                <div className="table-wrap hide-on-mobile">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th style={{ width: 150 }}>Timestamp</th>
+                        <th style={{ width: 120 }}>Case ID</th>
+                        <th style={{ width: 160 }}>Action</th>
+                        <th style={{ width: 140 }}>Department</th>
+                        <th style={{ width: 120 }}>By</th>
+                        <th style={{ width: 140 }}>Stage</th>
+                        <th>Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((log) => {
+                        const { bg, text } = getActionMeta(log.action_type);
+                        return (
+                          <tr key={log.id}>
+                            <td style={{ fontSize: 11, color: 'var(--text-4)', whiteSpace: 'nowrap' }}>
+                              {log.timestamp ? new Date(log.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                            </td>
+                            <td>
+                              <span style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--color-primary)', fontWeight: 600 }}>
+                                {log.case_id || '—'}
+                              </span>
+                            </td>
+                            <td>
+                              <span style={{
+                                padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600,
+                                background: bg, color: text, textTransform: 'capitalize',
+                                whiteSpace: 'nowrap', display: 'inline-block',
+                              }}>
+                                {(log.action_type || '—').replace(/_/g, ' ')}
+                              </span>
+                            </td>
+                            <td style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                              {DEPT_LABELS[log.department] || log.department || '—'}
+                            </td>
+                            <td style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-2)' }}>
+                              {log.updated_by || '—'}
+                            </td>
+                            <td style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                              {log.stage || log.new_stage || '—'}
+                            </td>
+                            <td style={{ fontSize: 12, color: 'var(--text-3)', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {log.notes || '—'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {filtered.length === 0 && (
+                        <tr>
+                          <td colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--text-4)' }}>
+                            No audit log entries found for the selected filters.
                           </td>
                         </tr>
-                      );
-                    })}
-                    {filtered.length === 0 && (
-                      <tr>
-                        <td colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--text-4)' }}>
-                          No audit log entries found for the selected filters.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* ── MOBILE CARDS ── */}
-              <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px', padding: '16px' }}>
-                {filtered.map((log) => {
-                  const { bg, text } = getActionMeta(log.action_type);
-                  return (
-                    <div
-                      key={`mob-${log.id}`}
-                      style={{
-                        background: 'var(--surface)',
-                        borderRadius: 'var(--radius-lg)',
-                        border: '1px solid var(--border)',
-                        boxShadow: 'var(--shadow-card)',
-                        padding: '16px',
-                        display: 'flex', flexDirection: 'column', gap: '8px'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div>
-                          <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Case ID:</span>
-                          <div style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--color-primary)', fontSize: '12px' }}>{log.case_id || '—'}</div>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', background: 'var(--page-bg)' }}>
+                  {filtered.map((log) => {
+                    const { bg, text } = getActionMeta(log.action_type);
+                    return (
+                      <div key={log.id} style={{ background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <span style={{ fontFamily: 'monospace', fontSize: 13, color: 'var(--color-primary)', fontWeight: 600 }}>
+                            {log.case_id || '—'}
+                          </span>
+                          <span style={{
+                            padding: '4px 8px', borderRadius: 99, fontSize: 10, fontWeight: 700,
+                            background: bg, color: text, textTransform: 'uppercase',
+                            whiteSpace: 'nowrap',
+                          }}>
+                            {(log.action_type || '—').replace(/_/g, ' ')}
+                          </span>
                         </div>
-                        <span style={{
-                          padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600,
-                          background: bg, color: text, textTransform: 'capitalize',
-                        }}>
-                          {(log.action_type || '—').replace(/_/g, ' ')}
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Dept / By:</span>
-                          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-2)' }}>{DEPT_LABELS[log.department] || log.department || '—'}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{log.updated_by || '—'}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'var(--surface-2)', padding: '12px', borderRadius: '8px' }}>
+                          <div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Department</div>
+                            <div style={{ fontSize: '13px', color: 'var(--text-1)', marginTop: '4px' }}>{DEPT_LABELS[log.department] || log.department || '—'}</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>By</div>
+                            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)', marginTop: '4px' }}>{log.updated_by || '—'}</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Stage</div>
+                            <div style={{ fontSize: '13px', color: 'var(--text-3)', marginTop: '4px' }}>{log.stage || log.new_stage || '—'}</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Timestamp</div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-4)', marginTop: '4px' }}>
+                              {log.timestamp ? new Date(log.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                            </div>
+                          </div>
                         </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>Stage:</span>
-                          <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>{log.stage || log.new_stage || '—'}</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-3)' }}>
+                          <span style={{fontWeight: 600, color: 'var(--text-2)'}}>Notes:</span> {log.notes || '—'}
                         </div>
                       </div>
-
-                      <div style={{ fontSize: '12px', color: 'var(--text-3)', background: 'var(--surface-2)', padding: '8px', borderRadius: '6px', marginTop: '4px' }}>
-                        {log.notes || '—'}
-                      </div>
-
-                      <div style={{ textAlign: 'right', marginTop: '4px' }}>
-                        <span style={{ fontSize: '10px', color: 'var(--text-4)' }}>
-                          {log.timestamp ? new Date(log.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
-                        </span>
-                      </div>
+                    );
+                  })}
+                  {filtered.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-4)' }}>
+                      No audit log entries found for the selected filters.
                     </div>
-                  );
-                })}
-                {filtered.length === 0 && (
-                  <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-4)', padding: '24px 0' }}>No audit log entries found</p>
-                )}
-              </div>
+                  )}
+                </div>
+              </>
 
               {/* Pagination */}
               <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

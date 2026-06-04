@@ -279,129 +279,123 @@ export default function ProcurementPortal({ onLogout }) {
               </div>
             ) : (
               <>
-              <div className="table-wrap hide-on-mobile" style={{ overflowX: 'auto' }}>
-                <table style={{ minWidth: 1200 }}>
-                  <thead>
-                    <tr>
-                      <th>Product</th>
-                      <th>Category / Brand</th>
-                      <th>SKU / Model</th>
-                      <th>Capacity</th>
-                      <th>Available</th>
-                      <th>Reserved</th>
-                      <th>Safety / WH</th>
-                      <th>Status</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map(item => {
-                      const low = isLow(item);
-                      const out = isOut(item);
-                      return (
-                        <tr key={item.id} style={{ background: out ? '#fef2f2' : low ? '#fffbeb' : 'transparent' }}>
-                          <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{item.name}</td>
-                          <td>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-2)' }}>{item.category}</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-4)' }}>{item.brand || 'N/A'}</div>
-                          </td>
-                          <td>
-                            <div style={{ fontSize: 12, fontFamily: 'monospace', background: 'var(--surface-2)', padding: '2px 6px', borderRadius: 4, display: 'inline-block' }}>{item.sku || 'N/A'}</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 4 }}>{item.model_number || 'N/A'}</div>
-                          </td>
-                          <td style={{ fontSize: 12, color: 'var(--text-3)' }}>{item.capacity || '—'}</td>
-                          <td style={{ fontWeight: 700, color: out ? '#ef4444' : low ? '#f59e0b' : '#10b981', fontSize: 14 }}>
-                            {item.stock} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-4)' }}>{item.unit}</span>
-                          </td>
-                          <td style={{ fontWeight: 600, color: '#8b5cf6', fontSize: 13 }}>{item.reserved_quantity || 0}</td>
-                          <td>
-                            <div style={{ fontSize: 11, color: 'var(--text-4)' }}>Min: {item.low_stock_threshold || 0}</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-4)' }}>WH: {item.warehouse_location || '—'}</div>
-                          </td>
-                          <td>
-                            <span style={{
-                              padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-                              background: out ? '#fecaca' : low ? '#fde68a' : '#d1fae5',
-                              color: out ? '#991b1b' : low ? '#92400e' : '#065f46'
-                            }}>
-                              {out ? 'Out of Stock' : low ? 'Low Stock' : 'In Stock'}
-                            </span>
-                          </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                              <button onClick={() => handleViewItem(item)} className="btn btn-ghost btn-sm" title="View"><Eye size={14} /></button>
-                              <button onClick={() => handleEditItem(item)} className="btn btn-ghost btn-sm" title="Edit"><Edit size={14} /></button>
-                              <button onClick={() => { setAdjustingItem(item); setAdjustType('add'); }} className="btn btn-ghost btn-sm" style={{ color: '#10b981' }} title="Add Stock"><Plus size={14} /></button>
-                              <button onClick={() => { setAdjustingItem(item); setAdjustType('deduct'); }} className="btn btn-ghost btn-sm" style={{ color: '#ef4444' }} title="Deduct Stock"><Minus size={14} /></button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                    {filtered.length === 0 && (
-                      <tr><td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-4)' }}>No matching inventory items found</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* ── MOBILE CARDS (Inventory) ── */}
-              <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                {filtered.map(item => {
-                  const low = isLow(item);
-                  const out = isOut(item);
-                  return (
-                    <div
-                      key={`mob-${item.id}`}
-                      style={{
-                        background: out ? '#fef2f2' : low ? '#fffbeb' : 'var(--surface)',
-                        borderRadius: 'var(--radius-lg)',
-                        border: `1px solid ${out ? '#fecaca' : low ? '#fde68a' : 'var(--border)'}`,
-                        boxShadow: 'var(--shadow-card)',
-                        padding: '16px',
-                        display: 'flex', flexDirection: 'column', gap: '10px'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div>
-                          <span style={{ fontSize: '10px', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>SKU: {item.sku || 'N/A'}</span>
-                          <div style={{ fontWeight: 700, color: 'var(--text-1)', fontSize: '15px' }}>{item.name}</div>
-                        </div>
-                        <span style={{
-                          padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-                          background: out ? '#fecaca' : low ? '#fde68a' : '#d1fae5',
-                          color: out ? '#991b1b' : low ? '#92400e' : '#065f46'
-                        }}>
-                          {out ? 'Out of Stock' : low ? 'Low Stock' : 'In Stock'}
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-2)' }}>{item.category}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-4)' }}>{item.brand || 'N/A'}</div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: 700, color: out ? '#ef4444' : low ? '#f59e0b' : '#10b981', fontSize: '16px' }}>
-                            {item.stock} <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-4)' }}>{item.unit}</span>
+                <div className="table-wrap hide-on-mobile" style={{ overflowX: 'auto' }}>
+                  <table style={{ minWidth: 1200 }}>
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Category / Brand</th>
+                        <th>SKU / Model</th>
+                        <th>Capacity</th>
+                        <th>Available</th>
+                        <th>Reserved</th>
+                        <th>Safety / WH</th>
+                        <th>Status</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map(item => {
+                        const low = isLow(item);
+                        const out = isOut(item);
+                        return (
+                          <tr key={item.id} style={{ background: out ? '#fef2f2' : low ? '#fffbeb' : 'transparent' }}>
+                            <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{item.name}</td>
+                            <td>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-2)' }}>{item.category}</div>
+                              <div style={{ fontSize: 11, color: 'var(--text-4)' }}>{item.brand || 'N/A'}</div>
+                            </td>
+                            <td>
+                              <div style={{ fontSize: 12, fontFamily: 'monospace', background: 'var(--surface-2)', padding: '2px 6px', borderRadius: 4, display: 'inline-block' }}>{item.sku || 'N/A'}</div>
+                              <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 4 }}>{item.model_number || 'N/A'}</div>
+                            </td>
+                            <td style={{ fontSize: 12, color: 'var(--text-3)' }}>{item.capacity || '—'}</td>
+                            <td style={{ fontWeight: 700, color: out ? '#ef4444' : low ? '#f59e0b' : '#10b981', fontSize: 14 }}>
+                              {item.stock} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-4)' }}>{item.unit}</span>
+                            </td>
+                            <td style={{ fontWeight: 600, color: '#8b5cf6', fontSize: 13 }}>{item.reserved_quantity || 0}</td>
+                            <td>
+                              <div style={{ fontSize: 11, color: 'var(--text-4)' }}>Min: {item.low_stock_threshold || 0}</div>
+                              <div style={{ fontSize: 11, color: 'var(--text-4)' }}>WH: {item.warehouse_location || '—'}</div>
+                            </td>
+                            <td>
+                              <span style={{
+                                padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+                                background: out ? '#fecaca' : low ? '#fde68a' : '#d1fae5',
+                                color: out ? '#991b1b' : low ? '#92400e' : '#065f46'
+                              }}>
+                                {out ? 'Out of Stock' : low ? 'Low Stock' : 'In Stock'}
+                              </span>
+                            </td>
+                            <td style={{ textAlign: 'right' }}>
+                              <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                                <button onClick={() => handleViewItem(item)} className="btn btn-ghost btn-sm" title="View"><Eye size={14} /></button>
+                                <button onClick={() => handleEditItem(item)} className="btn btn-ghost btn-sm" title="Edit"><Edit size={14} /></button>
+                                <button onClick={() => { setAdjustingItem(item); setAdjustType('add'); }} className="btn btn-ghost btn-sm" style={{ color: '#10b981' }} title="Add Stock"><Plus size={14} /></button>
+                                <button onClick={() => { setAdjustingItem(item); setAdjustType('deduct'); }} className="btn btn-ghost btn-sm" style={{ color: '#ef4444' }} title="Deduct Stock"><Minus size={14} /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {filtered.length === 0 && (
+                        <tr><td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-4)' }}>No matching inventory items found</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
+                  {filtered.map(item => {
+                    const low = isLow(item);
+                    const out = isOut(item);
+                    return (
+                      <div key={item.id} style={{ background: out ? '#fef2f2' : low ? '#fffbeb' : 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <div>
+                            <div style={{ fontWeight: 700, color: 'var(--text-1)', fontSize: 15 }}>{item.name}</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{item.category} • {item.brand || 'No Brand'}</div>
                           </div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-4)' }}>Reserved: {item.reserved_quantity || 0}</div>
+                          <span style={{
+                            padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+                            background: out ? '#fecaca' : low ? '#fde68a' : '#d1fae5',
+                            color: out ? '#991b1b' : low ? '#92400e' : '#065f46',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {out ? 'Out of Stock' : low ? 'Low Stock' : 'In Stock'}
+                          </span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: 'var(--surface-2)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
+                          <div>
+                            <div style={{ fontSize: 11, color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>SKU / Model</div>
+                            <div style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500, fontFamily: 'monospace' }}>{item.sku || 'N/A'}</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 11, color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Capacity</div>
+                            <div style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{item.capacity || '—'}</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 11, color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Available</div>
+                            <div style={{ fontSize: 15, fontWeight: 800, color: out ? '#ef4444' : low ? '#f59e0b' : '#10b981' }}>{item.stock} <span style={{fontSize: 11}}>{item.unit}</span></div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 11, color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Reserved</div>
+                            <div style={{ fontSize: 15, fontWeight: 800, color: '#8b5cf6' }}>{item.reserved_quantity || 0}</div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                          <button onClick={() => handleViewItem(item)} className="btn btn-outline" style={{flex: 1, padding: '8px'}}><Eye size={16} /> View</button>
+                          <button onClick={() => handleEditItem(item)} className="btn btn-outline" style={{flex: 1, padding: '8px'}}><Edit size={16} /> Edit</button>
+                          <button onClick={() => { setAdjustingItem(item); setAdjustType('add'); }} className="btn btn-outline" style={{padding: '8px', color: '#10b981', borderColor: '#10b981', flex: '0 0 auto'}}><Plus size={16} /></button>
+                          <button onClick={() => { setAdjustingItem(item); setAdjustType('deduct'); }} className="btn btn-outline" style={{padding: '8px', color: '#ef4444', borderColor: '#ef4444', flex: '0 0 auto'}}><Minus size={16} /></button>
                         </div>
                       </div>
-
-                      <div style={{ borderTop: '1px solid var(--border-2)', paddingTop: '10px', display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                        <button onClick={() => handleViewItem(item)} className="btn btn-ghost btn-sm" title="View"><Eye size={14} /></button>
-                        <button onClick={() => handleEditItem(item)} className="btn btn-ghost btn-sm" title="Edit"><Edit size={14} /></button>
-                        <button onClick={() => { setAdjustingItem(item); setAdjustType('add'); }} className="btn btn-ghost btn-sm" style={{ color: '#10b981' }} title="Add Stock"><Plus size={14} /></button>
-                        <button onClick={() => { setAdjustingItem(item); setAdjustType('deduct'); }} className="btn btn-ghost btn-sm" style={{ color: '#ef4444' }} title="Deduct Stock"><Minus size={14} /></button>
-                      </div>
-                    </div>
-                  );
-                })}
-                {filtered.length === 0 && (
-                  <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-4)', padding: '24px 0' }}>No matching inventory items found</p>
-                )}
-              </div>
+                    );
+                  })}
+                  {filtered.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-4)', background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)' }}>No matching inventory items found</div>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -420,108 +414,100 @@ export default function ProcurementPortal({ onLogout }) {
               </div>
             ) : (
               <>
-              <div className="table-wrap hide-on-mobile">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th>Action</th>
-                      <th>Quantity</th>
-                      <th>Before → After</th>
-                      <th>User</th>
-                      <th>Notes / Reference</th>
-                      <th>Date &amp; Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.map((tx) => {
-                      const isPos = tx.quantity > 0;
-                      const typeColor = tx.transaction_type === 'stock_in' || (tx.transaction_type === 'release') || (tx.transaction_type === 'adjustment' && isPos) ? '#10b981' :
-                                        tx.transaction_type === 'reservation' ? '#8b5cf6' : '#ef4444';
-                      return (
-                        <tr key={tx.id}>
-                          <td style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-1)' }}>{tx.inventory_name || '—'}</td>
-                          <td>
-                            <span style={{ padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: `${typeColor}15`, color: typeColor }}>
-                              {tx.transaction_type?.replace('_', ' ')}
-                            </span>
-                            {tx.dispatch_type && (
-                              <span style={{ marginLeft: 6, padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: '#e0e7ff', color: '#4338ca' }}>
-                                {tx.dispatch_type}
+                <div className="table-wrap hide-on-mobile">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th>Action</th>
+                        <th>Quantity</th>
+                        <th>Before → After</th>
+                        <th>User</th>
+                        <th>Notes / Reference</th>
+                        <th>Date &amp; Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.map((tx) => {
+                        const isPos = tx.quantity > 0;
+                        const typeColor = tx.transaction_type === 'stock_in' || (tx.transaction_type === 'release') || (tx.transaction_type === 'adjustment' && isPos) ? '#10b981' :
+                                          tx.transaction_type === 'reservation' ? '#8b5cf6' : '#ef4444';
+                        return (
+                          <tr key={tx.id}>
+                            <td style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-1)' }}>{tx.inventory_name || '—'}</td>
+                            <td>
+                              <span style={{ padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: `${typeColor}15`, color: typeColor }}>
+                                {tx.transaction_type?.replace('_', ' ')}
                               </span>
-                            )}
-                          </td>
-                          <td style={{ fontWeight: 800, color: typeColor, fontSize: 14 }}>{isPos ? '+' : ''}{tx.quantity}</td>
-                          <td style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>{tx.stock_before} <span style={{color: 'var(--border)'}}>→</span> {tx.stock_after}</td>
-                          <td style={{ fontSize: 12, color: 'var(--text-2)', fontWeight: 500 }}>{tx.created_by || '—'}</td>
-                          <td style={{ fontSize: 12, color: 'var(--text-3)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {tx.notes || tx.case_id || '—'}
-                          </td>
-                          <td style={{ fontSize: 11, color: 'var(--text-4)', whiteSpace: 'nowrap' }}>
-                            {tx.created_at ? new Date(tx.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—'}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                    {transactions.length === 0 && (
-                      <tr><td colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--text-4)' }}>No transactions found</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* ── MOBILE CARDS (Transactions) ── */}
-              <div className="mobile-only" style={{ flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                {transactions.map((tx) => {
-                  const isPos = tx.quantity > 0;
-                  const typeColor = tx.transaction_type === 'stock_in' || (tx.transaction_type === 'release') || (tx.transaction_type === 'adjustment' && isPos) ? '#10b981' :
-                                    tx.transaction_type === 'reservation' ? '#8b5cf6' : '#ef4444';
-                  return (
-                    <div
-                      key={`mob-tx-${tx.id}`}
-                      style={{
-                        background: 'var(--surface)',
-                        borderRadius: 'var(--radius-lg)',
-                        border: '1px solid var(--border)',
-                        boxShadow: 'var(--shadow-card)',
-                        padding: '16px',
-                        display: 'flex', flexDirection: 'column', gap: '8px'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-1)' }}>{tx.inventory_name || '—'}</div>
-                        <div style={{ fontWeight: 800, color: typeColor, fontSize: '15px' }}>{isPos ? '+' : ''}{tx.quantity}</div>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
+                              {tx.dispatch_type && (
+                                <span style={{ marginLeft: 6, padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: '#e0e7ff', color: '#4338ca' }}>
+                                  {tx.dispatch_type}
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ fontWeight: 800, color: typeColor, fontSize: 14 }}>{isPos ? '+' : ''}{tx.quantity}</td>
+                            <td style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>{tx.stock_before} <span style={{color: 'var(--border)'}}>→</span> {tx.stock_after}</td>
+                            <td style={{ fontSize: 12, color: 'var(--text-2)', fontWeight: 500 }}>{tx.created_by || '—'}</td>
+                            <td style={{ fontSize: 12, color: 'var(--text-3)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {tx.notes || tx.case_id || '—'}
+                            </td>
+                            <td style={{ fontSize: 11, color: 'var(--text-4)', whiteSpace: 'nowrap' }}>
+                              {tx.created_at ? new Date(tx.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {transactions.length === 0 && (
+                        <tr><td colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--text-4)' }}>No transactions found</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                  {transactions.map((tx) => {
+                    const isPos = tx.quantity > 0;
+                    const typeColor = tx.transaction_type === 'stock_in' || (tx.transaction_type === 'release') || (tx.transaction_type === 'adjustment' && isPos) ? '#10b981' :
+                                      tx.transaction_type === 'reservation' ? '#8b5cf6' : '#ef4444';
+                    return (
+                      <div key={tx.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--text-1)' }}>{tx.inventory_name || '—'}</div>
+                          <div style={{ fontWeight: 800, color: typeColor, fontSize: 15 }}>{isPos ? '+' : ''}{tx.quantity}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           <span style={{ padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: `${typeColor}15`, color: typeColor }}>
                             {tx.transaction_type?.replace('_', ' ')}
                           </span>
                           {tx.dispatch_type && (
-                            <span style={{ marginLeft: 6, padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: '#e0e7ff', color: '#4338ca' }}>
+                            <span style={{ padding: '4px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: '#e0e7ff', color: '#4338ca' }}>
                               {tx.dispatch_type}
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-4)', fontWeight: 600 }}>{tx.stock_before} <span style={{color: 'var(--border)'}}>→</span> {tx.stock_after}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'var(--surface-2)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
+                          <div>
+                            <div style={{ fontSize: 11, color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>Before → After</div>
+                            <div style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 600 }}>{tx.stock_before} <span style={{color: 'var(--text-4)'}}>→</span> {tx.stock_after}</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 11, color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 600 }}>User</div>
+                            <div style={{ fontSize: 13, color: 'var(--text-1)' }}>{tx.created_by || '—'}</div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 13, color: 'var(--text-3)' }}>
+                          <span style={{fontWeight: 600, color: 'var(--text-2)'}}>Notes: </span>{tx.notes || tx.case_id || '—'}
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 4 }}>
+                          {tx.created_at ? new Date(tx.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—'}
+                        </div>
                       </div>
-
-                      <div style={{ fontSize: '12px', color: 'var(--text-3)', background: 'var(--surface-2)', padding: '8px', borderRadius: '6px', marginTop: '4px' }}>
-                        {tx.notes || tx.case_id || '—'}
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                        <div style={{ fontSize: '11px', color: 'var(--text-2)', fontWeight: 500 }}><span style={{ color: 'var(--text-4)' }}>By:</span> {tx.created_by || '—'}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-4)' }}>{tx.created_at ? new Date(tx.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—'}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-                {transactions.length === 0 && (
-                  <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-4)', padding: '24px 0' }}>No transactions found</p>
-                )}
-              </div>
+                    );
+                  })}
+                  {transactions.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-4)', background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)' }}>No transactions found</div>
+                  )}
+                </div>
               </>
             )}
           </div>

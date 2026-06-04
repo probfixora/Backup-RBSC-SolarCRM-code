@@ -271,28 +271,49 @@ export default function DispatchCustomers({ onLogout }) {
                     <FileText size={16} color="var(--color-primary)" /> Dispatch History
                   </h3>
                   
-                  <div className="table-wrap">
-                    <table style={{ width: '100%', minWidth: 500 }}>
-                      <thead>
-                        <tr>
-                          <th>Item Name</th>
-                          <th>Quantity</th>
-                          <th>Date</th>
-                          <th>Notes / Reference</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedCustomer.txns.map(tx => (
-                          <tr key={tx.id}>
-                            <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{tx.inventory_name}</td>
-                            <td style={{ fontWeight: 800, color: selectedCustomer.type === 'B2B' ? '#8b5cf6' : '#0ea5e9' }}>{Math.abs(tx.quantity)}</td>
-                            <td style={{ color: 'var(--text-4)', fontSize: 12 }}>{new Date(tx.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                            <td style={{ color: 'var(--text-3)', fontSize: 12 }}>{tx.notes || '-'}</td>
+                  <>
+                    <div className="table-wrap hide-on-mobile">
+                      <table style={{ width: '100%', minWidth: 500 }}>
+                        <thead>
+                          <tr>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Date</th>
+                            <th>Notes / Reference</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {selectedCustomer.txns.map(tx => (
+                            <tr key={tx.id}>
+                              <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{tx.inventory_name}</td>
+                              <td style={{ fontWeight: 800, color: selectedCustomer.type === 'B2B' ? '#8b5cf6' : '#0ea5e9' }}>{Math.abs(tx.quantity)}</td>
+                              <td style={{ color: 'var(--text-4)', fontSize: 12 }}>{new Date(tx.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                              <td style={{ color: 'var(--text-3)', fontSize: 12 }}>{tx.notes || '-'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {selectedCustomer.txns.map(tx => (
+                        <div key={tx.id} style={{ background: 'var(--surface-2)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontWeight: 600, color: 'var(--text-1)' }}>{tx.inventory_name}</div>
+                            <div style={{ fontWeight: 800, color: selectedCustomer.type === 'B2B' ? '#8b5cf6' : '#0ea5e9', fontSize: '15px' }}>
+                              {Math.abs(tx.quantity)}
+                            </div>
+                          </div>
+                          <div style={{ fontSize: 13, color: 'var(--text-3)' }}>
+                            <span style={{fontWeight: 600}}>Notes:</span> {tx.notes || '-'}
+                          </div>
+                          <div style={{ color: 'var(--text-4)', fontSize: 12, textAlign: 'right' }}>
+                            {new Date(tx.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 </div>
               </>
             )}
