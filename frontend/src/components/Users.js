@@ -29,13 +29,15 @@ const fieldFocusStyle = {
   boxShadow: '0 0 0 3px rgba(37,99,235,0.12)',
 };
 
+
 const roleMeta = {
   admin:              { bg: '#eef2ff', text: '#4338ca', border: '#c7d2fe', label: 'Admin' },
   sales:              { bg: '#ecfdf5', text: '#065f46', border: '#a7f3d0', label: 'Sales' },
   registration:       { bg: '#fdf4ff', text: '#7e22ce', border: '#e9d5ff', label: 'Registration' },
   banking:            { bg: '#fffbeb', text: '#92400e', border: '#fde68a', label: 'Banking & Finance' },
   inventory:          { bg: '#fff1f2', text: '#9f1239', border: '#fecdd3', label: 'Inventory' },
-  field_installation: { bg: '#f0f9ff', text: '#075985', border: '#bae6fd', label: 'Field Installation' },
+  procurement:        { bg: '#fdf8ff', text: '#6d28d9', border: '#ddd6fe', label: 'Procurement' },
+  installation:       { bg: '#f0f9ff', text: '#075985', border: '#bae6fd', label: 'Installation' },
   electrical:         { bg: '#fef2f2', text: '#b91c1c', border: '#fecaca', label: 'Electrical' },
   subsidy:            { bg: '#fff7ed', text: '#9a3412', border: '#fed7aa', label: 'Subsidy' },
   technical:          { bg: '#ecfeff', text: '#155e75', border: '#a5f3fc', label: 'Technical QA' },
@@ -486,6 +488,7 @@ const Users = ({ onLogout }) => {
                       { value: 'registration',        label: 'Registration',      emoji: '📋', color: '#7e22ce', bg: '#fdf4ff', border: '#e9d5ff' },
                       { value: 'banking',             label: 'Banking & Finance', emoji: '🏦', color: '#92400e', bg: '#fffbeb', border: '#fde68a' },
                       { value: 'inventory',           label: 'Inventory',         emoji: '📦', color: '#9f1239', bg: '#fff1f2', border: '#fecdd3' },
+                      { value: 'procurement',         label: 'Procurement',       emoji: '🛒', color: '#6d28d9', bg: '#fdf8ff', border: '#ddd6fe' },
                       { value: 'field_installation',  label: 'Installation',      emoji: '⚡', color: '#075985', bg: '#f0f9ff', border: '#bae6fd' },
                       { value: 'electrical',          label: 'Electrical',        emoji: '⚡', color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' },
                       { value: 'subsidy',             label: 'Subsidy',           emoji: '🌿', color: '#9a3412', bg: '#fff7ed', border: '#fed7aa' },

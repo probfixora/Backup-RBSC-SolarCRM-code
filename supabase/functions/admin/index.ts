@@ -57,7 +57,7 @@ serve(async (req) => {
         return jsonResponse({ message: "Invalid email format" }, 400);
       }
 
-      const validRoles = ["admin", "sales", "registration", "banking", "inventory", "field_installation", "subsidy", "electrical", "technical", "accounts", "customer_service"];
+      const validRoles = ["admin", "sales", "registration", "banking", "inventory", "procurement", "field_installation", "subsidy", "electrical", "technical", "accounts", "customer_service"];
       if (!validRoles.includes(role)) {
         return jsonResponse({ message: `Invalid role: ${role}` }, 400);
       }
@@ -189,7 +189,7 @@ serve(async (req) => {
 </html>`;
 
           const payload = {
-            sender: { name: "${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}", email: gmailEmail },
+            sender: { name: `${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}`, email: gmailEmail },
             to: [{ email: email.toLowerCase().trim() }],
             subject: `Welcome to ${Deno.env.get("COMPANY_NAME") || "RBSC Solar"} — Your Account Has Been Created`,
             htmlContent: html,

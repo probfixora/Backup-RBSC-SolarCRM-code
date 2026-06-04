@@ -10,7 +10,7 @@ import {
   Package, TrendingDown, TrendingUp, AlertTriangle,
   Plus, Minus, History, ClipboardList, BarChart3,
   RefreshCw, Search, CheckCircle, Edit, Eye, Folder,
-  DollarSign, Briefcase, Truck, Building
+  DollarSign, Briefcase, Truck, Building, X
 } from 'lucide-react';
 
 const LOW_STOCK_THRESHOLD = 0.3;
@@ -38,9 +38,84 @@ export default function ProcurementPortal({ onLogout }) {
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
   const [showB2BModal, setShowB2BModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [modalMode, setModalMode] = useState('create'); // 'create' | 'edit' | 'view'
+  
+  // Stock Adjustment States
+  const [adjustingItem, setAdjustingItem] = useState(null);
+  const [adjustType, setAdjustType] = useState('add'); // 'add' | 'deduct'
+  const [adjustQty, setAdjustQty] = useState('');
+  const [adjustNotes, setAdjustNotes] = useState('');
+  const [adjustSaving, setAdjustSaving] = useState(false);
 
   const userRole = localStorage.getItem('role') || 'admin';
   const userName = localStorage.getItem('name') || 'Admin';
+
+  const handleViewItem = (item) => {
+    setSelectedItem(item);
+    setModalMode('view');
+    setShowAddModal(true);
+  };
+
+  const handleEditItem = (item) => {
+    setSelectedItem(item);
+    setModalMode('edit');
+    setShowAddModal(true);
+  };
+
+  const handleAdjustmentSubmit = async (e) => {
+    e.preventDefault();
+    if (!adjustingItem || !adjustQty || Number(adjustQty) <= 0) {
+      toast.error('Please enter a valid quantity');
+      return;
+    }
+    setAdjustSaving(true);
+    try {
+      const qty = Number(adjustQty);
+      const isAdd = adjustType === 'add';
+      const change = isAdd ? qty : -qty;
+      const newStock = adjustingItem.stock + change;
+
+      if (newStock < 0) {
+        throw new Error('Stock quantity cannot be less than 0');
+      }
+
+      // Update database
+      const { error: updateError } = await supabase
+        .from('inventory')
+        .update({ stock: newStock })
+        .eq('id', adjustingItem.id);
+
+      if (updateError) throw updateError;
+
+      // Log transaction
+      const { error: txError } = await supabase
+        .from('inventory_transactions')
+        .insert({
+          inventory_id: adjustingItem.id,
+          inventory_name: adjustingItem.name,
+          transaction_type: isAdd ? 'stock_in' : 'stock_out',
+          quantity: change,
+          stock_before: adjustingItem.stock,
+          stock_after: newStock,
+          notes: adjustNotes || (isAdd ? 'Manual Stock Addition' : 'Manual Stock Deduction'),
+          created_by: userName
+        });
+
+      if (txError) throw txError;
+
+      toast.success(`Stock ${isAdd ? 'added' : 'deducted'} successfully!`);
+      setAdjustingItem(null);
+      setAdjustQty('');
+      setAdjustNotes('');
+      fetchInventory();
+      fetchTransactions();
+    } catch (err) {
+      toast.error('Adjustment failed: ' + err.message);
+    } finally {
+      setAdjustSaving(false);
+    }
+  };
 
   const fetchInventory = useCallback(async () => {
     setLoading(true);
@@ -171,7 +246,7 @@ export default function ProcurementPortal({ onLogout }) {
             <button onClick={() => setShowB2BModal(true)} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', background: 'var(--surface-2)', border: '1px solid var(--border-color)', color: 'var(--text-1)' }}>
               <Building size={16} /> B2B Dispatch
             </button>
-            <button onClick={() => setShowAddModal(true)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px' }}>
+            <button onClick={() => { setModalMode('create'); setSelectedItem(null); setShowAddModal(true); }} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px' }}>
               <Plus size={16} /> Add New Item
             </button>
           </div>
@@ -253,10 +328,10 @@ export default function ProcurementPortal({ onLogout }) {
                           </td>
                           <td style={{ textAlign: 'right' }}>
                             <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                              <button className="btn btn-ghost btn-sm" title="View"><Eye size={14} /></button>
-                              <button className="btn btn-ghost btn-sm" title="Edit"><Edit size={14} /></button>
-                              <button className="btn btn-ghost btn-sm" style={{ color: '#10b981' }} title="Add Stock"><Plus size={14} /></button>
-                              <button className="btn btn-ghost btn-sm" style={{ color: '#ef4444' }} title="Deduct Stock"><Minus size={14} /></button>
+                              <button onClick={() => handleViewItem(item)} className="btn btn-ghost btn-sm" title="View"><Eye size={14} /></button>
+                              <button onClick={() => handleEditItem(item)} className="btn btn-ghost btn-sm" title="Edit"><Edit size={14} /></button>
+                              <button onClick={() => { setAdjustingItem(item); setAdjustType('add'); }} className="btn btn-ghost btn-sm" style={{ color: '#10b981' }} title="Add Stock"><Plus size={14} /></button>
+                              <button onClick={() => { setAdjustingItem(item); setAdjustType('deduct'); }} className="btn btn-ghost btn-sm" style={{ color: '#ef4444' }} title="Deduct Stock"><Minus size={14} /></button>
                             </div>
                           </td>
                         </tr>
@@ -340,11 +415,16 @@ export default function ProcurementPortal({ onLogout }) {
         <Footer />
       </main>
 
-      {/* Add Item Modal */}
+      {/* Add / Edit / View Item Modal */}
       {showAddModal && (
         <AddInventoryItemModal 
-          onClose={() => setShowAddModal(false)}
+          onClose={() => {
+            setShowAddModal(false);
+            setSelectedItem(null);
+          }}
           onAdded={fetchInventory}
+          item={selectedItem}
+          mode={modalMode}
         />
       )}
 
@@ -359,6 +439,94 @@ export default function ProcurementPortal({ onLogout }) {
           }}
           items={inventory}
         />
+      )}
+
+      {/* Stock Adjustment Modal */}
+      {adjustingItem && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '450px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', overflow: 'hidden'
+          }}>
+            <div style={{
+              padding: '20px 24px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                {adjustType === 'add' ? 'Add Stock' : 'Deduct Stock'}
+              </h2>
+              <button onClick={() => setAdjustingItem(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748b'}}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleAdjustmentSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#475569' }}>
+                  Item: <strong style={{ color: '#0f172a' }}>{adjustingItem.name}</strong>
+                </p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
+                  Current Stock: <strong>{adjustingItem.stock} {adjustingItem.unit}</strong>
+                </p>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>
+                  Quantity to {adjustType === 'add' ? 'Add' : 'Deduct'} *
+                </label>
+                <input 
+                  type="number"
+                  required
+                  min="1"
+                  value={adjustQty}
+                  onChange={e => setAdjustQty(e.target.value)}
+                  placeholder={`e.g. 10`}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1',
+                    fontSize: '14px', outline: 'none', transition: 'border-color 0.2s', background: '#fff',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>
+                  Notes / Reference
+                </label>
+                <textarea 
+                  value={adjustNotes}
+                  onChange={e => setAdjustNotes(e.target.value)}
+                  placeholder={adjustType === 'add' ? 'e.g. Received new shipment' : 'e.g. Broken or misplaced stock'}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1',
+                    fontSize: '14px', outline: 'none', transition: 'border-color 0.2s', background: '#fff',
+                    boxSizing: 'border-box', minHeight: '60px', resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              <div style={{
+                display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px'
+              }}>
+                <button type="button" onClick={() => setAdjustingItem(null)} style={{
+                  padding: '10px 20px', borderRadius: '8px', border: '1px solid #cbd5e1',
+                  background: '#fff', color: '#475569', fontWeight: 600, cursor: 'pointer'
+                }} disabled={adjustSaving}>Cancel</button>
+                <button type="submit" style={{
+                  padding: '10px 24px', borderRadius: '8px', border: 'none',
+                  background: adjustType === 'add' ? '#10b981' : '#ef4444', color: '#fff', fontWeight: 600, cursor: 'pointer'
+                }} disabled={adjustSaving}>
+                  {adjustSaving ? 'Saving...' : adjustType === 'add' ? 'Confirm Addition' : 'Confirm Deduction'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

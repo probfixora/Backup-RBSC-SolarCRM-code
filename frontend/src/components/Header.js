@@ -334,24 +334,16 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
 
           {/* Left: Branding */}
           <div className="admin-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* Hamburger Menu - Shown only on mobile, integrated into header */}
-            <button
-              className="mobile-only"
-              onClick={() => window.dispatchEvent(new Event('openMobileMenu'))}
-              style={{
-                background: 'var(--surface)', border: '1px solid var(--border)',
-                width: '36px', height: '36px', borderRadius: 'var(--radius-md)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0,
-                boxShadow: 'var(--shadow-sm)', padding: 0
-              }}
-              title="Open menu"
-            >
-              <i className="ti ti-menu-2" style={{ fontSize: '18px' }} />
-            </button>
+            {/* Brand Logo (Mobile) */}
+            <img 
+              src={APP_CONFIG.logoPath || '/logo.png'} 
+              alt={APP_CONFIG.companyName} 
+              className="admin-brand-logo"
+              style={{ height: '30px', objectFit: 'contain' }} 
+            />
             
-            {/* Brand Text */}
-            <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
+            {/* Brand Text (Desktop) */}
+            <span className="admin-brand-text" style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
               {APP_CONFIG.companyName}
             </span>
           </div>

@@ -27,14 +27,14 @@ const roleStageMap = {
 
 const stageColors = {
   'Registration Done':              '#6366f1',
-  'Banking In Process':             '#f59e0b',
-  'Loan Approved / Cash Confirmed': '#f97316',
-  'Sent to Store':                  '#8b5cf6',
-  'Installation Done':              '#2563EB',
-  'Electrical Checked':             '#0ea5e9',
-  'Plant Activated':                '#14b8a6',
-  'Subsidy Registration Completed': '#ec4899',
-  'Completed':                      '#22c55e',
+  'Banking In Process':             '#6366f1',
+  'Loan Approved / Cash Confirmed': '#6366f1',
+  'Sent to Store':                  '#6366f1',
+  'Installation Done':              '#6366f1',
+  'Electrical Checked':             '#6366f1',
+  'Plant Activated':                '#6366f1',
+  'Subsidy Registration Completed': '#6366f1',
+  'Completed':                      '#6366f1',
 };
 
 const timeInStage = (stageStart) => {
