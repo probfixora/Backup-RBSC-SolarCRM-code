@@ -163,7 +163,7 @@ const DepartmentPortal = ({ onLogout }) => {
 
         {/* Summary bar */}
         {!loading && depts.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginBottom: '24px' }}>
             {[
               { label: 'Total Departments', val: depts.length, icon: TrendingUp, color: '#6366f1' },
               { label: 'Total Team Members', val: depts.reduce((s, d) => s + d.memberCount, 0), icon: Users, color: '#10b981' },
