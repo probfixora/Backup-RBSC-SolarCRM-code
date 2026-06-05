@@ -2,7 +2,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 // We must use the Node.js runtime instead of the Edge runtime 
 // because http-proxy-middleware relies on Node APIs.
-export const config = {
+module.exports.config = {
   api: {
     bodyParser: false,
     externalResolver: true,
@@ -33,7 +33,7 @@ const proxy = createProxyMiddleware({
   }
 });
 
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   const target = process.env.SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL;
   if (!target) {
     return res.status(500).json({ error: 'Missing SUPABASE_URL in server environment' });
@@ -47,4 +47,4 @@ export default function handler(req, res) {
     }
     throw new Error(`Request '${req.url}' is not proxied!`);
   });
-}
+};
