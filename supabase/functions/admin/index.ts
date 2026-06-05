@@ -106,6 +106,7 @@ serve(async (req) => {
           console.error("BREVO_API_KEY or GMAIL_EMAIL not set. Cannot send onboarding email.");
         } else {
           const joinedDate = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
+          const portalUrl = Deno.env.get("FRONTEND_URL") || "https://crm-rbscsolar.vercel.app";
           const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -144,7 +145,7 @@ serve(async (req) => {
 <body>
 <div class="wrapper">
   <div class="header">
-    <img src="https://raw.githubusercontent.com/rbscsolar/crm.rbscsolar/main/frontend/public/logo.png" alt="${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}" class="header-logo"/>
+    <img src="${portalUrl}/logo.png" alt="${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}" class="header-logo"/>
     <h1>Welcome to ${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}</h1>
     <p>Your employee account is ready</p>
   </div>
@@ -168,6 +169,9 @@ serve(async (req) => {
     <div class="password-note">
       <strong>Security Notice:</strong> The temporary password above must be changed after your first login.
       Do not share your credentials with anyone.
+    </div>
+    <div class="cta-wrap">
+      <a href="${portalUrl}" class="cta-btn" target="_blank">Login to CRM Portal</a>
     </div>
     <p class="sign">
       Warm regards,<br/>
