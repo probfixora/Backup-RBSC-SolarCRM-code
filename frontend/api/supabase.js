@@ -56,7 +56,7 @@ module.exports = async function handler(req, res) {
 
     // Forward response body as buffer to support all content types
     const arrayBuffer = await response.arrayBuffer();
-    res.send(Buffer.from(arrayBuffer));
+    res.end(Buffer.from(arrayBuffer));
 
   } catch (error) {
     console.error('Fetch Proxy Error:', error);
