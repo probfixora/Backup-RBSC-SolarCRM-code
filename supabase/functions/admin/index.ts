@@ -133,11 +133,27 @@ serve(async (req) => {
     .credentials td:first-child{font-weight:600;color:#1a1a5e;width:40%;background:#f1f5fb}
     .password-note{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;font-size:13px;color:#78350f;margin-bottom:24px;line-height:1.6}
     .cta-wrap{text-align:center;margin-bottom:28px}
-    .cta-btn{display:inline-block;background:linear-gradient(135deg,#1a1a5e,#2563eb);color:#fff;font-size:14px;font-weight:700;text-decoration:none;padding:13px 32px;border-radius:8px;letter-spacing:0.3px}
+    .cta-btn{display:inline-block;background:#2563eb;color:#ffffff !important;font-size:14px;font-weight:700;text-decoration:none;padding:13px 32px;border-radius:8px;letter-spacing:0.3px}
     .sign{font-size:13px;color:#4a5568;line-height:1.7}
     .footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0}
     .footer-logo{font-size:15px;font-weight:700;color:#1a1a5e;margin-bottom:4px}
     .footer-logo span{color:#2563eb}
+    @media (prefers-color-scheme: dark) {
+      body { background: #121212 !important; color: #f1f5f9 !important; }
+      .wrapper { background: #1e1e1e !important; box-shadow: none !important; }
+      .body { background: #1e1e1e !important; }
+      .greeting { color: #ffffff !important; }
+      .intro { color: #cbd5e1 !important; }
+      .credentials { background: #2d2d2d !important; border-color: #475569 !important; }
+      .credentials-title { background: #0f172a !important; color: #ffffff !important; }
+      .credentials td { border-bottom-color: #333333 !important; color: #e2e8f0 !important; }
+      .credentials td:first-child { background: #252525 !important; color: #93c5fd !important; }
+      .password-note { background: #451a03 !important; border-color: #78350f !important; color: #fef3c7 !important; }
+      .sign { color: #cbd5e1 !important; }
+      .footer { background: #121212 !important; border-top-color: #333333 !important; }
+      .footer-logo { color: #ffffff !important; }
+      .footer p { color: #94a3b8 !important; }
+    }
     .footer p{font-size:11px;color:#94a3b8;line-height:1.6;margin-top:4px}
     .footer a{color:#4f46e5;text-decoration:none}
   </style>
@@ -171,7 +187,7 @@ serve(async (req) => {
       Do not share your credentials with anyone.
     </div>
     <div class="cta-wrap">
-      <a href="${portalUrl}" class="cta-btn" target="_blank">Login to CRM Portal</a>
+      <a href="${portalUrl}" class="cta-btn" target="_blank" style="color: #ffffff !important; text-decoration: none; background-color: #2563eb;">Login to CRM Portal</a>
     </div>
     <p class="sign">
       Warm regards,<br/>
