@@ -116,11 +116,11 @@ serve(async (req) => {
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}
     .wrapper{max-width:620px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}
-    .header{background:linear-gradient(135deg,#1a1a5e 0%,#16a34a 100%);padding:28px 40px 24px;text-align:center}
+    .header{background:linear-gradient(135deg,#1a1a5e 0%,#2563eb 100%);padding:28px 40px 24px;text-align:center}
     .header-logo{display:block;margin:0 auto 12px;max-height:60px;width:auto}
     .header h1{color:#fff;font-size:20px;font-weight:700;margin:0;letter-spacing:0.3px}
     .header p{color:rgba(255,255,255,0.80);font-size:13px;margin-top:4px}
-    .divider-bar{height:4px;background:linear-gradient(90deg,#1a1a5e,#16a34a)}
+    .divider-bar{height:4px;background:linear-gradient(90deg,#1a1a5e,#2563eb)}
     .body{padding:36px 40px}
     .greeting{font-size:18px;font-weight:700;color:#1a1a5e;margin-bottom:10px}
     .intro{font-size:14px;color:#4a5568;line-height:1.7;margin-bottom:24px}
@@ -132,11 +132,11 @@ serve(async (req) => {
     .credentials td:first-child{font-weight:600;color:#1a1a5e;width:40%;background:#f1f5fb}
     .password-note{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;font-size:13px;color:#78350f;margin-bottom:24px;line-height:1.6}
     .cta-wrap{text-align:center;margin-bottom:28px}
-    .cta-btn{display:inline-block;background:linear-gradient(135deg,#1a1a5e,#16a34a);color:#fff;font-size:14px;font-weight:700;text-decoration:none;padding:13px 32px;border-radius:8px;letter-spacing:0.3px}
+    .cta-btn{display:inline-block;background:linear-gradient(135deg,#1a1a5e,#2563eb);color:#fff;font-size:14px;font-weight:700;text-decoration:none;padding:13px 32px;border-radius:8px;letter-spacing:0.3px}
     .sign{font-size:13px;color:#4a5568;line-height:1.7}
     .footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0}
     .footer-logo{font-size:15px;font-weight:700;color:#1a1a5e;margin-bottom:4px}
-    .footer-logo span{color:#16a34a}
+    .footer-logo span{color:#2563eb}
     .footer p{font-size:11px;color:#94a3b8;line-height:1.6;margin-top:4px}
     .footer a{color:#4f46e5;text-decoration:none}
   </style>
@@ -144,7 +144,7 @@ serve(async (req) => {
 <body>
 <div class="wrapper">
   <div class="header">
-    <img src="data:image/png;base64,${logoBase64}" alt="${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}" class="header-logo"/>
+    <img src="https://raw.githubusercontent.com/rbscsolar/crm.rbscsolar/main/frontend/public/logo.png" alt="${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}" class="header-logo"/>
     <h1>Welcome to ${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}</h1>
     <p>Your employee account is ready</p>
   </div>
@@ -191,7 +191,7 @@ serve(async (req) => {
           const payload = {
             sender: { name: `${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}`, email: gmailEmail },
             to: [{ email: email.toLowerCase().trim() }],
-            subject: `Welcome to ${Deno.env.get("COMPANY_NAME") || "RBSC Solar"} — Your Account Has Been Created`,
+            subject: `Welcome to ${Deno.env.get("COMPANY_NAME") || "RBSC Solar"} – Your Employee Account is Ready`,
             htmlContent: html,
           };
 
