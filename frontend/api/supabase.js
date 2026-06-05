@@ -46,8 +46,10 @@ module.exports = async function handler(req, res) {
     // Forward response status and headers
     res.status(response.status);
     response.headers.forEach((value, key) => {
-      // Avoid chunked encoding issues
-      if (key.toLowerCase() !== 'transfer-encoding') {
+      const lowerKey = key.toLowerCase();
+      // Avoid chunked encoding issues, and don't copy content-encoding 
+      // because native fetch automatically decompresses the body.
+      if (!['transfer-encoding', 'content-encoding', 'content-length'].includes(lowerKey)) {
         res.setHeader(key, value);
       }
     });
