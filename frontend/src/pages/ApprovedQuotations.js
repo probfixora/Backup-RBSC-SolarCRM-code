@@ -48,6 +48,7 @@ const ApprovedQuotations = ({ onLogout }) => {
   const [profile, setProfile]               = useState('Job/Service');
   const [uploadingDoc, setUploadingDoc]     = useState(null);
   const [sendingToReg, setSendingToReg]     = useState(false);
+  const [completedQuots, setCompletedQuots] = useState(new Set());
 
   const fetchQuotations = async () => {
     try {
@@ -115,8 +116,11 @@ const ApprovedQuotations = ({ onLogout }) => {
       const res = await edgeFetch(EDGE.quotation, { action: 'send_to_registration', id: selectedQuotation.id });
       if (res.success) {
         toast.success(`Case ${res.caseId} created — sent to Registration!`);
-        setSelected(null);
-        fetchQuotations();
+        setCompletedQuots(prev => new Set(prev).add(selectedQuotation.id));
+        setTimeout(() => {
+          setSelected(null);
+          fetchQuotations();
+        }, 1500);
       }
     } catch (err) { toast.error('Failed: ' + err.message); }
     finally { setSendingToReg(false); }
@@ -203,15 +207,22 @@ const ApprovedQuotations = ({ onLogout }) => {
                         </span>
                       </td>
                       <td style={{ textAlign: 'right' }}>
-                        <button
-                          id={`upload-btn-${q.id}`}
-                          onClick={() => openModal(q)}
-                          className="btn btn-primary btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                        >
-                          <UploadCloud style={{ width: '13px', height: '13px' }} />
-                          Upload Customer
-                        </button>
+                        {completedQuots.has(q.id) ? (
+                          <button disabled className="btn btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', cursor: 'default' }}>
+                            <CheckCircle style={{ width: '13px', height: '13px' }} />
+                            Completed
+                          </button>
+                        ) : (
+                          <button
+                            id={`upload-btn-${q.id}`}
+                            onClick={() => openModal(q)}
+                            className="btn btn-primary btn-sm"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <UploadCloud style={{ width: '13px', height: '13px' }} />
+                            Upload Customer
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -259,15 +270,22 @@ const ApprovedQuotations = ({ onLogout }) => {
                   </div>
                 </div>
                 
-                <button
-                  id={`upload-btn-${q.id}-mob`}
-                  onClick={() => openModal(q)}
-                  className="btn btn-primary"
-                  style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', width: '100%', marginTop: '4px' }}
-                >
-                  <UploadCloud style={{ width: '15px', height: '15px' }} />
-                  Upload Customer Documents
-                </button>
+                {completedQuots.has(q.id) ? (
+                  <button disabled className="btn" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', width: '100%', marginTop: '4px', background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', cursor: 'default' }}>
+                    <CheckCircle style={{ width: '15px', height: '15px' }} />
+                    Completed
+                  </button>
+                ) : (
+                  <button
+                    id={`upload-btn-${q.id}-mob`}
+                    onClick={() => openModal(q)}
+                    className="btn btn-primary"
+                    style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', width: '100%', marginTop: '4px' }}
+                  >
+                    <UploadCloud style={{ width: '15px', height: '15px' }} />
+                    Upload Customer Documents
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -405,18 +423,22 @@ const ApprovedQuotations = ({ onLogout }) => {
             {/* Modal Footer */}
             <div className="modal-footer" style={{ justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
               <span style={{ fontSize: '13px', fontWeight: 600, color: isComplete ? 'var(--color-accent)' : 'var(--color-text-muted)' }}>
-                {isComplete
-                  ? '✅ All documents ready!'
-                  : `⏳ ${reqDocs.length - uploaded} document(s) remaining`}
+                {completedQuots.has(selectedQuotation.id) ? '✅ Registration Complete' : (isComplete ? '✅ All documents ready!' : `⏳ ${reqDocs.length - uploaded} document(s) remaining`)}
               </span>
               <button
                 id="send-to-registration-btn"
-                disabled={!isComplete || sendingToReg}
+                disabled={!isComplete || sendingToReg || completedQuots.has(selectedQuotation.id)}
                 onClick={handleSendToReg}
-                className={isComplete && !sendingToReg ? 'btn btn-primary' : 'btn btn-secondary'}
-                style={{ cursor: !isComplete || sendingToReg ? 'not-allowed' : 'pointer', opacity: !isComplete ? 0.55 : 1 }}
+                className={completedQuots.has(selectedQuotation.id) ? 'btn' : (isComplete && !sendingToReg ? 'btn btn-primary' : 'btn btn-secondary')}
+                style={{
+                  cursor: (!isComplete || sendingToReg || completedQuots.has(selectedQuotation.id)) ? 'not-allowed' : 'pointer',
+                  opacity: (!isComplete && !completedQuots.has(selectedQuotation.id)) ? 0.55 : 1,
+                  background: completedQuots.has(selectedQuotation.id) ? '#16a34a' : '',
+                  color: completedQuots.has(selectedQuotation.id) ? '#fff' : '',
+                  border: completedQuots.has(selectedQuotation.id) ? 'none' : ''
+                }}
               >
-                {sendingToReg ? 'Processing…' : 'Send to Registration →'}
+                {completedQuots.has(selectedQuotation.id) ? '✓ Completed' : (sendingToReg ? 'Processing…' : 'Send to Registration →')}
               </button>
             </div>
           </div>

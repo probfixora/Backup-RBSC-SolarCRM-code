@@ -1,13 +1,12 @@
 // src/lib/supabaseClient.js
-// Central Supabase client — import this everywhere instead of axios for auth
+// Central Supabase client — proxied securely to hide API keys
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl  = process.env.REACT_APP_SUPABASE_URL;
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+// The URL and Key are now completely hidden from the frontend!
+// All requests are routed through our Serverless Proxy (/api/supabase)
+const supabaseUrl = window.location.origin + '/api/supabase';
+const supabaseAnonKey = 'hidden-key';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('[Supabase] Missing REACT_APP_SUPABASE_URL or REACT_APP_SUPABASE_ANON_KEY in .env');
-}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

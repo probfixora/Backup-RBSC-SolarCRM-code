@@ -6,7 +6,7 @@ import {
   X, ArrowRight, MessageSquare, AlertTriangle, CheckCircle2,
   User, Phone, MapPin, Zap, FileText, ClipboardList, UserCheck, History,
   Package, Plus, Trash2, IndianRupee, FileCheck, AlertOctagon,
-  Printer, Star, Clock, Navigation, Download,
+  Printer, Star, Clock, Navigation, Download, Edit2,
   Microscope, Calculator, Headphones, Link as LinkIcon, Send
 } from 'lucide-react';
 import CaseTimeline from './CaseTimeline';
@@ -38,6 +38,10 @@ const normalizeCase = (c) => ({
   subsidyPhase1Amount: c.subsidy_phase1_amount ?? c.subsidyPhase1Amount,
   subsidyPhase2Amount: c.subsidy_phase2_amount ?? c.subsidyPhase2Amount,
   subsidyNote: c.subsidy_note ?? c.subsidyNote,
+  totalAmount: c.total_amount ?? c.totalAmount ?? c.product_price ?? c.productPrice ?? c.quotation_price ?? 0,
+  quotationVerified: c.quotation_verified ?? c.quotationVerified ?? false,
+  financeVerified: c.finance_verified ?? c.financeVerified ?? false,
+  accountsVerified: c.accounts_verified ?? c.accountsVerified ?? false,
 });
 
 const STAGES = [
@@ -145,6 +149,13 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     emiAmount: '',
     bankName: ''
   });
+  const [financeEditMode, setFinanceEditMode] = useState(false);
+  
+  const [quotationVerifyLoading, setQuotationVerifyLoading] = useState(false);
+  const [quotationEditMode, setQuotationEditMode] = useState(false);
+
+  const [accountsVerifyLoading, setAccountsVerifyLoading] = useState(false);
+  const [accountsEditMode, setAccountsEditMode] = useState(false);
 
   // Dispatch Tab State
   const [inventoryList, setInventoryList] = useState([]);
@@ -467,13 +478,41 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     e.preventDefault();
     setFinanceLoading(true);
     try {
-      await edgeFetch(EDGE.workflow, { action: 'update_finance', caseId, ...fData });
+      await edgeFetch(EDGE.workflow, { action: 'update_finance', caseId, ...fData, financeVerified: true });
+      await edgeFetch(EDGE.workflow, { action: 'update_details', caseId, financeVerified: true });
       toast.success('Finance details updated!');
+      setFinanceEditMode(false);
       onClose();
       onRefresh();
     } catch (err) {
       toast.error(err.message || 'Update failed.');
     } finally { setFinanceLoading(false); }
+  };
+
+  const handleQuotationVerify = async () => {
+    setQuotationVerifyLoading(true);
+    try {
+      await edgeFetch(EDGE.workflow, { action: 'update_details', caseId, quotationVerified: true });
+      toast.success('Quotation verified!');
+      setQuotationEditMode(false);
+      onClose();
+      onRefresh();
+    } catch (err) {
+      toast.error(err.message || 'Update failed.');
+    } finally { setQuotationVerifyLoading(false); }
+  };
+
+  const handleAccountsVerify = async () => {
+    setAccountsVerifyLoading(true);
+    try {
+      await edgeFetch(EDGE.workflow, { action: 'update_details', caseId, accountsVerified: true });
+      toast.success('Payment received and verified!');
+      setAccountsEditMode(false);
+      onClose();
+      onRefresh();
+    } catch (err) {
+      toast.error(err.message || 'Update failed.');
+    } finally { setAccountsVerifyLoading(false); }
   };
 
   const handleAddDispatchItem = () => {
@@ -1119,6 +1158,38 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                   </div>
                 );
               })()}
+
+              {/* Quotation Verification Section */}
+              {(role === 'registration' || role === 'admin') && (
+                <div style={{ marginTop: '24px', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <p style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>Quotation Verification</p>
+                    {normalized.quotationVerified && !quotationEditMode && (
+                      <button onClick={() => setQuotationEditMode(true)} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px', color: 'var(--color-primary)' }}>
+                        <Edit2 style={{ width: '13px', height: '13px', marginRight: '4px' }} /> Edit
+                      </button>
+                    )}
+                  </div>
+                  
+                  {normalized.quotationVerified && !quotationEditMode ? (
+                    <div style={{ padding: '16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <CheckCircle2 style={{ width: '18px', height: '18px', color: '#16a34a' }} />
+                      <div>
+                        <p style={{ fontSize: '12px', color: '#166534', fontWeight: 600 }}>Quotation Verified</p>
+                        <p style={{ fontSize: '14px', color: '#14532d', fontWeight: 700 }}>₹{Number(normalized.totalAmount).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      <p style={{ fontSize: '13px', color: '#475569', marginBottom: '12px' }}>Please call the customer to verify the quotation amount:</p>
+                      <p style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', marginBottom: '16px' }}>₹{Number(normalized.totalAmount).toLocaleString()}</p>
+                      <button onClick={handleQuotationVerify} disabled={quotationVerifyLoading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                        {quotationVerifyLoading ? 'Verifying...' : 'Mark Quotation as Verified'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -1137,107 +1208,145 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
           {/* FINANCE TAB */}
           {activeTab === 'finance' && (
             <div>
-              <p style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>Financial Details</p>
-              
-              <form onSubmit={handleFinanceUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>Payment Type</label>
-                    <select
-                      value={fData.paymentType}
-                      onChange={e => setFData({ ...fData, paymentType: e.target.value })}
-                      className="input"
-                    >
-                      <option value="" disabled>Select</option>
-                      <option value="Cash">Cash</option>
-                      <option value="Loan">Loan</option>
-                    </select>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <p style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>Financial Details</p>
+                {normalized.financeVerified && !financeEditMode && (
+                  <button onClick={() => setFinanceEditMode(true)} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px', color: 'var(--color-primary)' }}>
+                    <Edit2 style={{ width: '13px', height: '13px', marginRight: '4px' }} /> Edit
+                  </button>
+                )}
+              </div>
+
+              {normalized.financeVerified && !financeEditMode ? (
+                <div style={{ padding: '16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <CheckCircle2 style={{ width: '16px', height: '16px', color: '#16a34a' }} />
+                    <span style={{ fontSize: '13px', color: '#166534', fontWeight: 700 }}>Finance Details Saved</span>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>Down Payment (₹)</label>
-                    <input
-                      type="number"
-                      value={fData.downPayment}
-                      onChange={e => setFData({ ...fData, downPayment: e.target.value })}
-                      placeholder="0"
-                      className="input"
-                    />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div><span style={{ fontSize: '11px', color: '#166534' }}>Total Amount</span><p style={{ fontSize: '14px', fontWeight: 700, color: '#14532d' }}>₹{Number(normalized.totalAmount).toLocaleString()}</p></div>
+                    <div><span style={{ fontSize: '11px', color: '#166534' }}>Payment Type</span><p style={{ fontSize: '14px', fontWeight: 700, color: '#14532d' }}>{fData.paymentType || '—'}</p></div>
+                    <div><span style={{ fontSize: '11px', color: '#166534' }}>Down Payment</span><p style={{ fontSize: '14px', fontWeight: 700, color: '#14532d' }}>₹{Number(fData.downPayment || 0).toLocaleString()}</p></div>
+                    <div><span style={{ fontSize: '11px', color: '#166534' }}>Remaining Amount</span><p style={{ fontSize: '14px', fontWeight: 700, color: '#14532d' }}>₹{Number((normalized.totalAmount || 0) - (fData.downPayment || 0) - (fData.paymentType === 'Loan' ? (fData.loanAmount || 0) : 0)).toLocaleString()}</p></div>
                   </div>
                 </div>
-
-                {fData.paymentType === 'Cash' && (
-                  <div style={{ display: 'flex', gap: '12px', padding: '14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px' }}>
-                    <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#166534', marginBottom: '6px' }}>Cash Amount (₹)</label>
-                      <input
-                        type="number"
-                        value={fData.cashAmount}
-                        onChange={e => setFData({ ...fData, cashAmount: e.target.value })}
-                        placeholder="Total cash to pay"
-                        className="input"
-                      />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#166534', marginBottom: '6px' }}>Payment Mode</label>
-                      <select
-                        value={fData.paymentMode}
-                        onChange={e => setFData({ ...fData, paymentMode: e.target.value })}
-                        className="input"
-                      >
-                        <option value="">Select mode...</option>
-                        <option value="Cash">Cash (Physical)</option>
-                        <option value="Cheque">Cheque</option>
-                        <option value="Debit Card">Debit Card</option>
-                        <option value="Credit Card">Credit Card</option>
-                        <option value="UPI">UPI</option>
-                      </select>
-                    </div>
+              ) : (
+                <>
+                  <div style={{ padding: '12px 16px', background: '#e0e7ff', border: '1px solid #c7d2fe', borderRadius: '8px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#3730a3' }}>Quotation Total:</span>
+                    <span style={{ fontSize: '15px', fontWeight: 800, color: '#312e81' }}>₹{Number(normalized.totalAmount).toLocaleString()}</span>
                   </div>
-                )}
-
-                {fData.paymentType === 'Loan' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px' }}>
+                  <form onSubmit={handleFinanceUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     <div style={{ display: 'flex', gap: '12px' }}>
                       <div style={{ flex: 1 }}>
-                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1e3a8a', marginBottom: '6px' }}>Loan Amount (₹)</label>
-                        <input
-                          type="number"
-                          value={fData.loanAmount}
-                          onChange={e => setFData({ ...fData, loanAmount: e.target.value })}
-                          placeholder="Amount financed"
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>Payment Type</label>
+                        <select
+                          value={fData.paymentType}
+                          onChange={e => setFData({ ...fData, paymentType: e.target.value })}
                           className="input"
-                        />
+                        >
+                          <option value="" disabled>Select</option>
+                          <option value="Cash">Cash</option>
+                          <option value="Loan">Loan</option>
+                        </select>
                       </div>
                       <div style={{ flex: 1 }}>
-                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1e3a8a', marginBottom: '6px' }}>Monthly EMI (₹)</label>
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>Down Payment (₹)</label>
                         <input
                           type="number"
-                          value={fData.emiAmount}
-                          onChange={e => setFData({ ...fData, emiAmount: e.target.value })}
-                          placeholder="Monthly payment"
+                          value={fData.downPayment}
+                          onChange={e => setFData({ ...fData, downPayment: e.target.value })}
+                          placeholder="0"
                           className="input"
                         />
                       </div>
                     </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1e3a8a', marginBottom: '6px' }}>Approved Bank Name</label>
-                      <input
-                        type="text"
-                        value={fData.bankName}
-                        onChange={e => setFData({ ...fData, bankName: e.target.value })}
-                        placeholder="e.g. HDFC, SBI"
-                        className="input"
-                      />
-                    </div>
-                  </div>
-                )}
 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button type="submit" disabled={financeLoading} className="btn btn-primary">
-                    {financeLoading ? 'Saving...' : 'Save Financial Details'}
-                  </button>
-                </div>
-              </form>
+                    {fData.paymentType === 'Cash' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px' }}>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#166534', marginBottom: '6px' }}>Cash Amount (₹)</label>
+                            <input
+                              type="number"
+                              value={fData.cashAmount}
+                              onChange={e => setFData({ ...fData, cashAmount: e.target.value })}
+                              placeholder="Total cash to pay"
+                              className="input"
+                            />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#166534', marginBottom: '6px' }}>Payment Mode</label>
+                            <select
+                              value={fData.paymentMode}
+                              onChange={e => setFData({ ...fData, paymentMode: e.target.value })}
+                              className="input"
+                            >
+                              <option value="">Select mode...</option>
+                              <option value="Cash">Cash (Physical)</option>
+                              <option value="Cheque">Cheque</option>
+                              <option value="Debit Card">Debit Card</option>
+                              <option value="Credit Card">Credit Card</option>
+                              <option value="UPI">UPI</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div style={{ padding: '10px', background: '#dcfce7', borderRadius: '6px', border: '1px solid #86efac', display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: '#14532d' }}>Remaining Cash to be Paid:</span>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#14532d' }}>₹{Number((normalized.totalAmount || 0) - (fData.downPayment || 0)).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {fData.paymentType === 'Loan' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px' }}>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1e3a8a', marginBottom: '6px' }}>Loan Amount (₹)</label>
+                            <input
+                              type="number"
+                              value={fData.loanAmount}
+                              onChange={e => setFData({ ...fData, loanAmount: e.target.value })}
+                              placeholder="Amount financed"
+                              className="input"
+                            />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1e3a8a', marginBottom: '6px' }}>Monthly EMI (₹)</label>
+                            <input
+                              type="number"
+                              value={fData.emiAmount}
+                              onChange={e => setFData({ ...fData, emiAmount: e.target.value })}
+                              placeholder="Monthly payment"
+                              className="input"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1e3a8a', marginBottom: '6px' }}>Approved Bank Name</label>
+                          <input
+                            type="text"
+                            value={fData.bankName}
+                            onChange={e => setFData({ ...fData, bankName: e.target.value })}
+                            placeholder="e.g. HDFC, SBI"
+                            className="input"
+                          />
+                        </div>
+                        <div style={{ padding: '10px', background: '#dbeafe', borderRadius: '6px', border: '1px solid #93c5fd', display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: '#1e3a8a' }}>Remaining Balance (After Down Payment & Loan):</span>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e3a8a' }}>₹{Number((normalized.totalAmount || 0) - (fData.downPayment || 0) - (fData.loanAmount || 0)).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                      <button type="submit" disabled={financeLoading} className="btn btn-primary">
+                        {financeLoading ? 'Saving...' : 'Save Financial Details'}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
             </div>
           )}
 
@@ -1758,10 +1867,52 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
           {/* ACCOUNTS TAB */}
           {activeTab === 'accounts' && (
             <div>
-              <div style={{ marginBottom: 16 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)', marginBottom: 4 }}>Accounts & Payment Verification</p>
-                <p style={{ fontSize: 12, color: 'var(--text-4)', lineHeight: 1.5 }}>Verify payment receipts, track outstanding balances, and log financial clearance.</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)', marginBottom: 4 }}>Accounts & Payment Verification</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-4)', lineHeight: 1.5 }}>Verify payment receipts, track outstanding balances, and log financial clearance.</p>
+                </div>
+                {normalized.accountsVerified && !accountsEditMode && (
+                  <button onClick={() => setAccountsEditMode(true)} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px', color: 'var(--color-primary)' }}>
+                    <Edit2 style={{ width: '13px', height: '13px', marginRight: '4px' }} /> Edit
+                  </button>
+                )}
               </div>
+
+              {normalized.accountsVerified && !accountsEditMode ? (
+                <div style={{ padding: '16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                  <CheckCircle2 style={{ width: '18px', height: '18px', color: '#16a34a' }} />
+                  <div>
+                    <p style={{ fontSize: '12px', color: '#166534', fontWeight: 600 }}>Payment Received & Verified</p>
+                    <p style={{ fontSize: '14px', color: '#14532d', fontWeight: 700 }}>Remaining Balance: ₹{Number((normalized.totalAmount || 0) - (fData.downPayment || 0) - (fData.paymentType === 'Loan' ? (fData.loanAmount || 0) : 0)).toLocaleString()}</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                    <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                      <p style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Total Amount</p>
+                      <p style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>₹{Number(normalized.totalAmount).toLocaleString()}</p>
+                    </div>
+                    <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                      <p style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Down Payment</p>
+                      <p style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>₹{Number(fData.downPayment || 0).toLocaleString()}</p>
+                    </div>
+                    <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                      <p style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Loan Amount</p>
+                      <p style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>₹{Number(fData.paymentType === 'Loan' ? (fData.loanAmount || 0) : 0).toLocaleString()}</p>
+                    </div>
+                    <div style={{ padding: '12px', background: '#e0e7ff', border: '1px solid #c7d2fe', borderRadius: '8px' }}>
+                      <p style={{ fontSize: '11px', color: '#3730a3', textTransform: 'uppercase', fontWeight: 600 }}>Remaining Balance</p>
+                      <p style={{ fontSize: '16px', fontWeight: 800, color: '#312e81', marginTop: '4px' }}>₹{Number((normalized.totalAmount || 0) - (fData.downPayment || 0) - (fData.paymentType === 'Loan' ? (fData.loanAmount || 0) : 0)).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  
+                  <button onClick={handleAccountsVerify} disabled={accountsVerifyLoading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '16px' }}>
+                    {accountsVerifyLoading ? 'Verifying...' : 'Verify Payment Received'}
+                  </button>
+                </>
+              )}
 
               {/* Payment Summary */}
               <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '14px 18px', marginBottom: 16 }}>

@@ -3,8 +3,12 @@
 // Replaces Express authController.js + userController.js (admin routes)
 // Deploy: supabase functions deploy admin
 
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+declare const Deno: any;
 import { logoBase64 } from "../quotation/logoBase64.ts";
 
 const corsHeaders = {
@@ -29,7 +33,7 @@ async function getAdminUser(req: Request, supabase: ReturnType<typeof createClie
   return { ...user, name: profile.name, role: profile.role?.toLowerCase() };
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   // Admin client — uses service role, bypasses RLS
@@ -265,7 +269,7 @@ serve(async (req) => {
       // Get emails from auth admin
       const { data: { users: authUsers } } = await supabase.auth.admin.listUsers();
       
-      const users = authUsers.map((u) => {
+      const users = authUsers.map((u: any) => {
         const p = profileMap.get(u.id);
         return {
           id: u.id,
