@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, edgeFetch, EDGE } from '../lib/supabaseClient';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -40,6 +40,7 @@ const DEPT_LABELS = {
 
 export default function AuditLogViewer({ onLogout }) {
   const [logs, setLogs]             = useState([]);
+  const [casesMap, setCasesMap]     = useState({});
   const [loading, setLoading]       = useState(true);
   const [search, setSearch]         = useState('');
   const [filterDept, setFilterDept] = useState('');
@@ -48,6 +49,19 @@ export default function AuditLogViewer({ onLogout }) {
   const [dateTo, setDateTo]         = useState('');
   const [page, setPage]             = useState(0);
   const PAGE_SIZE = 50;
+
+  const fetchCasesMap = useCallback(async () => {
+    try {
+      const data = await edgeFetch(EDGE.workflow, { action: 'get_all' });
+      const map = {};
+      data.forEach(c => {
+        map[c.id] = c;
+      });
+      setCasesMap(map);
+    } catch (err) {
+      console.error('Failed to load cases for audit log:', err);
+    }
+  }, []);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -73,28 +87,43 @@ export default function AuditLogViewer({ onLogout }) {
     }
   }, [page, filterDept, filterAction, dateFrom, dateTo]);
 
-  useEffect(() => { fetchLogs(); }, [fetchLogs]);
+  useEffect(() => { 
+    fetchCasesMap();
+    fetchLogs(); 
+  }, [fetchCasesMap, fetchLogs]);
 
-  const filtered = logs.filter(log =>
-    !search ||
-    log.case_id?.toLowerCase().includes(search.toLowerCase()) ||
-    log.updated_by?.toLowerCase().includes(search.toLowerCase()) ||
-    log.notes?.toLowerCase().includes(search.toLowerCase()) ||
-    log.action_type?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = logs.filter(log => {
+    const c = casesMap[log.case_id] || {};
+    const cId = c.customer_id || c.case_id || log.case_id || '';
+    const searchLower = search.toLowerCase();
+    
+    return !search ||
+      cId.toLowerCase().includes(searchLower) ||
+      (c.customer_name && c.customer_name.toLowerCase().includes(searchLower)) ||
+      log.case_id?.toLowerCase().includes(searchLower) ||
+      log.updated_by?.toLowerCase().includes(searchLower) ||
+      log.notes?.toLowerCase().includes(searchLower) ||
+      log.action_type?.toLowerCase().includes(searchLower);
+  });
 
   const handleExportCSV = () => {
     const rows = [
-      ['Timestamp', 'Case ID', 'Action', 'Department', 'By', 'Stage', 'Notes'],
-      ...filtered.map(l => [
-        new Date(l.timestamp).toLocaleString('en-IN'),
-        l.case_id || '',
-        l.action_type || '',
-        l.department || '',
-        l.updated_by || '',
-        l.stage || '',
-        (l.notes || '').replace(/"/g, '""'),
-      ].map(v => `"${v}"`))
+      ['Timestamp', 'Customer ID', 'Customer Name', 'Action', 'Department', 'By', 'Stage', 'Notes'],
+      ...filtered.map(l => {
+        const c = casesMap[l.case_id] || {};
+        const custId = c.customer_id || c.case_id || l.case_id || '';
+        const custName = c.customer_name || '';
+        return [
+          new Date(l.timestamp).toLocaleString('en-IN'),
+          custId,
+          custName,
+          l.action_type || '',
+          l.department || '',
+          l.updated_by || '',
+          l.stage || '',
+          (l.notes || '').replace(/"/g, '""'),
+        ].map(v => `"${v}"`)
+      })
     ];
     const csv = rows.map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -199,10 +228,10 @@ export default function AuditLogViewer({ onLogout }) {
                   <table>
                     <thead>
                       <tr>
-                        <th style={{ width: 150 }}>Timestamp</th>
-                        <th style={{ width: 120 }}>Case ID</th>
-                        <th style={{ width: 160 }}>Action</th>
-                        <th style={{ width: 140 }}>Department</th>
+                        <th style={{ width: 130 }}>Timestamp</th>
+                        <th style={{ width: 140 }}>Customer ID</th>
+                        <th style={{ width: 140 }}>Action</th>
+                        <th style={{ width: 120 }}>Department</th>
                         <th style={{ width: 120 }}>By</th>
                         <th style={{ width: 140 }}>Stage</th>
                         <th>Notes</th>
@@ -211,15 +240,20 @@ export default function AuditLogViewer({ onLogout }) {
                     <tbody>
                       {filtered.map((log) => {
                         const { bg, text } = getActionMeta(log.action_type);
+                        const caseObj = casesMap[log.case_id] || {};
+                        const displayId = caseObj.customer_id || caseObj.case_id || log.case_id || '—';
                         return (
                           <tr key={log.id}>
                             <td style={{ fontSize: 11, color: 'var(--text-4)', whiteSpace: 'nowrap' }}>
                               {log.timestamp ? new Date(log.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
                             </td>
                             <td>
-                              <span style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--color-primary)', fontWeight: 600 }}>
-                                {log.case_id || '—'}
-                              </span>
+                              <div style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--color-primary)', fontWeight: 600 }}>
+                                {displayId}
+                              </div>
+                              {caseObj.customer_name && (
+                                <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{caseObj.customer_name}</div>
+                              )}
                             </td>
                             <td>
                               <span style={{
@@ -259,12 +293,19 @@ export default function AuditLogViewer({ onLogout }) {
                 <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', background: 'var(--page-bg)' }}>
                   {filtered.map((log) => {
                     const { bg, text } = getActionMeta(log.action_type);
+                    const caseObj = casesMap[log.case_id] || {};
+                    const displayId = caseObj.customer_id || caseObj.case_id || log.case_id || '—';
                     return (
                       <div key={log.id} style={{ background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: 'var(--shadow-sm)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <span style={{ fontFamily: 'monospace', fontSize: 13, color: 'var(--color-primary)', fontWeight: 600 }}>
-                            {log.case_id || '—'}
-                          </span>
+                          <div>
+                            <div style={{ fontFamily: 'monospace', fontSize: 13, color: 'var(--color-primary)', fontWeight: 600 }}>
+                              {displayId}
+                            </div>
+                            {caseObj.customer_name && (
+                              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{caseObj.customer_name}</div>
+                            )}
+                          </div>
                           <span style={{
                             padding: '4px 8px', borderRadius: 99, fontSize: 10, fontWeight: 700,
                             background: bg, color: text, textTransform: 'uppercase',
