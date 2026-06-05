@@ -44,7 +44,8 @@ const Login = ({ setToken }) => {
         .eq('id', user.id)
         .single();
 
-      if (profileError || !profile) throw new Error('Could not load user profile metadata');
+      if (profileError) throw new Error(`Profile error: ${profileError.message || JSON.stringify(profileError)}`);
+      if (!profile) throw new Error('Could not load user profile metadata: profile is null');
       if (profile.status === 'inactive') throw new Error('Account is deactivated. Please contact support.');
 
       const { name, role, employee_id } = profile;
