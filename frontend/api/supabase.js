@@ -9,7 +9,12 @@ module.exports = async function handler(req, res) {
 
     // Get the path after /api/supabase
     const pathAndQuery = req.url.replace(/^\/api\/supabase/, '');
-    const targetUrl = `${target}${pathAndQuery}`;
+    const targetUrl = new URL(`${target}${pathAndQuery}`);
+    
+    // Vercel automatically injects route parameters into the query string.
+    // We must remove the 'match' parameter injected by vercel.json rewrites
+    // otherwise PostgREST tries to parse it as a column filter and crashes!
+    targetUrl.searchParams.delete('match');
 
     // Prepare headers
     const fetchHeaders = new Headers();
