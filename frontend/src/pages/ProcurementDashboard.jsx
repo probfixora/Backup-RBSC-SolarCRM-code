@@ -92,7 +92,7 @@ function PieChart2({ slices, size = 160, label }) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 120 }}>
         {paths.map((p, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          <div key={i} 
             onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
             style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'default', opacity: hovered !== null && hovered !== i ? 0.5 : 1, transition: 'opacity 0.2s' }}
           >
