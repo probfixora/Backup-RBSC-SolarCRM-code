@@ -18,12 +18,20 @@ const BRANDS = [
   'Credence Solar Panel','MV Solar Panel','Waree Solar Panel',
 ];
 const BLANK_BRANDS = ['INA Solar Panel','Vikram Solar Panel','Credence Solar Panel','MV Solar Panel','Waree Solar Panel'];
-const CATEGORIES = ['Off Grid','On Grid','Hybrid','On Grid Commercial'];
+const PRODUCT_CATEGORIES = ['Topcon', 'Bifacial'];
+const SUB_CATEGORIES = ['Off Grid','On Grid','Hybrid','On Grid Commercial'];
 
-const getProductName = (brand, cat) => {
-  if (!brand || !cat || BLANK_BRANDS.includes(brand)) return '';
+const WIRE_MAKES = ['Polycab', 'Havells', 'KEI', 'Finolex'];
+const WIRE_SIZES = ['2 Sq mm', '3 Sq mm', '4 Sq mm', '6 Sq mm'];
+const STRUCTURE_BRANDS = ['Jindal', 'Apollo'];
+const STRUCTURE_SIZES = ['80mm'];
+const BATTERY_BRANDS = ['Luminous', 'Exide', 'Sarotech'];
+const BATTERY_CAPACITIES = ['150Ah', '200Ah'];
+
+const getProductName = (brand, prodCat, subCat) => {
+  if (!brand || !prodCat || !subCat || BLANK_BRANDS.includes(brand)) return '';
   const short = brand.replace(' Solar Panel','');
-  return `${short} ${cat} Solar Panel`;
+  return `${short} ${prodCat} ${subCat} Solar Panel`;
 };
 
 const GTI_MAP = {
@@ -36,15 +44,7 @@ const GTI_MAP = {
 const DEFAULT_GTI = ['Luminous','Solis Estacon','Sarotech','Sarotech Hybrid'];
 const getGTI = (brand) => GTI_MAP[brand] || DEFAULT_GTI;
 
-// Battery options: combined brand + capacity with price per battery
-const BATTERY_OPTIONS = [
-  { label: 'Luminous 150Ah', capacity: 150, price: 15000 },
-  { label: 'Luminous 200Ah', capacity: 200, price: 19000 },
-  { label: 'Exide 150Ah',    capacity: 150, price: 15000 },
-  { label: 'Exide 200Ah',    capacity: 200, price: 19000 },
-  { label: 'Sarotech 150Ah', capacity: 150, price: 15000 },
-  { label: 'Sarotech 200Ah', capacity: 200, price: 19000 },
-];
+
 const BAT_WARR = [
   '0 Years', '2 Years', '4 Years', '5 Years',
   '10 Years', '12 Years', '15 Years', '20 Years', '25 Years',
@@ -56,12 +56,12 @@ const PANEL_WARR = ['25 Years','30 Years'];
 const INIT = {
   customerMode:'', customerId:'', customerName:'', mobile:'', email:'', address:'',
   electricalDivision:'', electricalNo:'', electricalLoad:'',
-  category:'', panelBrand:'', productName:'',
+  productCategory:'', subCategory:'', panelBrand:'', productName:'',
   panelUnit:'', panelCount:0, totalWatt:0, totalPrice:0, panelWarranty:'',
-  gtiInverter:'', inverterKw:'', inverterWarranty:'',
-  batteryOption:'', batteryQty:0, batteryWarranty:'', totalBatCapacity:0, totalBatPrice:0,
-  structure:'', bos:'Complete Set',
-  wire_core_material:'', wire_armouring:'',  // Replaces free-text wiring
+  gtiInverter:'', inverterKw:'', inverterWarranty:'', inverterPrice:0,
+  batteryBrand:'', batteryCapacity:'', batteryQty:0, batteryWarranty:'', totalBatCapacity:0, totalBatPrice:0,
+  structureBrand:'', structureSize:'', bos:'Complete Set',
+  wire_core_material:'', wire_armouring:'', wireMake:'', wireSize:'',
   earthing:'', installation:'Added', productPrice:'', recheckPrice:'',
   employeeId:'', employeeName:'', employeeEmail:'',
 };
@@ -190,19 +190,26 @@ export default function QuotationForm() {
 
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
 
-  const onBrand = (brand) => {
+  const onProdCat = (cat) => {
     setF(p => ({
-      ...p, panelBrand: brand,
-      productName: getProductName(brand, p.category),
-      gtiInverter: '',
-      ...recalc(brand, p.panelUnit),
+      ...p, productCategory: cat,
+      productName: getProductName(p.panelBrand, cat, p.subCategory),
     }));
   };
 
-  const onCategory = (cat) => {
+  const onSubCat = (cat) => {
     setF(p => ({
-      ...p, category: cat,
-      productName: getProductName(p.panelBrand, cat),
+      ...p, subCategory: cat,
+      productName: getProductName(p.panelBrand, p.productCategory, cat),
+    }));
+  };
+
+  const onBrand = (brand) => {
+    setF(p => ({
+      ...p, panelBrand: brand,
+      productName: getProductName(brand, p.productCategory, p.subCategory),
+      gtiInverter: '',
+      ...recalc(brand, p.panelUnit),
     }));
   };
 
@@ -246,30 +253,30 @@ export default function QuotationForm() {
     setF(p => ({ ...p, customerMode:'existing', customerId: id, customerName: c?.name||'', mobile: c?.mobile||'', email: c?.email||'', address: c?.address||'' }));
   };
 
-  const onBatteryOption = (label) => {
-    const opt = BATTERY_OPTIONS.find(o => o.label === label);
-    setF(p => {
-      const qty = Math.max(1, p.batteryQty); // default to 1 when first selecting
-      return {
-        ...p, batteryOption: label, batteryQty: qty,
-        totalBatCapacity: qty * (opt?.capacity || 0),
-        totalBatPrice:    qty * (opt?.price    || 0),
-      };
-    });
+  const onInverterKw = (kw) => {
+    const num = parseInt(String(kw).replace(/kW$/i, ''), 10) || 0;
+    setF(p => ({ ...p, inverterKw: kw, inverterPrice: num * 9000 }));
   };
 
-  const onBatteryQty = (qty) => {
-    const opt = BATTERY_OPTIONS.find(o => o.label === f.batteryOption);
+  const updateBatteryVals = (bBrand, bCap, qty) => {
+    const capNum = parseInt(String(bCap).replace(/Ah$/i, ''), 10) || 0;
+    let price = 0;
+    if (capNum === 150) price = 15000;
+    if (capNum === 200) price = 19000;
+
     setF(p => ({
-      ...p, batteryQty: qty,
-      totalBatCapacity: qty * (opt?.capacity || 0),
-      totalBatPrice:    qty * (opt?.price    || 0),
+      ...p,
+      batteryBrand: bBrand,
+      batteryCapacity: bCap,
+      batteryQty: qty,
+      totalBatCapacity: qty * capNum,
+      totalBatPrice: qty * price,
     }));
   };
 
 
   const priceOk = f.productPrice && f.recheckPrice && f.productPrice === f.recheckPrice;
-  const showBat = f.category === 'Off Grid' || f.category === 'Hybrid';
+  const showBat = f.subCategory === 'Off Grid' || f.subCategory === 'Hybrid';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -289,7 +296,7 @@ export default function QuotationForm() {
         electricalDivision: f.electricalDivision,
         electricalNumber:   f.electricalNo,
         electricalLoad:     f.electricalLoad,
-        productCategory:    f.category,
+        productCategory:    f.subCategory, // mapped for backward compatibility
         productBrand:       f.panelBrand,
         productName:        f.productName || f.panelBrand,
         panelUnit:          f.panelUnit,
@@ -300,16 +307,17 @@ export default function QuotationForm() {
         inverterBrand:      f.gtiInverter,
         inverterKw:         f.inverterKw,
         inverterWarranty:   f.inverterWarranty,
-        batteryBrand:       f.batteryOption || null,
+        inverterPrice:      Number(f.inverterPrice) || 0,
+        batteryBrand:       (f.batteryBrand && f.batteryCapacity) ? `${f.batteryBrand} ${f.batteryCapacity}`.trim() : null,
         batteryCount:       f.batteryQty || 0,
         batteryWarranty:    f.batteryWarranty || null,
         batteryCapacity:    f.totalBatCapacity || 0,
         batteryPrice:       f.totalBatPrice || 0,
-        structure:          f.structure,
+        structure:          f.structureBrand ? `${f.structureBrand} ${f.structureSize}`.trim() : '',
         bos:                f.bos,
-        wireCoreM:          f.wire_core_material,
+        wireCoreM:          `${f.wireMake} ${f.wire_core_material} ${f.wireSize}`.trim(),
         wireArmouring:      f.wire_armouring,
-        earthing:           f.earthing,
+        earthing:           f.earthing ? `${f.earthing} Square MM copper` : '',
         installation:       f.installation,
         employeeId:         f.employeeId,
         employeeName:       f.employeeName,
@@ -391,9 +399,15 @@ export default function QuotationForm() {
               />
             </F>
             <F label="Product Category" req>
-              <select style={S.sel} value={f.category} onChange={e=>onCategory(e.target.value)} required>
+              <select style={S.sel} value={f.productCategory} onChange={e=>onProdCat(e.target.value)} required>
                 <option value="">Select Category</option>
-                {CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}
+                {PRODUCT_CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}
+              </select>
+            </F>
+            <F label="Sub Category" req>
+              <select style={S.sel} value={f.subCategory} onChange={e=>onSubCat(e.target.value)} required>
+                <option value="">Select Sub Category</option>
+                {SUB_CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}
               </select>
             </F>
           </div>
@@ -434,8 +448,15 @@ export default function QuotationForm() {
               <F label="Number of Panels">
                 <Ctr value={f.panelCount} onChange={onPanelCount} />
               </F>
-              <div style={S.info}>Total Wattage: {f.totalWatt.toLocaleString()} Watt</div>
-              <div style={S.info}>Total Price: ₹{f.totalPrice.toLocaleString()}</div>
+              <div style={{marginTop: 14}}>
+                <F label="Total Wattage">
+                  <div style={{display:'flex', alignItems:'center', gap:8}}>
+                    <input style={{...S.inp, flex: 1}} type="number" value={f.totalWatt} onChange={e=>set('totalWatt', Number(e.target.value))} />
+                    <span style={{fontSize: 14, fontWeight: 700, color: 'var(--text-3)'}}>W</span>
+                  </div>
+                </F>
+              </div>
+              <div style={S.info}>Total Panel Price: ₹{f.totalPrice.toLocaleString()}</div>
             </div>
           </div>
         </div>
@@ -469,15 +490,21 @@ export default function QuotationForm() {
               <ManualTypeDropdown
                 options={KW500}
                 value={f.inverterKw}
-                onChange={v => set('inverterKw', v)}
+                onChange={onInverterKw}
                 placeholder="Select kW"
                 customLabel="Custom Inverter kW"
                 required
                 style={S.sel}
               />
             </F>
-            <F label="Inverter Warranty">
-              <input style={S.inp} value={f.inverterWarranty} onChange={e=>set('inverterWarranty',e.target.value)} placeholder="e.g. 2 Years" />
+            <div>
+              <F label="Inverter Price (₹)">
+                <input style={S.inp} type="number" value={f.inverterPrice} onChange={e=>set('inverterPrice', Number(e.target.value))} placeholder="Estimated Price" />
+              </F>
+              <div style={{...S.info, marginTop: 8}}>Total Inverter Price: ₹{(f.inverterPrice || 0).toLocaleString()}</div>
+            </div>
+            <F label="Inverter Warranty (Years)">
+              <input style={S.inp} type="number" min="0" value={f.inverterWarranty} onChange={e=>set('inverterWarranty',e.target.value)} placeholder="e.g. 5" />
             </F>
           </div>
         </div>
@@ -489,25 +516,38 @@ export default function QuotationForm() {
             <div style={{...S.g2, marginBottom:14}}>
               <div>
                 <F label="Battery Brand">
-                  <select style={S.sel} value={f.batteryOption} onChange={e=>onBatteryOption(e.target.value)}>
-                    <option value="">Select Brand &amp; Capacity</option>
-                    {BATTERY_OPTIONS.map(o=><option key={o.label} value={o.label}>{o.label}</option>)}
-                  </select>
+                  <ManualTypeDropdown
+                    options={BATTERY_BRANDS}
+                    value={f.batteryBrand}
+                    onChange={v => updateBatteryVals(v, f.batteryCapacity, Math.max(1, f.batteryQty || 1))}
+                    placeholder="Select Battery Brand"
+                    customLabel="Custom Brand"
+                    style={S.sel}
+                  />
                 </F>
-                {f.batteryOption && (() => {
-                  const opt = BATTERY_OPTIONS.find(o => o.label === f.batteryOption);
-                  return (
-                    <div style={{marginTop:8, padding:'8px 12px', background:'#eff6ff', borderRadius:8, border:'1px solid #dbeafe'}}>
-                      <div style={{fontSize:12, color:'#6b7280', fontWeight:500}}>Price per battery: <strong style={{color:'#1d4ed8'}}>&#8377;{(opt?.price||0).toLocaleString()}</strong></div>
-                      <div style={S.info}>Total Capacity: {f.totalBatCapacity} Ah</div>
-                      <div style={S.info}>Total Battery Price: &#8377;{f.totalBatPrice.toLocaleString()}</div>
-                    </div>
-                  );
-                })()}
+                <div style={{marginTop: 14}}>
+                  <F label="Battery Capacity (Ah)">
+                    <ManualTypeDropdown
+                      options={BATTERY_CAPACITIES}
+                      value={f.batteryCapacity}
+                      onChange={v => updateBatteryVals(f.batteryBrand, v, Math.max(1, f.batteryQty || 1))}
+                      placeholder="Select Capacity"
+                      customLabel="Custom Capacity"
+                      style={S.sel}
+                    />
+                  </F>
+                </div>
+                {f.batteryBrand && f.batteryCapacity && (
+                  <div style={{marginTop:8, padding:'8px 12px', background:'#eff6ff', borderRadius:8, border:'1px solid #dbeafe'}}>
+                    <div style={{fontSize:12, color:'#6b7280', fontWeight:500}}>Price per battery: <strong style={{color:'#1d4ed8'}}>&#8377;{((f.totalBatPrice / (f.batteryQty || 1)) || 0).toLocaleString()}</strong></div>
+                    <div style={S.info}>Total Capacity: {f.totalBatCapacity} Ah</div>
+                    <div style={S.info}>Total Battery Price: &#8377;{f.totalBatPrice.toLocaleString()}</div>
+                  </div>
+                )}
               </div>
               <div>
                 <F label="Number of Batteries">
-                  <Ctr value={f.batteryQty} onChange={onBatteryQty} />
+                  <Ctr value={f.batteryQty} onChange={(qty) => updateBatteryVals(f.batteryBrand, f.batteryCapacity, qty)} />
                 </F>
                 <div style={{marginTop:14}}>
                   <F label="Battery Warranty">
@@ -524,51 +564,84 @@ export default function QuotationForm() {
               </div>
             </div>
           ) : (
-            f.category && <div style={{padding:'12px 16px',background:'#eff6ff',borderRadius:8,color:'#2563eb',fontSize:13,fontWeight:500,marginBottom:14,border:'1px solid #dbeafe'}}>
-              ✓ Battery not required for <strong>{f.category}</strong> systems
+            f.subCategory && <div style={{padding:'12px 16px',background:'#eff6ff',borderRadius:8,color:'#2563eb',fontSize:13,fontWeight:500,marginBottom:14,border:'1px solid #dbeafe'}}>
+              ✓ Battery not required for <strong>{f.subCategory}</strong> systems
             </div>
           )}
           <div style={S.g3}>
-            <F label="Structure">
-              <ManualTypeDropdown
-                options={STRUCTURES}
-                value={f.structure}
-                onChange={v => set('structure', v)}
-                placeholder="Select Structure"
-                customLabel="Custom Structure"
-                style={S.sel}
-              />
-            </F>
+            <div>
+              <F label="Structure Brand">
+                <ManualTypeDropdown
+                  options={STRUCTURE_BRANDS}
+                  value={f.structureBrand}
+                  onChange={v => set('structureBrand', v)}
+                  placeholder="Select Structure Brand"
+                  customLabel="Custom Brand"
+                  style={S.sel}
+                />
+              </F>
+              {f.structureBrand && (
+                <div style={{marginTop:10}}>
+                  <F label="Structure Size (mm)">
+                    <ManualTypeDropdown
+                      options={STRUCTURE_SIZES}
+                      value={f.structureSize}
+                      onChange={v => set('structureSize', v)}
+                      placeholder="Select Size"
+                      customLabel="Custom Size"
+                      style={S.sel}
+                    />
+                  </F>
+                </div>
+              )}
+            </div>
             <F label="BOS (Balance of System)">
               <input style={S.ro} value={f.bos} readOnly />
             </F>
             <div>
-              <F label="Wire Core Material">
+              <F label="Wire Brand">
                 <ManualTypeDropdown
-                  options={WIRE_CORE}
-                  value={f.wire_core_material}
-                  onChange={v => set('wire_core_material', v)}
-                  placeholder="Select Core"
-                  customLabel="Custom Wire Core"
+                  options={WIRE_MAKES}
+                  value={f.wireMake}
+                  onChange={v => set('wireMake', v)}
+                  placeholder="Select Brand"
+                  customLabel="Custom Brand"
                   style={S.sel}
                 />
               </F>
               <div style={{marginTop:10}}>
-                <F label="Armouring Protection">
+                <F label="Wire Size (sq mm)">
                   <ManualTypeDropdown
-                    options={WIRE_ARMOUR}
-                    value={f.wire_armouring}
-                    onChange={v => set('wire_armouring', v)}
-                    placeholder="Select Armouring"
+                    options={WIRE_SIZES}
+                    value={f.wireSize}
+                    onChange={v => set('wireSize', v)}
+                    placeholder="Select Size"
+                    customLabel="Custom Size"
                     style={S.sel}
                   />
+                </F>
+              </div>
+              <div style={{marginTop:10}}>
+                <F label="Wire Core Material">
+                  <select style={S.sel} value={f.wire_core_material} onChange={e=>set('wire_core_material', e.target.value)}>
+                    <option value="">Select Core</option>
+                    {WIRE_CORE.map(o=><option key={o} value={o}>{o}</option>)}
+                  </select>
+                </F>
+              </div>
+              <div style={{marginTop:10}}>
+                <F label="Armouring Protection">
+                  <select style={S.sel} value={f.wire_armouring} onChange={e=>set('wire_armouring', e.target.value)}>
+                    <option value="">Select Armouring</option>
+                    {WIRE_ARMOUR.map(o=><option key={o} value={o}>{o}</option>)}
+                  </select>
                 </F>
               </div>
             </div>
           </div>
           <div style={{...S.g2, marginTop:14}}>
             <F label="Earthing">
-              <input style={S.inp} value={f.earthing} onChange={e=>set('earthing',e.target.value)} placeholder="e.g. 2.5 Sq MM copper" />
+              <input style={S.inp} type="number" value={f.earthing} onChange={e=>set('earthing', Number(e.target.value))} placeholder="e.g. 2" />
             </F>
             <F label="Installation & Net Metering">
               <input style={S.ro} value={f.installation} readOnly />
