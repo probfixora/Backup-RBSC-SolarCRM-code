@@ -2,13 +2,34 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { edgeFetch, EDGE } from '../lib/supabaseClient';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Search, Clock, AlertOctagon, CheckCircle2, Layers, Plus, Keyboard, Filter } from 'lucide-react';
+import { Search, Clock, AlertOctagon, CheckCircle2, Layers, Plus, Filter, ChevronDown, Download, X } from 'lucide-react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import CaseTable from './CaseTable';
 import CaseDrawer from './CaseDrawer';
 import Breadcrumbs from './Breadcrumbs';
 import Footer from './Footer';
+
+// Department → stages mapping (for admin filter)
+const DEPT_STAGES = {
+  all:          [],
+  registration: ['Registration Done', 'Phone Verification Done'],
+  banking:      ['Bank & Finance'],
+  inventory:    ['Sent to Store'],
+  installation: ['Installation Done', 'Plant Activated'],
+  subsidy:      ['Sent to Subsidy', 'Subsidy Registration Completed'],
+  completed:    ['Completed'],
+};
+
+const DEPT_LABELS = {
+  all:          'All Departments',
+  registration: 'Registration',
+  banking:      'Banking & Finance',
+  inventory:    'Inventory',
+  installation: 'Installation',
+  subsidy:      'Subsidy',
+  completed:    'Completed',
+};
 
 const roleStageMap = {
   admin: [],
@@ -40,7 +61,12 @@ const Cases = ({ onLogout }) => {
   const [search, setSearch]            = useState(searchParams.get('q') || '');
   const [activeTab, setActiveTab]      = useState(searchParams.get('tab') || 'all');
   const [selectedCase, setSelectedCase] = useState(null);
-  const [showShortcutHint, setShowShortcutHint] = useState(false);
+  // ── Advanced Admin Filters ────────────────────────────────────────────────
+  const [deptFilter, setDeptFilter]     = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [fromDate, setFromDate]         = useState('');
+  const [toDate, setToDate]             = useState('');
+  const [showAdvFilters, setShowAdvFilters] = useState(false);
 
   const navigate   = useNavigate();
   const searchRef  = useRef(null);
@@ -122,6 +148,53 @@ const Cases = ({ onLogout }) => {
     }
   };
 
+  /* ── CSV Export ── */
+  const handleExportCSV = (filteredCases) => {
+    if (!filteredCases || filteredCases.length === 0) {
+      toast.error('No data to export.');
+      return;
+    }
+    const daysInStage = (t) => {
+      if (!t) return '';
+      const d = Math.floor((Date.now() - new Date(t)) / 86400000);
+      return d === 0 ? 'Today' : `${d} day${d !== 1 ? 's' : ''}`;
+    };
+    const stageToLabel = {
+      'Registration Done': 'Registration', 'Phone Verification Done': 'Registration',
+      'Bank & Finance': 'Banking', 'Sent to Store': 'Inventory',
+      'Installation Done': 'Installation', 'Plant Activated': 'Installation',
+      'Sent to Subsidy': 'Subsidy', 'Subsidy Registration Completed': 'Subsidy',
+      'Completed': 'Completed',
+    };
+    const headers = ['Customer ID', 'Tracking ID', 'Customer Name', 'Phone', 'Current Stage', 'Department', 'Status', 'Assigned Employee', 'Time in Stage', 'Created At'];
+    const rows = filteredCases.map(c => [
+      c.customerId || c.customer_id || '',
+      c.trackingId || c.tracking_id || '',
+      c.customerName || c.customer_name || '',
+      c.phone || '',
+      c.currentStage || c.current_stage || '',
+      stageToLabel[c.currentStage || c.current_stage] || '',
+      c.status || '',
+      c.assignedTo || c.assigned_to || '',
+      daysInStage(c.stageStartTime || c.stage_start_time),
+      c.created_at ? new Date(c.created_at).toLocaleDateString('en-IN') : '',
+    ]);
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+    link.download = `Cases_Export_${today}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${filteredCases.length} records to CSV`);
+  };
+
   /* ── Keyboard shortcuts ── */
   useEffect(() => {
     const onKey = (e) => {
@@ -169,15 +242,10 @@ const Cases = ({ onLogout }) => {
     if (myFirstStageIdx < 0) return true; // fallback for unknown roles
 
     const cIdx = STAGE_ORDER.indexOf(c.currentStage);
-    // If the case is at a stage index >= my department's first stage, I can see it.
-    // Also fallback to true if the stage isn't found in STAGE_ORDER (cIdx === -1)
     return cIdx >= myFirstStageIdx || cIdx === -1;
   });
 
-  // Role-aware tab helpers:
-  // "In Progress" = cases currently AT my dept's stage (I have action pending)
-  // "Completed" = cases that have moved PAST my last stage (I've handed off)
-  // Admin falls back to global status field
+  // Role-aware tab helpers
   const myLastStageIdx = myStages.length > 0
     ? Math.max(...myStages.map(s => STAGE_ORDER.indexOf(s)))
     : -1;
@@ -199,13 +267,48 @@ const Cases = ({ onLogout }) => {
     return isAtMyStage(c);
   };
 
-  const tabFiltered = (() => {
+  // ── Advanced Admin Filters (applied after tab) ───────────────────────────
+  const applyAdvancedFilters = (list) => {
+    if (userRole !== 'admin') return list;
+    let result = list;
+
+    // Department filter
+    if (deptFilter !== 'all') {
+      const stages = DEPT_STAGES[deptFilter] || [];
+      result = result.filter(c => stages.includes(c.currentStage || c.current_stage));
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'in_progress') result = result.filter(c => c.status === 'In Progress');
+      if (statusFilter === 'delayed')     result = result.filter(c => c.status === 'Delayed');
+      if (statusFilter === 'completed')   result = result.filter(c => c.status === 'Completed');
+    }
+
+    // Date range filter (by created_at)
+    if (fromDate) {
+      const from = new Date(fromDate);
+      result = result.filter(c => c.created_at && new Date(c.created_at) >= from);
+    }
+    if (toDate) {
+      const to = new Date(toDate);
+      to.setHours(23, 59, 59, 999);
+      result = result.filter(c => c.created_at && new Date(c.created_at) <= to);
+    }
+
+    return result;
+  };
+
+  const tabFiltered = applyAdvancedFilters((() => {
     if (activeTab === 'mystage')   return searched.filter(isAtMyStage);
     if (activeTab === 'active')    return searched.filter(isInProgress);
     if (activeTab === 'delayed')   return searched.filter(c => c.status === 'Delayed');
     if (activeTab === 'completed') return searched.filter(isPastMyStage);
     return searched;
-  })();
+  })());
+
+  const hasActiveAdvFilters = deptFilter !== 'all' || statusFilter !== 'all' || fromDate || toDate;
+  const clearAdvFilters = () => { setDeptFilter('all'); setStatusFilter('all'); setFromDate(''); setToDate(''); };
 
   // Clean 4 tabs: All, In Progress (role-aware), Delayed, Completed (role-aware)
   const tabs = [
@@ -257,13 +360,60 @@ const Cases = ({ onLogout }) => {
         )}
 
         {/* ── Controls row ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-            {/* Spacer for layout */}
-            <div style={{ flex: '1 1 250px' }}></div>
-            
-            {/* New Case button */}
+            {/* Search box */}
+            <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: '380px' }}>
+              <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '14px', height: '14px', color: 'var(--text-4)', pointerEvents: 'none' }} />
+              <input
+                ref={searchRef}
+                type="text"
+                placeholder="Search name, ID, phone…  /"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="input"
+                style={{ paddingLeft: '36px', fontSize: '13px' }}
+              />
+            </div>
+
+            {/* Right side: Admin filter toggle + New Case */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {userRole === 'admin' && (
+                <>
+                  <button
+                    onClick={() => setShowAdvFilters(v => !v)}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      padding: '8px 14px', borderRadius: '8px', cursor: 'pointer',
+                      fontSize: '12.5px', fontWeight: 600, transition: 'all 0.15s',
+                      background: showAdvFilters || hasActiveAdvFilters ? '#eef2ff' : 'var(--surface)',
+                      color: showAdvFilters || hasActiveAdvFilters ? '#4338ca' : 'var(--text-3)',
+                      border: `1px solid ${showAdvFilters || hasActiveAdvFilters ? '#c7d2fe' : 'var(--border)'}`,
+                    }}
+                  >
+                    <Filter style={{ width: '13px', height: '13px' }} />
+                    Filters
+                    {hasActiveAdvFilters && (
+                      <span style={{ fontSize: '10px', background: '#4338ca', color: '#fff', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>ON</span>
+                    )}
+                    <ChevronDown style={{ width: '12px', height: '12px', transform: showAdvFilters ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                  </button>
+                  <button
+                    onClick={() => handleExportCSV(tabFiltered)}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--border)',
+                      background: 'var(--surface)', color: 'var(--text-3)',
+                      fontSize: '12.5px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#ecfdf5'; e.currentTarget.style.color = '#15803d'; e.currentTarget.style.borderColor = '#bbf7d0'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                  >
+                    <Download style={{ width: '13px', height: '13px' }} />
+                    Export CSV
+                  </button>
+                </>
+              )}
               {(userRole === 'sales') && (
                 <button
                   onClick={() => navigate('/create-case')}
@@ -277,11 +427,90 @@ const Cases = ({ onLogout }) => {
                 >
                   <Plus style={{ width: '16px', height: '16px' }} />
                   New Customer
-                  <span className="hide-on-mobile" style={{ fontSize: '10px', background: 'rgba(255,255,255,0.2)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600, marginLeft: '4px' }}>N</span>
                 </button>
               )}
             </div>
           </div>
+
+          {/* ── Admin Advanced Filter Panel ── */}
+          {userRole === 'admin' && showAdvFilters && (
+            <div style={{
+              display: 'flex', alignItems: 'flex-end', gap: '12px', flexWrap: 'wrap',
+              padding: '16px', borderRadius: '12px',
+              background: 'var(--surface)', border: '1px solid var(--border)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            }}>
+              {/* Department */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 160px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Department</label>
+                <select
+                  value={deptFilter}
+                  onChange={e => setDeptFilter(e.target.value)}
+                  className="input"
+                  style={{ fontSize: '12.5px', paddingTop: '7px', paddingBottom: '7px' }}
+                >
+                  {Object.entries(DEPT_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+              </div>
+              {/* Status */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 140px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</label>
+                <select
+                  value={statusFilter}
+                  onChange={e => setStatusFilter(e.target.value)}
+                  className="input"
+                  style={{ fontSize: '12.5px', paddingTop: '7px', paddingBottom: '7px' }}
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="delayed">Delayed</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+              {/* From Date */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 140px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>From Date</label>
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={e => setFromDate(e.target.value)}
+                  className="input"
+                  style={{ fontSize: '12.5px', paddingTop: '7px', paddingBottom: '7px' }}
+                />
+              </div>
+              {/* To Date */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 140px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>To Date</label>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={e => setToDate(e.target.value)}
+                  className="input"
+                  style={{ fontSize: '12.5px', paddingTop: '7px', paddingBottom: '7px' }}
+                />
+              </div>
+              {/* Clear */}
+              {hasActiveAdvFilters && (
+                <button
+                  onClick={clearAdvFilters}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '5px',
+                    padding: '8px 12px', borderRadius: '8px', border: '1px solid #fecdd3',
+                    background: '#fff1f2', color: '#be123c', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                    alignSelf: 'flex-end',
+                  }}
+                >
+                  <X style={{ width: '12px', height: '12px' }} /> Clear
+                </button>
+              )}
+              {/* Result count */}
+              <div style={{ alignSelf: 'flex-end', fontSize: '12px', color: 'var(--text-4)', whiteSpace: 'nowrap', paddingBottom: '8px' }}>
+                {tabFiltered.length} result{tabFiltered.length !== 1 ? 's' : ''}
+              </div>
+            </div>
+          )}
 
           {/* Filter tabs */}
           <div className="hide-scrollbar" style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>

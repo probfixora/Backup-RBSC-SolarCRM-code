@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { edgeFetch, EDGE } from '../lib/supabaseClient';
+import { edgeFetch, EDGE, supabase } from '../lib/supabaseClient';
 import { toast } from 'react-hot-toast';
 import { Search, FileText, Download, CheckCircle, Clock, XCircle } from 'lucide-react';
 import Sidebar from './Sidebar';
@@ -172,13 +172,26 @@ const QuotationList = ({ onLogout }) => {
                           <button
                             onClick={async () => {
                               try {
-                                const url = q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`;
-                                const res = await fetch(url);
+                                const fileName = `Quotation_${q.quotation_id || q.quotationId}.pdf`;
+                                let downloadUrl = q.pdf_url || q.pdfUrl;
+                                
+                                if (!downloadUrl) {
+                                  const { data } = supabase.storage.from('Quotations').getPublicUrl(fileName);
+                                  downloadUrl = data?.publicUrl;
+                                }
+                                
+                                if (!downloadUrl) throw new Error('No public URL generated');
+
+                                const res = await fetch(downloadUrl);
+                                if (!res.ok) {
+                                  toast.error('PDF file has not been generated yet or is missing.');
+                                  throw new Error('PDF file not found on server');
+                                }
                                 const blob = await res.blob();
                                 const objectUrl = window.URL.createObjectURL(blob);
                                 const link = document.createElement('a');
                                 link.href = objectUrl;
-                                link.download = `Quotation_${q.quotation_id || q.quotationId}.pdf`;
+                                link.download = fileName;
                                 document.body.appendChild(link);
                                 link.click();
                                 document.body.removeChild(link);
@@ -186,7 +199,9 @@ const QuotationList = ({ onLogout }) => {
                               } catch (err) {
                                 console.error('PDF download failed:', err);
                                 // Fallback
-                                window.open(q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`, '_blank');
+                                const fileName = `Quotation_${q.quotation_id || q.quotationId}.pdf`;
+                                const { data } = supabase.storage.from('Quotations').getPublicUrl(fileName);
+                                if (data?.publicUrl) window.open(data.publicUrl, '_blank');
                               }
                             }}
                             className="btn btn-ghost btn-sm"
@@ -274,20 +289,35 @@ const QuotationList = ({ onLogout }) => {
                     <button
                       onClick={async () => {
                         try {
-                          const url = q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`;
-                          const res = await fetch(url);
+                          const fileName = `Quotation_${q.quotation_id || q.quotationId}.pdf`;
+                          let downloadUrl = q.pdf_url || q.pdfUrl;
+                          
+                          if (!downloadUrl) {
+                            const { data } = supabase.storage.from('Quotations').getPublicUrl(fileName);
+                            downloadUrl = data?.publicUrl;
+                          }
+                          
+                          if (!downloadUrl) throw new Error('No public URL generated');
+
+                          const res = await fetch(downloadUrl);
+                          if (!res.ok) {
+                            toast.error('PDF file has not been generated yet or is missing.');
+                            throw new Error('PDF file not found on server');
+                          }
                           const blob = await res.blob();
                           const objectUrl = window.URL.createObjectURL(blob);
                           const link = document.createElement('a');
                           link.href = objectUrl;
-                          link.download = `Quotation_${q.quotation_id || q.quotationId}.pdf`;
+                          link.download = fileName;
                           document.body.appendChild(link);
                           link.click();
                           document.body.removeChild(link);
                           window.URL.revokeObjectURL(objectUrl);
                         } catch (err) {
                           console.error('PDF download failed:', err);
-                          window.open(q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`, '_blank');
+                          const fileName = `Quotation_${q.quotation_id || q.quotationId}.pdf`;
+                          const { data } = supabase.storage.from('Quotations').getPublicUrl(fileName);
+                          if (data?.publicUrl) window.open(data.publicUrl, '_blank');
                         }
                       }}
                       className="btn btn-ghost btn-sm" style={{ padding: '8px' }} title="Download PDF"

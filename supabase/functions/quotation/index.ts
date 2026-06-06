@@ -558,7 +558,7 @@ async function sendEmail(q: any, pdfBytes: Uint8Array, approvalToken?: string, s
 </html>`;
 
   const payload = {
-    sender: { name: companyName, email: companyEmail },
+    sender: { name: companyName, email: gmailEmail },
     to: [{ email: q.customer_email as string }],
     subject: `Your Solar Quotation ${q.quotation_id} — ${companyName}`,
     htmlContent: html,

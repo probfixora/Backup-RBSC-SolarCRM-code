@@ -12,6 +12,7 @@ import {
   Microscope, Calculator, Headphones, Link as LinkIcon, Send
 } from 'lucide-react';
 import CaseTimeline from './CaseTimeline';
+import PaymentTracker from './PaymentTracker';
 
 // Normalize Supabase snake_case row → camelCase the rest of the app expects
 const normalizeCase = (c) => ({
@@ -34,6 +35,7 @@ const normalizeCase = (c) => ({
   cashAmount: c.cash_amount ?? c.cashAmount,
   paymentMode: c.payment_mode ?? c.paymentMode,
   loanAmount: c.loan_amount ?? c.loanAmount,
+  loanApprovedAmount: c.loan_approved_amount ?? c.loanApprovedAmount,
   emiAmount: c.emi_amount ?? c.emiAmount,
   bankName: c.bank_name ?? c.bankName,
   subsidyRefNumber: c.subsidy_ref_number ?? c.subsidyRefNumber,
@@ -151,6 +153,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     cashAmount: '',
     paymentMode: '',
     loanAmount: '',
+    loanApprovedAmount: '',
     emiAmount: '',
     bankName: ''
   });
@@ -168,6 +171,11 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
   // ── Resend Tracking ID state ────────────────────────────────────────────────
   const [resendLoading, setResendLoading] = useState(false);
+
+  // ── Assign to Employee state (admin only) ────────────────────────────────
+  const [deptEmployees, setDeptEmployees]   = useState([]);
+  const [selectedEmployee, setSelectedEmployee] = useState(normalized.assignedTo || '');
+  const [assignLoading, setAssignLoading]   = useState(false);
 
   // Dispatch Tab State
   const [inventoryList, setInventoryList] = useState([]);
@@ -232,6 +240,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       cashAmount: normalized.cashAmount || '',
       paymentMode: normalized.paymentMode || '',
       loanAmount: normalized.loanAmount || '',
+      loanApprovedAmount: normalized.loanApprovedAmount || '',
       emiAmount: normalized.emiAmount || '',
       bankName: normalized.bankName || ''
     });
@@ -1021,6 +1030,85 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                 </div>
               )}
 
+              {/* ── ADMIN: Assign to Employee ── */}
+              {role === 'admin' && (
+                <div style={{ marginBottom: '20px', padding: '14px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <p style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <UserCheck style={{ width: '13px', height: '13px', color: '#6366f1' }} />
+                      Assign to Employee
+                    </p>
+                    {normalized.assignedTo && (
+                      <span style={{ fontSize: '11px', fontWeight: 600, color: '#6366f1', background: '#eef2ff', padding: '2px 8px', borderRadius: '20px', border: '1px solid #c7d2fe' }}>
+                        Currently: {normalized.assignedTo}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <select
+                      value={selectedEmployee}
+                      onChange={e => setSelectedEmployee(e.target.value)}
+                      onFocus={async () => {
+                        if (deptEmployees.length === 0) {
+                          try {
+                            const emps = await edgeFetch(EDGE.workflow, { action: 'get_dept_employees', caseId: normalized.caseId });
+                            setDeptEmployees(emps || []);
+                          } catch { /* silently fail */ }
+                        }
+                      }}
+                      className="input"
+                      style={{ flex: 1, fontSize: '12.5px', paddingTop: '7px', paddingBottom: '7px' }}
+                    >
+                      <option value="">— Select employee —</option>
+                      {deptEmployees.map(emp => (
+                        <option key={emp.id} value={emp.name}>{emp.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      disabled={assignLoading || !selectedEmployee}
+                      onClick={async () => {
+                        setAssignLoading(true);
+                        try {
+                          await edgeFetch(EDGE.workflow, { action: 'assign', caseId: normalized.caseId, assignedTo: selectedEmployee });
+                          toast.success(`Case assigned to ${selectedEmployee}`);
+                          onRefresh();
+                        } catch (err) {
+                          toast.error(err.message || 'Could not assign case.');
+                        } finally { setAssignLoading(false); }
+                      }}
+                      style={{
+                        padding: '8px 14px', borderRadius: '8px', border: 'none',
+                        background: assignLoading || !selectedEmployee ? '#e2e8f0' : '#6366f1',
+                        color: assignLoading || !selectedEmployee ? '#94a3b8' : '#fff',
+                        fontSize: '12px', fontWeight: 600, cursor: assignLoading || !selectedEmployee ? 'not-allowed' : 'pointer',
+                        whiteSpace: 'nowrap', transition: 'all 0.15s',
+                      }}
+                    >
+                      {assignLoading ? 'Saving…' : 'Assign'}
+                    </button>
+                    {normalized.assignedTo && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setAssignLoading(true);
+                          try {
+                            await edgeFetch(EDGE.workflow, { action: 'assign', caseId: normalized.caseId, assignedTo: '' });
+                            toast.success('Assignment removed');
+                            setSelectedEmployee('');
+                            onRefresh();
+                          } catch (err) { toast.error(err.message || 'Error'); }
+                          finally { setAssignLoading(false); }
+                        }}
+                        style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid #fecdd3', background: '#fff1f2', color: '#be123c', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                      >
+                        <X style={{ width: '12px', height: '12px' }} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {isCompleted ? (
                 <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                   <CheckCircle2 style={{ width: '40px', height: '40px', color: 'var(--color-primary)', margin: '0 auto 12px' }} />
@@ -1543,6 +1631,16 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                             />
                           </div>
                           <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1e3a8a', marginBottom: '6px' }}>Loan Approved Amount (₹)</label>
+                            <input
+                              type="number"
+                              value={fData.loanApprovedAmount}
+                              onChange={e => setFData({ ...fData, loanApprovedAmount: e.target.value })}
+                              placeholder="Approved amount"
+                              className="input"
+                            />
+                          </div>
+                          <div style={{ flex: 1 }}>
                             <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1e3a8a', marginBottom: '6px' }}>Monthly EMI (₹)</label>
                             <input
                               type="number"
@@ -1576,6 +1674,9 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                       </button>
                     </div>
                   </form>
+                  
+                  {/* Payment History Tracker (B.10) */}
+                  <PaymentTracker caseId={normalized.caseId} userRole={role} />
                 </>
               )}
             </div>

@@ -218,6 +218,29 @@ serve(async (req) => {
         .select("id, tracking_id, current_stage, status, is_tracking_visible")
         .eq("id", trackingId)
         .maybeSingle();
+
+          "Completed": "admin",
+        };
+
+        const deptRole = stageToDeptRole[caseRow.current_stage];
+        if (!deptRole) return jsonResponse([]);
+
+        const { data: employees, error: empErr } = await supabase
+          .from("profiles")
+          .select("id, name, role")
+          .eq("role", deptRole)
+          .eq("status", "active")
+          .order("name");
+
+        if (empErr) throw empErr;
+        return jsonResponse(employees || []);
+      }
+
+      // ── ASSIGN CASE ────────────────────────────────────────────────────────────
+      if (rawBody.action === "assign") {
+        // Implementation logic
+      }
+
       data = byCaseId.data;
       error = byCaseId.error;
     }
@@ -292,6 +315,44 @@ serve(async (req) => {
       });
 
       return jsonResponse(maskedData);
+    }
+
+    // ── GET DEPT EMPLOYEES (for assign dropdown) ──────────────────────────────
+    if (action === "get_dept_employees") {
+      if (user.role !== "admin") return jsonResponse({ message: "Unauthorized" }, 403);
+
+      const { data: caseRow } = await supabase
+        .from("cases")
+        .select("current_stage")
+        .eq("id", body.caseId)
+        .single();
+
+      if (!caseRow) return jsonResponse({ message: "Case not found" }, 404);
+
+      const stageToDeptRole: Record<string, string> = {
+        "Registration Done": "registration",
+        "Phone Verification Done": "registration",
+        "Bank & Finance": "banking",
+        "Sent to Store": "inventory",
+        "Installation Done": "field_installation",
+        "Plant Activated": "field_installation",
+        "Sent to Subsidy": "subsidy",
+        "Subsidy Registration Completed": "subsidy",
+        "Completed": "admin",
+      };
+
+      const deptRole = stageToDeptRole[caseRow.current_stage];
+      if (!deptRole) return jsonResponse([]);
+
+      const { data: employees, error: empErr } = await supabase
+        .from("profiles")
+        .select("id, name, role")
+        .eq("role", deptRole)
+        .eq("status", "active")
+        .order("name");
+
+      if (empErr) throw empErr;
+      return jsonResponse(employees || []);
     }
 
     // ── GET ONE CASE ───────────────────────────────────────────────────────
@@ -1017,6 +1078,7 @@ serve(async (req) => {
         cashAmount: "cash_amount",
         paymentMode: "payment_mode",
         loanAmount: "loan_amount",
+        loanApprovedAmount: "loan_approved_amount",
         emiAmount: "emi_amount",
         bankName: "bank_name",
         bankVisitedDate: "bank_visited_date",
@@ -1073,6 +1135,55 @@ serve(async (req) => {
       });
       
       return jsonResponse(updated);
+    }
+
+    // ── ADD PAYMENT ENTRY ──────────────────────────────────────────────────────
+    if (action === "add_payment") {
+      if (!['admin', 'accounts', 'banking'].includes(user.role)) {
+        return jsonResponse({ message: "Unauthorized" }, 403);
+      }
+      const { caseId, paymentDate, amount, paymentType: pType, notes } = body;
+      if (!caseId || !paymentDate || !amount) {
+        return jsonResponse({ message: "caseId, paymentDate, and amount are required" }, 400);
+      }
+
+      const { data: newPayment, error: pmtErr } = await supabase
+        .from("payment_history")
+        .insert({
+          case_id:      caseId,
+          payment_date: paymentDate,
+          amount:       Number(amount),
+          payment_type: pType || "installment",
+          notes:        notes || "",
+          recorded_by:  user.name,
+        })
+        .select()
+        .single();
+
+      if (pmtErr) throw pmtErr;
+
+      await supabase.from("case_history").insert({
+        case_id:     caseId,
+        updated_by:  user.name,
+        action_type: "payment_recorded",
+        remarks:     `Payment of ₹${Number(amount).toLocaleString('en-IN')} recorded (${pType || 'installment'}) on ${paymentDate}.`,
+      });
+
+      return jsonResponse(newPayment);
+    }
+
+    // ── GET PAYMENTS ───────────────────────────────────────────────────────────
+    if (action === "get_payments") {
+      if (!body.caseId) return jsonResponse({ message: "caseId required" }, 400);
+
+      const { data: payments, error: pmtErr } = await supabase
+        .from("payment_history")
+        .select("*")
+        .eq("case_id", body.caseId)
+        .order("payment_date", { ascending: true });
+
+      if (pmtErr) throw pmtErr;
+      return jsonResponse(payments || []);
     }
 
     // ── GET INVENTORY ───────────────────────────────────────────
