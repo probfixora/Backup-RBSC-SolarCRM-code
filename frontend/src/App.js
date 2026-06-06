@@ -11,49 +11,48 @@ import OfflineBanner from './components/OfflineBanner';
 import LowStockPopup from './components/LowStockPopup';
 
 // Lazy-loaded pages/components to reduce initial bundle size
-const Cases = lazy(() => import('./components/Cases'));
-const CreateCase = lazy(() => import('./components/CreateCase'));
-const Users = lazy(() => import('./components/Users'));
-const Profile = lazy(() => import('./components/Profile'));
-const Support = lazy(() => import('./components/Support'));
-const MyTasks = null; // Deleted — employees work from Customers section
+import Cases from './components/Cases';
+import CreateCase from './components/CreateCase';
+import Users from './components/Users';
+import Profile from './components/Profile';
+import Support from './components/Support';
 
-const QuotationForm = lazy(() => import('./components/QuotationForm'));
-const QuotationList = lazy(() => import('./components/QuotationList'));
-const ApprovedQuotations = lazy(() => import('./pages/ApprovedQuotations'));
-const FinalLeads = lazy(() => import('./pages/FinalLeads'));
+import QuotationForm from './components/QuotationForm';
+import QuotationList from './components/QuotationList';
+import ApprovedQuotations from './pages/ApprovedQuotations';
+import FinalLeads from './pages/FinalLeads';
 
 // Lazy-loaded Dashboards
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const SalesDashboard = lazy(() => import('./pages/SalesDashboard'));
-const RegistrationDashboard = lazy(() => import('./pages/RegistrationDashboard'));
-const BankingDashboard = lazy(() => import('./pages/BankingDashboard'));
-const FinanceTracking = lazy(() => import('./pages/FinanceTracking'));
-const InventoryDashboard = lazy(() => import('./pages/InventoryDashboard'));
-const InstallationDashboard = lazy(() => import('./pages/InstallationDashboard'));
-const ElectricalDashboard = lazy(() => import('./pages/ElectricalDashboard'));
-const SubsidyDashboard = lazy(() => import('./pages/SubsidyDashboard'));
+import AdminDashboard from './pages/AdminDashboard';
+import SalesDashboard from './pages/SalesDashboard';
+import RegistrationDashboard from './pages/RegistrationDashboard';
+import BankingDashboard from './pages/BankingDashboard';
+import FinanceTracking from './pages/FinanceTracking';
+import InventoryDashboard from './pages/InventoryDashboard';
+import InstallationDashboard from './pages/InstallationDashboard';
+import ElectricalDashboard from './pages/ElectricalDashboard';
+import SubsidyDashboard from './pages/SubsidyDashboard';
 
 // Admin portal pages
-const DepartmentPortal = lazy(() => import('./pages/DepartmentPortal'));
-const EmployeeDrillDown = lazy(() => import('./pages/EmployeeDrillDown'));
+import DepartmentPortal from './pages/DepartmentPortal';
+import EmployeeDrillDown from './pages/EmployeeDrillDown';
 
 // New ERP pages
-const ProcurementPortal = lazy(() => import('./pages/ProcurementPortal'));
-const ProcurementDashboard = lazy(() => import('./pages/ProcurementDashboard'));
-const B2CDispatchPortal = lazy(() => import('./pages/B2CDispatchPortal'));
-const WattageSettings = lazy(() => import('./pages/WattageSettings'));
-const CustomerPortal = lazy(() => import('./pages/CustomerPortal'));
-const AuditLogViewer = lazy(() => import('./pages/AuditLogViewer'));
-const DispatchCustomers = lazy(() => import('./pages/DispatchCustomers'));
+import ProcurementPortal from './pages/ProcurementPortal';
+import ProcurementDashboard from './pages/ProcurementDashboard';
+import B2CDispatchPortal from './pages/B2CDispatchPortal';
+import WattageSettings from './pages/WattageSettings';
+import CustomerPortal from './pages/CustomerPortal';
+import AuditLogViewer from './pages/AuditLogViewer';
+import DispatchCustomers from './pages/DispatchCustomers';
 
 // New department dashboards
-const TechnicalDashboard = lazy(() => import('./pages/TechnicalDashboard'));
-const AccountsDashboard = lazy(() => import('./pages/AccountsDashboard'));
-const CustomerServiceDashboard = lazy(() => import('./pages/CustomerServiceDashboard'));
+import TechnicalDashboard from './pages/TechnicalDashboard';
+import AccountsDashboard from './pages/AccountsDashboard';
+import CustomerServiceDashboard from './pages/CustomerServiceDashboard';
 
 // Public pages
-const TrackingPage = lazy(() => import('./pages/TrackingPage'));
+import TrackingPage from './pages/TrackingPage';
 
 // Helper component for role-based redirection from root
 const DashboardRedirect = () => {
@@ -222,7 +221,7 @@ function App() {
         {/* Low Stock Popup — only shows for admin/inventory roles with critical stock */}
         {token && <LowStockPopup />}
 
-        <Suspense fallback={<div className="main-loading"><div style={{ width: '36px', height: '36px', border: '3px solid var(--border)', borderTopColor: 'var(--brand)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '40px auto' }} /></div>}>
+        
           <Routes>
             {/* Fully Public Routes — no auth required */}
             <Route path="/track" element={<TrackingPage />} />
@@ -276,10 +275,11 @@ function App() {
             <Route path="/" element={<DashboardRedirect />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
-        </Suspense>
+        
       </div>
     </Router>
   );
 }
 
 export default App;
+const MyTasks = null;
