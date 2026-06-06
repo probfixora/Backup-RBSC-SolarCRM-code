@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { edgeFetch, EDGE, supabase } from '../lib/supabaseClient';
 import { APP_CONFIG } from '../config';
 import toast from 'react-hot-toast';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import {
   X, ArrowRight, MessageSquare, AlertTriangle, CheckCircle2,
   User, Phone, MapPin, Zap, FileText, ClipboardList, UserCheck, History,
   Package, Plus, Trash2, IndianRupee, FileCheck, AlertOctagon,
-  Printer, Star, Clock, Navigation, Download, Edit2,
+  Printer, Star, Clock, Navigation, Download, Edit2, Lock, RefreshCw,
   Microscope, Calculator, Headphones, Link as LinkIcon, Send
 } from 'lucide-react';
 import CaseTimeline from './CaseTimeline';
@@ -160,6 +162,12 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
   const [accountsVerifyLoading, setAccountsVerifyLoading] = useState(false);
   const [accountsEditMode, setAccountsEditMode] = useState(false);
+
+  // ── Download All Docs ZIP state ─────────────────────────────────────────────
+  const [downloadZipLoading, setDownloadZipLoading] = useState(false);
+
+  // ── Resend Tracking ID state ────────────────────────────────────────────────
+  const [resendLoading, setResendLoading] = useState(false);
 
   // Dispatch Tab State
   const [inventoryList, setInventoryList] = useState([]);
@@ -500,19 +508,79 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     setQuotationVerifyLoading(true);
     try {
       const amount = editedAmount !== undefined ? Number(editedAmount) : Number(normalized.quotationAmount);
+      if (!amount || amount <= 0) { toast.error('Please enter a valid quotation amount.'); return; }
       await edgeFetch(EDGE.workflow, { 
         action: 'update_details', 
         caseId, 
         quotationVerified: true,
         quotationAmount: amount,
       });
-      toast.success('Quotation verified!');
+      // Toast notification — non-intrusive corner notification (no popup/page-close)
+      toast.success('✓ Quotation verified successfully!');
       setQuotationEditMode(false);
       setQuotationAmountEdit('');
-      onRefresh();
+      onRefresh(); // refresh data in-place, drawer stays open
     } catch (err) {
       toast.error(err.message || 'Update failed.');
     } finally { setQuotationVerifyLoading(false); }
+  };
+
+  // ── Download All Documents as ZIP ──────────────────────────────────────────
+  const handleDownloadZip = async (visibleDocs) => {
+    if (!visibleDocs || visibleDocs.length === 0) return;
+    setDownloadZipLoading(true);
+    try {
+      const zip = new JSZip();
+      const folder = zip.folder('documents');
+      let successCount = 0;
+
+      await Promise.all(visibleDocs.map(async ([docName, docUrl]) => {
+        try {
+          const response = await fetch(docUrl, { mode: 'cors' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const blob = await response.blob();
+          // Derive extension from Content-Type or URL
+          const ct = response.headers.get('content-type') || '';
+          const extMap = { 'application/pdf': '.pdf', 'image/jpeg': '.jpg', 'image/jpg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
+          const ext = extMap[ct.split(';')[0].trim()] || (docUrl.match(/\.([a-z0-9]{2,5})(\?|$)/i)?.[1] ? '.' + docUrl.match(/\.([a-z0-9]{2,5})(\?|$)/i)[1] : '');
+          const safeDocName = docName.replace(/[^a-zA-Z0-9_\- ]/g, '_');
+          folder.file(`${safeDocName}${ext}`, blob);
+          successCount++;
+        } catch (fileErr) {
+          console.warn(`[downloadZip] Skipped "${docName}":`, fileErr.message);
+        }
+      }));
+
+      if (successCount === 0) {
+        toast.error('Could not download any documents. Files may be inaccessible.');
+        return;
+      }
+
+      // Systematic filename: Documents_[CustomerID]_[CustomerName].zip
+      const custId   = (normalized.customerId || 'UNKNOWN').replace(/[^a-zA-Z0-9_\-]/g, '_');
+      const custName = (normalized.customerName || 'Customer').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_');
+      const zipName  = `Documents_${custId}_${custName}.zip`;
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, zipName);
+      toast.success(`Downloaded ${successCount} document${successCount !== 1 ? 's' : ''} as ${zipName}`);
+    } catch (err) {
+      toast.error('ZIP download failed. Please try again.');
+      console.error('[downloadZip]', err);
+    } finally {
+      setDownloadZipLoading(false);
+    }
+  };
+
+  // ── Resend Tracking ID ─────────────────────────────────────────────────────
+  const handleResendTrackingId = async () => {
+    setResendLoading(true);
+    try {
+      const res = await edgeFetch(EDGE.workflow, { action: 'resend_tracking_id', caseId });
+      toast.success(res.message || 'Tracking ID resent to customer!');
+    } catch (err) {
+      toast.error(err.message || 'Resend failed.');
+    } finally { setResendLoading(false); }
   };
 
   const handleAccountsVerify = async () => {
@@ -989,26 +1057,35 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                             {normalized.quotationVerified ? <CheckCircle2 style={{ width: '14px', height: '14px' }} /> : <AlertOctagon style={{ width: '14px', height: '14px' }} />}
                             Step 2 — Quotation Verification
                           </p>
+                          {/* Edit button: always shown to admin; hidden to registration after verify */}
                           {normalized.quotationVerified && !quotationEditMode && (
-                            <button
-                              type="button"
-                              onClick={() => { setQuotationEditMode(true); setQuotationAmountEdit(String(normalized.quotationAmount || '')); }}
-                              style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '6px', border: '1px solid #bbf7d0', background: '#dcfce7', color: '#16a34a', fontSize: '11.5px', fontWeight: 600, cursor: 'pointer' }}
-                            >
-                              <Edit2 style={{ width: '12px', height: '12px' }} /> Edit
-                            </button>
+                            role === 'admin' ? (
+                              <button
+                                type="button"
+                                onClick={() => { setQuotationEditMode(true); setQuotationAmountEdit(String(normalized.quotationAmount || '')); }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '6px', border: '1px solid #bbf7d0', background: '#dcfce7', color: '#16a34a', fontSize: '11.5px', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                <Edit2 style={{ width: '12px', height: '12px' }} /> Edit
+                              </button>
+                            ) : (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '6px', border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: '11px', fontWeight: 600 }}>
+                                <Lock style={{ width: '11px', height: '11px' }} /> Admin Only
+                              </span>
+                            )
                           )}
                         </div>
 
                         {normalized.quotationVerified && !quotationEditMode ? (
+                          /* ── VERIFIED STATE: Green card, stays in-place, no popup ── */
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <CheckCircle2 style={{ width: '20px', height: '20px', color: '#16a34a', flexShrink: 0 }} />
                             <div>
-                              <p style={{ fontSize: '11px', color: '#166534', fontWeight: 600, marginBottom: '2px' }}>Verified ✓</p>
+                              <p style={{ fontSize: '11px', color: '#166534', fontWeight: 600, marginBottom: '2px' }}>Verified ✓ — No further action needed</p>
                               <p style={{ fontSize: '18px', fontWeight: 800, color: '#14532d' }}>₹{Number(normalized.quotationAmount || 0).toLocaleString('en-IN')}</p>
                             </div>
                           </div>
                         ) : quotationEditMode ? (
+                          /* ── EDIT MODE (admin only after verify) ── */
                           <div>
                             <p style={{ fontSize: '12.5px', color: '#475569', marginBottom: '10px' }}>Edit the quotation amount and re-verify:</p>
                             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -1038,12 +1115,25 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                             </div>
                           </div>
                         ) : (
+                          /* ── UNVERIFIED STATE: Show amount + Edit button + Verify button ── */
                           <div>
-                            <p style={{ fontSize: '12.5px', color: '#92400e', marginBottom: '10px' }}>Call the customer to confirm and verify this quotation amount:</p>
-                            <p style={{ fontSize: '22px', fontWeight: 800, color: '#78350f', marginBottom: '12px' }}>₹{Number(normalized.quotationAmount || 0).toLocaleString('en-IN')}</p>
+                            <p style={{ fontSize: '12.5px', color: '#92400e', marginBottom: '8px' }}>Call the customer to confirm, then edit if needed and verify:</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                              <p style={{ fontSize: '22px', fontWeight: 800, color: '#78350f', margin: 0 }}>₹{Number(normalized.quotationAmount || 0).toLocaleString('en-IN')}</p>
+                              {/* Edit amount BEFORE verify */}
+                              {!quotationEditMode && (
+                                <button
+                                  type="button"
+                                  onClick={() => { setQuotationEditMode(true); setQuotationAmountEdit(String(normalized.quotationAmount || '')); }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '5px 12px', borderRadius: '6px', border: '1px solid #fde68a', background: '#fef9c3', color: '#92400e', fontSize: '11.5px', fontWeight: 600, cursor: 'pointer' }}
+                                >
+                                  <Edit2 style={{ width: '12px', height: '12px' }} /> Edit Amount
+                                </button>
+                              )}
+                            </div>
                             <button
                               type="button"
-                              onClick={() => handleQuotationVerify()}
+                              onClick={() => handleQuotationVerify(normalized.quotationAmount)}
                               disabled={quotationVerifyLoading}
                               style={{ width: '100%', padding: '10px', borderRadius: '8px', border: 'none', background: '#16a34a', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: quotationVerifyLoading ? 'wait' : 'pointer' }}
                             >
@@ -1126,6 +1216,34 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                         }
                       </button>
                     </div>
+
+                    {/* ── Resend Tracking ID — shown at Phone Verification Done stage ── */}
+                    {normalized.currentStage === 'Phone Verification Done' && (role === 'registration' || role === 'admin') && (
+                      <div style={{ marginTop: '12px', padding: '12px 14px', borderRadius: '10px', background: '#f0f9ff', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <div>
+                          <p style={{ fontSize: '12px', fontWeight: 700, color: '#0369a1', marginBottom: '2px' }}>Customer not received tracking ID?</p>
+                          <p style={{ fontSize: '11px', color: '#0284c7' }}>Manually resend the tracking ID via email as a fallback.</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleResendTrackingId}
+                          disabled={resendLoading}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            padding: '7px 14px', borderRadius: '8px', border: 'none',
+                            background: resendLoading ? '#e0f2fe' : '#0ea5e9',
+                            color: '#fff', fontSize: '12px', fontWeight: 600,
+                            cursor: resendLoading ? 'wait' : 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+                          }}
+                        >
+                          {resendLoading ? (
+                            <><div style={{ width: '12px', height: '12px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Sending…</>
+                          ) : (
+                            <><RefreshCw style={{ width: '12px', height: '12px' }} />Resend Tracking ID</>
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </form>
 
                   {/* Delay section */}
@@ -1180,7 +1298,9 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
           {/* DOCUMENTS TAB */}
           {activeTab === 'docs' && (
             <div>
-              <p style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>Uploaded Documents</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <p style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>Uploaded Documents</p>
+              </div>
               
               {(() => {
                 const allDocsObj = { ...(normalized.documents || {}) };
@@ -1218,6 +1338,35 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
                 return (
                   <div style={{ display: 'grid', gap: '12px' }}>
+                    {/* Download All Documents as ZIP */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
+                      <button
+                        onClick={() => handleDownloadZip(visibleDocs)}
+                        disabled={downloadZipLoading || visibleDocs.length === 0}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '6px',
+                          padding: '7px 14px', borderRadius: '8px', border: '1px solid #bfdbfe',
+                          background: downloadZipLoading ? '#e0f2fe' : '#eff6ff',
+                          color: downloadZipLoading ? '#0369a1' : '#1d4ed8',
+                          fontSize: '12px', fontWeight: 600, cursor: (downloadZipLoading || visibleDocs.length === 0) ? 'not-allowed' : 'pointer',
+                          opacity: visibleDocs.length === 0 ? 0.5 : 1,
+                          transition: 'all 0.15s',
+                        }}
+                        title={visibleDocs.length === 0 ? 'No documents to download' : `Download all ${visibleDocs.length} document(s) as ZIP`}
+                      >
+                        {downloadZipLoading ? (
+                          <>
+                            <div style={{ width: '12px', height: '12px', border: '2px solid #bfdbfe', borderTopColor: '#1d4ed8', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                            Compressing…
+                          </>
+                        ) : (
+                          <>
+                            <Download style={{ width: '13px', height: '13px' }} />
+                            Download All ({visibleDocs.length})
+                          </>
+                        )}
+                      </button>
+                    </div>
                     {visibleDocs.map(([docName, docUrl]) => {
                       const status = docStatuses[docName] || 'Yellow';
                       const statusColors = {
