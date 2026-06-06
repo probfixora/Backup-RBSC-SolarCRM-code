@@ -437,10 +437,10 @@ async function generatePDF(q: Record<string, unknown>): Promise<Uint8Array> {
   }
 
   // Attempt 2: Fallback to open source API for converting HTML to PDF
-  const fallbackRes = await fetch("https://api.html2pdf.app/v1/generate", {
+  const fallbackRes = await fetch("https://api.pdfshift.io/v3/convert/pdf", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ html: html })
+    body: JSON.stringify({ source: `<!DOCTYPE html>\n` + html })
   });
 
   if (fallbackRes.ok) {
@@ -451,7 +451,7 @@ async function generatePDF(q: Record<string, unknown>): Promise<Uint8Array> {
 }
 
 // ─── Email via Brevo HTTP API ──────────────────────────────────────────────────
-async function sendEmail(q: any, pdfBytes: Uint8Array, approvalToken?: string, supabase?: any) {
+async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: string, supabase?: any) {
   const brevoApiKey = Deno.env.get("BREVO_API_KEY");
   const gmailEmail = Deno.env.get("GMAIL_EMAIL");
   
@@ -459,8 +459,7 @@ async function sendEmail(q: any, pdfBytes: Uint8Array, approvalToken?: string, s
   if (!gmailEmail) throw new Error("GMAIL_EMAIL not configured");
 
   // Convert Uint8Array to base64 for the PDF attachment
-  const binaryString = Array.from(pdfBytes).map(b => String.fromCharCode(b)).join('');
-  const b64 = btoa(binaryString);
+  const b64 = pdfBytes ? btoa(Array.from(pdfBytes).map(b => String.fromCharCode(b)).join('')) : null;
 
   const dateStr = new Date(q.created_at).toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' });
   const price = Number(q.product_price || 0).toLocaleString('en-IN');
@@ -557,18 +556,16 @@ async function sendEmail(q: any, pdfBytes: Uint8Array, approvalToken?: string, s
 </body>
 </html>`;
 
-  const payload = {
+  const payload: any = {
     sender: { name: companyName, email: gmailEmail },
     to: [{ email: q.customer_email as string }],
     subject: `Your Solar Quotation ${q.quotation_id} — ${companyName}`,
     htmlContent: html,
-    attachment: [
-      {
-        name: `Quotation_${q.quotation_id}.pdf`,
-        content: b64,
-      },
-    ],
   };
+
+  if (b64) {
+    payload.attachment = [{ name: `Quotation_${q.quotation_id}.pdf`, content: b64 }];
+  }
 
   try {
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -688,7 +685,13 @@ serve(async (req) => {
       const processPdfAndEmail = async () => {
         try {
           const fullQuotationData = { ...quotation, wiring: body.wiring, earthing: body.earthing, installation: body.installation, bos: body.bos };
-          const pdfBytes = await generatePDF(fullQuotationData);
+          
+          let pdfBytes: Uint8Array | null = null;
+          try {
+            pdfBytes = await generatePDF(fullQuotationData);
+          } catch (pdfErr) {
+            console.error("PDF generation skipped/failed:", pdfErr);
+          }
           
           // Ensure customer email is present before sending
           if (!quotation.customer_email) {
@@ -696,18 +699,20 @@ serve(async (req) => {
           }
 
           // Upload PDF to Supabase Storage (Quotations bucket)
-          const fileName = `Quotation_${quotation.quotation_id}.pdf`;
-          const { error: storageError } = await supabase.storage
-            .from("Quotations")
-            .upload(fileName, pdfBytes, {
-              contentType: "application/pdf",
-              upsert: true, // Overwrite if exists
-            });
-          
-          if (storageError) {
-            console.error("Failed to upload PDF to storage:", storageError);
-          } else {
-            console.log(`✅ PDF uploaded to storage: ${fileName}`);
+          if (pdfBytes) {
+            const fileName = `Quotation_${quotation.quotation_id}.pdf`;
+            const { error: storageError } = await supabase.storage
+              .from("Quotations")
+              .upload(fileName, pdfBytes, {
+                contentType: "application/pdf",
+                upsert: true, // Overwrite if exists
+              });
+            
+            if (storageError) {
+              console.error("Failed to upload PDF to storage:", storageError);
+            } else {
+              console.log(`✅ PDF uploaded to storage: ${fileName}`);
+            }
           }
 
           // Generate a token for customer approval portal
