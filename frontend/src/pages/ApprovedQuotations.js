@@ -48,7 +48,6 @@ const ApprovedQuotations = ({ onLogout }) => {
   const [profile, setProfile]               = useState('Job/Service');
   const [uploadingDoc, setUploadingDoc]     = useState(null);
   const [sendingToReg, setSendingToReg]     = useState(false);
-  const [completedQuots, setCompletedQuots] = useState(new Set());
 
   const fetchQuotations = async () => {
     try {
@@ -130,11 +129,9 @@ const ApprovedQuotations = ({ onLogout }) => {
       const res = await edgeFetch(EDGE.quotation, { action: 'send_to_registration', id: selectedQuotation.id });
       if (res.success) {
         toast.success(`Case ${res.caseId} created — sent to Registration!`);
-        setCompletedQuots(prev => new Set(prev).add(selectedQuotation.id));
-        setTimeout(() => {
-          setSelected(null);
-          fetchQuotations();
-        }, 1500);
+        // Immediately remove this quotation from the list
+        setQuotations(prev => prev.filter(q => q.id !== selectedQuotation.id));
+        setSelected(null);
       }
     } catch (err) { toast.error('Failed: ' + err.message); }
     finally { setSendingToReg(false); }

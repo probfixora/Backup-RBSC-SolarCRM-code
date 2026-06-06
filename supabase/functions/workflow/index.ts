@@ -415,9 +415,9 @@ serve(async (req) => {
           return;
         }
 
-        const companyName = Deno.env.get("COMPANY_NAME") || "${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}";
-        const companyEmail = Deno.env.get("COMPANY_EMAIL") || "${Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com"}";
-        const companyWebsite = Deno.env.get("COMPANY_WEBSITE") || "${Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com"}";
+        const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Solar";
+        const companyEmail = Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
+        const companyWebsite = Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com";
         const companyAddress = Deno.env.get("COMPANY_ADDRESS_LINE1") || "Lucknow, Uttar Pradesh, India";
         const companyPrimary = Deno.env.get("COMPANY_NAME_PRIMARY") || "RBSC";
         const companySecondary = Deno.env.get("COMPANY_NAME_SECONDARY") || "Solar";
@@ -684,6 +684,15 @@ serve(async (req) => {
             unverifiedDocs: unverified,
           }, 400);
         }
+
+        // ── QUOTATION VERIFICATION GATE ───────────────────────────────────────
+        // Quotation must be verified before case can move to next stage
+        if (!caseObj.quotation_verified) {
+          return jsonResponse({
+            message: "Quotation amount must be verified before proceeding. Please verify the quotation amount first.",
+          }, 400);
+        }
+        // ─────────────────────────────────────────────────────────────────────
       }
       // ──────────────────────────────────────────────────────────────────────
 
@@ -969,6 +978,11 @@ serve(async (req) => {
         subsidyRefNumber: "subsidy_ref_number",
         subsidyNote: "subsidy_note",
         documentStatuses: "document_statuses",
+        // ── Verification fields ──────────────────────────────────────────────
+        quotationVerified: "quotation_verified",
+        quotationAmount:   "quotation_amount",
+        financeVerified:   "finance_verified",
+        accountsVerified:  "accounts_verified",
       };
 
       const updatePayload: Record<string, unknown> = {};

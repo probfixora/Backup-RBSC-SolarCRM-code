@@ -39,6 +39,9 @@ const normalizeCase = (c) => ({
   subsidyPhase2Amount: c.subsidy_phase2_amount ?? c.subsidyPhase2Amount,
   subsidyNote: c.subsidy_note ?? c.subsidyNote,
   totalAmount: c.total_amount ?? c.totalAmount ?? c.product_price ?? c.productPrice ?? c.quotation_price ?? 0,
+  // quotation_amount is set automatically when case is created from quotation
+  quotationAmount: c.quotation_amount ?? c.quotationAmount ?? c.total_amount ?? c.totalAmount ?? c.product_price ?? 0,
+  quotationIdRef: c.quotation_id_ref ?? c.quotationIdRef ?? '',
   quotationVerified: c.quotation_verified ?? c.quotationVerified ?? false,
   financeVerified: c.finance_verified ?? c.financeVerified ?? false,
   accountsVerified: c.accounts_verified ?? c.accountsVerified ?? false,
@@ -153,6 +156,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   
   const [quotationVerifyLoading, setQuotationVerifyLoading] = useState(false);
   const [quotationEditMode, setQuotationEditMode] = useState(false);
+  const [quotationAmountEdit, setQuotationAmountEdit] = useState('');
 
   const [accountsVerifyLoading, setAccountsVerifyLoading] = useState(false);
   const [accountsEditMode, setAccountsEditMode] = useState(false);
@@ -410,6 +414,8 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   const docs = normalized.documents || {};
   const unverifiedDocs = Object.keys(docs).filter(d => (docStatuses[d] || 'Yellow') !== 'Green');
   const hasDocError = isRegStage && unverifiedDocs.length > 0;
+  // Quotation must be verified before proceeding from registration stages
+  const hasQuotationError = isRegStage && !normalized.quotationVerified;
 
   const isBankingStage = normalized.currentStage === 'Bank & Finance';
   const pType = (normalized.paymentType || '').toLowerCase();
@@ -425,6 +431,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
     // ── Client-side Gates ────────────────────────────────────────────────
     if (hasDocError) return;
+    if (hasQuotationError) { toast.error('Please verify the quotation amount before proceeding.'); return; }
     if (hasFinanceError) return;
     // ─────────────────────────────────────────────────────────────────────
 
@@ -489,13 +496,19 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     } finally { setFinanceLoading(false); }
   };
 
-  const handleQuotationVerify = async () => {
+  const handleQuotationVerify = async (editedAmount) => {
     setQuotationVerifyLoading(true);
     try {
-      await edgeFetch(EDGE.workflow, { action: 'update_details', caseId, quotationVerified: true });
+      const amount = editedAmount !== undefined ? Number(editedAmount) : Number(normalized.quotationAmount);
+      await edgeFetch(EDGE.workflow, { 
+        action: 'update_details', 
+        caseId, 
+        quotationVerified: true,
+        quotationAmount: amount,
+      });
       toast.success('Quotation verified!');
       setQuotationEditMode(false);
-      onClose();
+      setQuotationAmountEdit('');
       onRefresh();
     } catch (err) {
       toast.error(err.message || 'Update failed.');
@@ -967,6 +980,86 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                         Document not verified kindly verify first then proceed
                       </div>
                     )}
+
+                    {/* ── Step 2: Quotation Verification (Registration stage only) ─────────── */}
+                    {isRegStage && (role === 'registration' || role === 'admin') && (
+                      <div style={{ marginTop: '20px', padding: '16px', background: normalized.quotationVerified ? '#f0fdf4' : '#fffbeb', border: `1px solid ${normalized.quotationVerified ? '#bbf7d0' : '#fde68a'}`, borderRadius: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <p style={{ fontSize: '12px', fontWeight: 700, color: normalized.quotationVerified ? '#166534' : '#92400e', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {normalized.quotationVerified ? <CheckCircle2 style={{ width: '14px', height: '14px' }} /> : <AlertOctagon style={{ width: '14px', height: '14px' }} />}
+                            Step 2 — Quotation Verification
+                          </p>
+                          {normalized.quotationVerified && !quotationEditMode && (
+                            <button
+                              type="button"
+                              onClick={() => { setQuotationEditMode(true); setQuotationAmountEdit(String(normalized.quotationAmount || '')); }}
+                              style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '6px', border: '1px solid #bbf7d0', background: '#dcfce7', color: '#16a34a', fontSize: '11.5px', fontWeight: 600, cursor: 'pointer' }}
+                            >
+                              <Edit2 style={{ width: '12px', height: '12px' }} /> Edit
+                            </button>
+                          )}
+                        </div>
+
+                        {normalized.quotationVerified && !quotationEditMode ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <CheckCircle2 style={{ width: '20px', height: '20px', color: '#16a34a', flexShrink: 0 }} />
+                            <div>
+                              <p style={{ fontSize: '11px', color: '#166534', fontWeight: 600, marginBottom: '2px' }}>Verified ✓</p>
+                              <p style={{ fontSize: '18px', fontWeight: 800, color: '#14532d' }}>₹{Number(normalized.quotationAmount || 0).toLocaleString('en-IN')}</p>
+                            </div>
+                          </div>
+                        ) : quotationEditMode ? (
+                          <div>
+                            <p style={{ fontSize: '12.5px', color: '#475569', marginBottom: '10px' }}>Edit the quotation amount and re-verify:</p>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                              <input
+                                type="number"
+                                value={quotationAmountEdit}
+                                onChange={e => setQuotationAmountEdit(e.target.value)}
+                                placeholder="Enter quotation amount"
+                                className="input"
+                                style={{ flex: 1 }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleQuotationVerify(quotationAmountEdit)}
+                                disabled={quotationVerifyLoading || !quotationAmountEdit}
+                                style={{ padding: '9px 16px', borderRadius: '8px', border: 'none', background: '#16a34a', color: '#fff', fontSize: '12.5px', fontWeight: 700, cursor: quotationVerifyLoading ? 'wait' : 'pointer', opacity: !quotationAmountEdit ? 0.55 : 1, whiteSpace: 'nowrap' }}
+                              >
+                                {quotationVerifyLoading ? 'Saving…' : 'Re-Verify'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { setQuotationEditMode(false); setQuotationAmountEdit(''); }}
+                                style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f1f5f9', color: '#475569', fontSize: '12px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <p style={{ fontSize: '12.5px', color: '#92400e', marginBottom: '10px' }}>Call the customer to confirm and verify this quotation amount:</p>
+                            <p style={{ fontSize: '22px', fontWeight: 800, color: '#78350f', marginBottom: '12px' }}>₹{Number(normalized.quotationAmount || 0).toLocaleString('en-IN')}</p>
+                            <button
+                              type="button"
+                              onClick={() => handleQuotationVerify()}
+                              disabled={quotationVerifyLoading}
+                              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: 'none', background: '#16a34a', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: quotationVerifyLoading ? 'wait' : 'pointer' }}
+                            >
+                              {quotationVerifyLoading ? 'Verifying…' : '✓ Mark Quotation as Verified'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {hasQuotationError && !hasDocError && (
+                      <div style={{ marginTop: '10px', padding: '12px 16px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#b91c1c', fontSize: '13px', fontWeight: 500 }}>
+                        <AlertOctagon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+                        Please verify the quotation amount (Step 2 above) before proceeding.
+                      </div>
+                    )}
                     {hasFinanceError && (
                       <div style={{ marginTop: '14px', padding: '12px 16px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#b91c1c', fontSize: '13px', fontWeight: 500 }}>
                         <AlertOctagon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
@@ -1159,35 +1252,24 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                 );
               })()}
 
-              {/* Quotation Verification Section */}
+              {/* Quotation Verification Section — in Docs Tab (readonly summary) */}
               {(role === 'registration' || role === 'admin') && (
                 <div style={{ marginTop: '24px', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <p style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>Quotation Verification</p>
-                    {normalized.quotationVerified && !quotationEditMode && (
-                      <button onClick={() => setQuotationEditMode(true)} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px', color: 'var(--color-primary)' }}>
-                        <Edit2 style={{ width: '13px', height: '13px', marginRight: '4px' }} /> Edit
-                      </button>
-                    )}
+                  <p style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>Quotation Amount</p>
+                  <div style={{ padding: '14px 16px', background: normalized.quotationVerified ? '#f0fdf4' : '#fffbeb', border: `1px solid ${normalized.quotationVerified ? '#bbf7d0' : '#fde68a'}`, borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {normalized.quotationVerified
+                      ? <CheckCircle2 style={{ width: '18px', height: '18px', color: '#16a34a', flexShrink: 0 }} />
+                      : <AlertOctagon style={{ width: '18px', height: '18px', color: '#d97706', flexShrink: 0 }} />
+                    }
+                    <div>
+                      <p style={{ fontSize: '11px', fontWeight: 600, color: normalized.quotationVerified ? '#166534' : '#92400e', marginBottom: '2px' }}>
+                        {normalized.quotationVerified ? 'Verified ✓' : 'Pending Verification — go to Update tab'}
+                      </p>
+                      <p style={{ fontSize: '16px', fontWeight: 800, color: normalized.quotationVerified ? '#14532d' : '#78350f' }}>
+                        ₹{Number(normalized.quotationAmount || 0).toLocaleString('en-IN')}
+                      </p>
+                    </div>
                   </div>
-                  
-                  {normalized.quotationVerified && !quotationEditMode ? (
-                    <div style={{ padding: '16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <CheckCircle2 style={{ width: '18px', height: '18px', color: '#16a34a' }} />
-                      <div>
-                        <p style={{ fontSize: '12px', color: '#166534', fontWeight: 600 }}>Quotation Verified</p>
-                        <p style={{ fontSize: '14px', color: '#14532d', fontWeight: 700 }}>₹{Number(normalized.totalAmount).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                      <p style={{ fontSize: '13px', color: '#475569', marginBottom: '12px' }}>Please call the customer to verify the quotation amount:</p>
-                      <p style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', marginBottom: '16px' }}>₹{Number(normalized.totalAmount).toLocaleString()}</p>
-                      <button onClick={handleQuotationVerify} disabled={quotationVerifyLoading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                        {quotationVerifyLoading ? 'Verifying...' : 'Mark Quotation as Verified'}
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
             </div>

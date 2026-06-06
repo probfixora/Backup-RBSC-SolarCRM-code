@@ -60,7 +60,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
         <div style="font-weight:bold; font-size:13px;"><span style="color:#ff8c00;">${Deno.env.get("COMPANY_NAME_PRIMARY") || "RBSC"}</span> <span style="color:#008000;">${Deno.env.get("COMPANY_NAME_SECONDARY") || "Associates"}</span></div>
         <div>${Deno.env.get("COMPANY_ADDRESS_LINE1") || "Office no. 11, Bhopal House Lalbagh,"}</div>
         <div>${Deno.env.get("COMPANY_ADDRESS_LINE2") || "Hazratganj, Lucknow 226001, India"}</div>
-        <div>Email: <span style="color:#0000cc;">${Deno.env.get("COMPANY_EMAIL") || "${Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com"}"}</span> | Web: <span style="color:#0000cc;">${Deno.env.get("COMPANY_WEBSITE") || "${Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com"}"}</span></div>
+        <div>Email: <span style="color:#0000cc;">${Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com"}</span> | Web: <span style="color:#0000cc;">${Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com"}</span></div>
       </div>
     </div>
   `;
@@ -244,7 +244,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     <!-- Left Bank -->
     <div style="flex:1; line-height:1.8;">
       <div><strong>Bank Details:</strong></div>
-      <div>Account Name: ${Deno.env.get("COMPANY_NAME") || "${Deno.env.get("COMPANY_NAME") || "RBSC Associates"}"}</div>
+      <div>Account Name: ${Deno.env.get("COMPANY_NAME") || "RBSC Associates"}</div>
       <div>Bank Name: State Bank of India (SBI)</div>
       <div>Branch: Hussainganj, Lucknow</div>
       <div>Account No.: 43722468016</div>
@@ -257,7 +257,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     <!-- Right Bank -->
     <div style="flex:1; text-align:right; line-height:1.8;">
       <div><strong>Bank Details:</strong></div>
-      <div>Account Name: ${Deno.env.get("COMPANY_NAME") || "${Deno.env.get("COMPANY_NAME") || "RBSC Associates"}"}</div>
+      <div>Account Name: ${Deno.env.get("COMPANY_NAME") || "RBSC Associates"}</div>
       <div>Bank Name: UCO BANK</div>
       <div>Branch: CHARBAGH BAL VIDYA MANDIR, Lucknow</div>
       <div>Account No.: 20220210000205</div>
@@ -295,7 +295,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
   ${lightDivider}
   <div style="margin: 12px 0; font-size:11px; text-align:justify; line-height:1.8;">
     <p><strong>VALIDITY OF OFFER:</strong><br/>
-    Prices quoted are firm and generally valid for 15 days from the date of offer. After this period, prices are subject to reconfirmation. ${(Deno.env.get("COMPANY_NAME") || "${Deno.env.get("COMPANY_NAME") || "RBSC Associates"}").toUpperCase()} will only be liable to perform work based on the scope of work listed in the final offer. Any additional work or equipment beyond this scope shall be charged separately. Offer prices may vary after a detailed site survey or due to changes in site conditions.</p>
+    Prices quoted are firm and generally valid for 15 days from the date of offer. After this period, prices are subject to reconfirmation. ${(Deno.env.get("COMPANY_NAME") || "RBSC Associates").toUpperCase()} will only be liable to perform work based on the scope of work listed in the final offer. Any additional work or equipment beyond this scope shall be charged separately. Offer prices may vary after a detailed site survey or due to changes in site conditions.</p>
   </div>
 
   ${lightDivider}
@@ -347,17 +347,17 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     ${lightDivider}
     <div style="margin: 12px 0; text-align:justify;">
       <p><strong>LIMITATION OF LIABILITY &amp; INDEMNITY:</strong><br/>
-      ${(Deno.env.get("COMPANY_NAME") || "${Deno.env.get("COMPANY_NAME") || "RBSC Associates"}").toUpperCase()} shall not be liable for any special, punitive, indirect, or consequential damages, including but not limited to loss of profits, loss of use, service interruptions, loss of reputation, or costs arising from pollution remediation. Claims by the Owner's customers or other parties shall also be excluded from liability.</p>
+      ${(Deno.env.get("COMPANY_NAME") || "RBSC Associates").toUpperCase()} shall not be liable for any special, punitive, indirect, or consequential damages, including but not limited to loss of profits, loss of use, service interruptions, loss of reputation, or costs arising from pollution remediation. Claims by the Owner's customers or other parties shall also be excluded from liability.</p>
     </div>
 
     ${lightDivider}
     <div style="margin: 12px 0; text-align:justify;">
-      <p><strong>COMMISSIONING &amp; TESTING:</strong> The overall liability of ${(Deno.env.get("COMPANY_NAME") || "${Deno.env.get("COMPANY_NAME") || "RBSC Associates"}").toUpperCase()}, whether for liquidated damages or otherwise, shall not exceed 2% of the total order value.</p>
+      <p><strong>COMMISSIONING &amp; TESTING:</strong> The overall liability of ${(Deno.env.get("COMPANY_NAME") || "RBSC Associates").toUpperCase()}, whether for liquidated damages or otherwise, shall not exceed 2% of the total order value.</p>
     </div>
 
     ${lightDivider}
     <div style="margin: 12px 0; text-align:justify;">
-      <p><strong>RESTOCKING CHARGES:</strong> Liquidated damages shall be the Owner's sole remedy for delay in delivery or deviations in the supply of equipment and shall constitute the complete liability of ${(Deno.env.get("COMPANY_NAME") || "${Deno.env.get("COMPANY_NAME") || "RBSC Associates"}").toUpperCase()} in such cases.</p>
+      <p><strong>RESTOCKING CHARGES:</strong> Liquidated damages shall be the Owner's sole remedy for delay in delivery or deviations in the supply of equipment and shall constitute the complete liability of ${(Deno.env.get("COMPANY_NAME") || "RBSC Associates").toUpperCase()} in such cases.</p>
     </div>
 
     ${lightDivider}
@@ -867,6 +867,10 @@ serve(async (req) => {
         sales_person: q.employee_name || null,
         tracking_id: trackingIdVal,
         customer_id: customerIdVal,
+        // ── Quotation reference & amount auto-filled from quotation ─────────
+        quotation_id_ref: q.quotation_id || q.id || '',
+        quotation_amount: Number(q.product_price || q.total_amount || 0),
+        // ────────────────────────────────────────────────────────────────────
       }).select().single();
 
       if (caseErr) return jsonResponse({ message: `Case creation failed: ${caseErr.message}` }, 400);
@@ -1106,7 +1110,7 @@ serve(async (req) => {
 </html>`;
 
         const payload = {
-          sender: { name: "${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}", email: senderEmail },
+          sender: { name: "RBSC Solar", email: senderEmail },
           to: [{ email: customerEmail, name: customerName }],
           subject: `Registration Confirmed — Your Tracking ID: ${trackingId}`,
           htmlContent,
