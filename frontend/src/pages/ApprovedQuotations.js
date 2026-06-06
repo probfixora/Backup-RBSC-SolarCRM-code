@@ -96,17 +96,31 @@ const ApprovedQuotations = ({ onLogout }) => {
     setUploadingDoc(docName);
     try {
       const ext      = file.name.split('.').pop();
-      const fileName = `${selectedQuotation.quotation_id}_${docName.replace(/\s+/g,'_')}_${Date.now()}.${ext}`;
+      const safeDocName = docName.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `${selectedQuotation.quotation_id}_${safeDocName}_${Date.now()}.${ext}`;
       const filePath = `${selectedQuotation.quotation_id}/${fileName}`;
-      const { error } = await supabase.storage.from('Documents').upload(filePath, file);
-      if (error) throw error;
-      const { data: urlData } = supabase.storage.from('Documents').getPublicUrl(filePath);
-      const newDocs = { ...(selectedQuotation.documents || {}), [docName]: urlData.publicUrl };
+      const { error } = await supabase.storage.from('documents').upload(filePath, file);
+      
+      // Fallback: If 'documents' fails due to uppercase/lowercase mismatch, try 'Documents'
+      if (error && error.message?.includes('Bucket not found')) {
+        const retry = await supabase.storage.from('Documents').upload(filePath, file);
+        if (retry.error) throw retry.error;
+      } else if (error) {
+        throw error;
+      }
+
+      const { data: urlData } = supabase.storage.from('documents').getPublicUrl(filePath);
+      const publicUrl = urlData?.publicUrl || supabase.storage.from('Documents').getPublicUrl(filePath).data.publicUrl;
+
+      const newDocs = { ...(selectedQuotation.documents || {}), [docName]: publicUrl };
       await edgeFetch(EDGE.quotation, { action: 'update_status', id: selectedQuotation.id, documents: newDocs });
       setSelected(prev => ({ ...prev, documents: newDocs }));
       toast.success(`${docName} uploaded!`);
       fetchQuotations();
-    } catch { toast.error(`Error uploading ${docName}`); }
+    } catch (err) { 
+      console.error(err);
+      toast.error(`Error uploading ${docName}: ${err.message || JSON.stringify(err)}`); 
+    }
     finally  { setUploadingDoc(null); }
   };
 
