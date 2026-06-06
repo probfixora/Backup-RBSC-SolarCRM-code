@@ -41,9 +41,10 @@ module.exports = async function handler(req, res) {
       headers: fetchHeaders,
     };
 
-    // Vercel automatically parses JSON bodies into req.body
-    if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
-      options.body = typeof req.body === 'object' ? JSON.stringify(req.body) : req.body;
+    // Since bodyParser is disabled, we pipe the raw request directly to Supabase
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      options.body = req;
+      options.duplex = 'half'; // Required for Node fetch when streaming request body
     }
 
     const response = await fetch(targetUrl, options);
@@ -67,4 +68,11 @@ module.exports = async function handler(req, res) {
     console.error('Fetch Proxy Error:', error);
     res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
+};
+
+module.exports.config = {
+  api: {
+    bodyParser: false,
+    responseLimit: false,
+  },
 };
