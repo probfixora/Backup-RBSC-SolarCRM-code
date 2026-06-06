@@ -31,6 +31,39 @@ const DEPT_LABELS = {
   completed:    'Completed',
 };
 
+// For dept-relative status filtering:
+// `active` = stages where this dept is currently working (In Progress)
+// `past`   = stages that come AFTER this dept's last stage (Completed from this dept's view)
+const DEPT_STAGE_BOUNDS = {
+  registration: {
+    active: ['Registration Done', 'Phone Verification Done'],
+    past:   ['Bank & Finance', 'Sent to Store', 'Installation Done', 'Plant Activated',
+              'Sent to Subsidy', 'Subsidy Registration Completed', 'Completed'],
+  },
+  banking: {
+    active: ['Bank & Finance'],
+    past:   ['Sent to Store', 'Installation Done', 'Plant Activated',
+              'Sent to Subsidy', 'Subsidy Registration Completed', 'Completed'],
+  },
+  inventory: {
+    active: ['Sent to Store'],
+    past:   ['Installation Done', 'Plant Activated', 'Sent to Subsidy',
+              'Subsidy Registration Completed', 'Completed'],
+  },
+  installation: {
+    active: ['Installation Done', 'Plant Activated'],
+    past:   ['Sent to Subsidy', 'Subsidy Registration Completed', 'Completed'],
+  },
+  subsidy: {
+    active: ['Sent to Subsidy', 'Subsidy Registration Completed'],
+    past:   ['Completed'],
+  },
+  completed: {
+    active: ['Completed'],
+    past:   [],
+  },
+};
+
 const roleStageMap = {
   admin: [],
   sales: [],
@@ -166,7 +199,22 @@ const Cases = ({ onLogout }) => {
       'Sent to Subsidy': 'Subsidy', 'Subsidy Registration Completed': 'Subsidy',
       'Completed': 'Completed',
     };
-    const headers = ['Customer ID', 'Tracking ID', 'Customer Name', 'Phone', 'Current Stage', 'Department', 'Status', 'Assigned Employee', 'Time in Stage', 'Created At'];
+    // Dept-relative status for CSV (same logic as filters)
+    const getDeptRelativeStatus = (c) => {
+      const stage = c.currentStage || c.current_stage || '';
+      const bounds = deptFilter !== 'all' ? DEPT_STAGE_BOUNDS[deptFilter] : null;
+      if (!bounds) return c.status || '';
+      if (bounds.past.includes(stage) || stage === 'Completed') return 'Completed';
+      if (bounds.active.includes(stage)) return c.status === 'Delayed' ? 'Delayed' : 'In Progress';
+      return 'Pending';
+    };
+    const activeFilterLabel = deptFilter !== 'all' ? DEPT_LABELS[deptFilter] : 'All';
+    const headers = [
+      'Customer ID', 'Tracking ID', 'Customer Name', 'Phone',
+      'Current Stage', 'Department', 'Overall Status',
+      ...(deptFilter !== 'all' ? [`${activeFilterLabel} Status`] : []),
+      'Assigned Employee', 'Time in Stage', 'Created At'
+    ];
     const rows = filteredCases.map(c => [
       c.customerId || c.customer_id || '',
       c.trackingId || c.tracking_id || '',
@@ -175,6 +223,7 @@ const Cases = ({ onLogout }) => {
       c.currentStage || c.current_stage || '',
       stageToLabel[c.currentStage || c.current_stage] || '',
       c.status || '',
+      ...(deptFilter !== 'all' ? [getDeptRelativeStatus(c)] : []),
       c.assignedTo || c.assigned_to || '',
       daysInStage(c.stageStartTime || c.stage_start_time),
       c.created_at ? new Date(c.created_at).toLocaleDateString('en-IN') : '',
@@ -187,7 +236,9 @@ const Cases = ({ onLogout }) => {
     const link = document.createElement('a');
     link.href = url;
     const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-    link.download = `Cases_Export_${today}.csv`;
+    const deptSuffix = deptFilter !== 'all' ? `_${DEPT_LABELS[deptFilter].replace(/[^a-zA-Z0-9]/g, '_')}` : '';
+    const statusSuffix = statusFilter !== 'all' ? `_${statusFilter}` : '';
+    link.download = `Cases_Export_${today}${deptSuffix}${statusSuffix}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -272,17 +323,46 @@ const Cases = ({ onLogout }) => {
     if (userRole !== 'admin') return list;
     let result = list;
 
-    // Department filter
+    // Department filter — narrows to cases currently at these stages
     if (deptFilter !== 'all') {
       const stages = DEPT_STAGES[deptFilter] || [];
       result = result.filter(c => stages.includes(c.currentStage || c.current_stage));
     }
 
-    // Status filter
+    // Status filter — dept-relative when a dept filter is active, global otherwise
     if (statusFilter !== 'all') {
-      if (statusFilter === 'in_progress') result = result.filter(c => c.status === 'In Progress');
-      if (statusFilter === 'delayed')     result = result.filter(c => c.status === 'Delayed');
-      if (statusFilter === 'completed')   result = result.filter(c => c.status === 'Completed');
+      const bounds = deptFilter !== 'all' ? DEPT_STAGE_BOUNDS[deptFilter] : null;
+
+      if (bounds) {
+        // Dept-relative status logic:
+        // in_progress → case is currently AT this dept's active stages
+        // completed   → case has moved PAST this dept's stages
+        // delayed     → case is at this dept's active stages AND marked Delayed
+        if (statusFilter === 'in_progress') {
+          result = result.filter(c => {
+            const stage = c.currentStage || c.current_stage;
+            return bounds.active.includes(stage) && c.status !== 'Delayed';
+          });
+        } else if (statusFilter === 'delayed') {
+          result = result.filter(c => {
+            const stage = c.currentStage || c.current_stage;
+            return bounds.active.includes(stage) && c.status === 'Delayed';
+          });
+        } else if (statusFilter === 'completed') {
+          // Dept=Registration + Status=Completed means cases that have MOVED PAST registration.
+          // We filter from the full searched list (to preserve text search) but ignore the
+          // dept active-stage restriction — we want all cases past this dept.
+          result = searched.filter(c => {
+            const stage = c.currentStage || c.current_stage;
+            return bounds.past.includes(stage) || stage === 'Completed';
+          });
+        }
+      } else {
+        // No dept filter — use global status
+        if (statusFilter === 'in_progress') result = result.filter(c => c.status === 'In Progress');
+        if (statusFilter === 'delayed')     result = result.filter(c => c.status === 'Delayed');
+        if (statusFilter === 'completed')   result = result.filter(c => c.status === 'Completed');
+      }
     }
 
     // Date range filter (by created_at)

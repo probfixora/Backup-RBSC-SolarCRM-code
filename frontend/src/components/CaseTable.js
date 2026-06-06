@@ -94,6 +94,19 @@ const roleLastStage = {
   subsidy:            'Subsidy Registration Completed',
 };
 
+// Human-readable department label for each stage (used by admin view)
+const stageToDeptLabel = {
+  'Registration Done':              'Registration Dept',
+  'Phone Verification Done':        'Registration Dept',
+  'Bank & Finance':                 'Banking Dept',
+  'Sent to Store':                  'Inventory Dept',
+  'Installation Done':              'Installation Dept',
+  'Plant Activated':                'Installation Dept',
+  'Sent to Subsidy':                'Subsidy Dept',
+  'Subsidy Registration Completed': 'Subsidy Dept',
+  'Completed':                      'Completed',
+};
+
 const canUpdateCase = (c) => {
   const role = (localStorage.getItem('role') || '').toLowerCase();
   if (role === 'admin') return true;
@@ -102,11 +115,24 @@ const canUpdateCase = (c) => {
 };
 
 // Returns department-relative status from THIS user's perspective
+// For admin: returns global status + current department/stage context
 const getDeptStatus = (c) => {
   const role = (localStorage.getItem('role') || '').toLowerCase();
-  if (role === 'admin') return null; // admin sees global status
+  const currentStage = c.current_stage || c.currentStage;
+  const deptLabel = stageToDeptLabel[currentStage] || 'Unknown';
 
-  const currentStage  = c.current_stage || c.currentStage;
+  // ── Admin: show global status with department context ──
+  if (role === 'admin') {
+    const isCompleted = currentStage === 'Completed' || c.status === 'Completed';
+    if (isCompleted) {
+      return { label: 'Completed', color: '#15803d', bg: '#ecfdf5', border: '#bbf7d0', icon: 'check', dept: 'Completed', stage: 'Completed' };
+    }
+    if (c.status === 'Delayed') {
+      return { label: 'Delayed', color: '#be123c', bg: '#fff1f2', border: '#fecdd3', icon: 'alert', dept: deptLabel, stage: currentStage };
+    }
+    return { label: 'In Progress', color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe', icon: 'clock', dept: deptLabel, stage: currentStage };
+  }
+
   const currentIdx    = STAGES.indexOf(currentStage);
   const myLastStage   = roleLastStage[role];
   const myLastIdx     = myLastStage ? STAGES.indexOf(myLastStage) : -1;
@@ -114,21 +140,21 @@ const getDeptStatus = (c) => {
   // Case is at one of my stages — "In Progress" (I need to act)
   if (stageToRole[currentStage] === role) {
     if (c.status === 'Delayed') {
-      return { label: 'Delayed',      color: '#be123c', bg: '#fff1f2', border: '#fecdd3', icon: 'alert' };
+      return { label: 'Delayed',     color: '#be123c', bg: '#fff1f2', border: '#fecdd3', icon: 'alert', dept: deptLabel, stage: currentStage };
     }
-    return { label: 'In Progress', color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe', icon: 'clock' };
+    return { label: 'In Progress', color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe', icon: 'clock', dept: deptLabel, stage: currentStage };
   }
 
   // Case has moved PAST my last stage — my job is done
   if (myLastIdx >= 0 && currentIdx > myLastIdx) {
-    return { label: 'Completed', color: '#15803d', bg: '#ecfdf5', border: '#bbf7d0', icon: 'check' };
+    return { label: 'Completed', color: '#15803d', bg: '#ecfdf5', border: '#bbf7d0', icon: 'check', dept: deptLabel, stage: currentStage };
   }
 
   // Case is before my stage (shouldn't normally happen but handle gracefully)
   if (role === 'sales') {
-    return { label: 'Sent to Registration', color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe', icon: 'check' };
+    return { label: 'Sent to Registration', color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe', icon: 'check', dept: deptLabel, stage: currentStage };
   }
-  return { label: 'Pending', color: '#92400e', bg: '#fffbeb', border: '#fde68a', icon: 'clock' };
+  return { label: 'Pending', color: '#92400e', bg: '#fffbeb', border: '#fde68a', icon: 'clock', dept: deptLabel, stage: currentStage };
 };
 
 const daysInStage = (stageStartTime) => {
@@ -275,19 +301,34 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh }) => {
                           deptSt?.icon === 'check' ? <CheckCircle2 style={{ width: '11px', height: '11px' }} /> :
                           deptSt?.icon === 'alert' ? <span style={{ fontSize: '11px' }}>⚠</span> :
                           <Clock style={{ width: '11px', height: '11px' }} />;
-                        const label    = deptSt?.label || c.status;
-                        const bg       = deptSt?.bg    || (isCompleted ? '#ecfdf5' : c.status === 'Delayed' ? '#fff1f2' : '#eff6ff');
-                        const color    = deptSt?.color  || (isCompleted ? '#15803d' : c.status === 'Delayed' ? '#be123c' : '#1d4ed8');
-                        const border   = deptSt?.border || (isCompleted ? '#bbf7d0' : c.status === 'Delayed' ? '#fecdd3' : '#bfdbfe');
+                        const label  = deptSt?.label  || c.status;
+                        const bg     = deptSt?.bg     || (isCompleted ? '#ecfdf5' : c.status === 'Delayed' ? '#fff1f2' : '#eff6ff');
+                        const color  = deptSt?.color  || (isCompleted ? '#15803d' : c.status === 'Delayed' ? '#be123c' : '#1d4ed8');
+                        const border = deptSt?.border || (isCompleted ? '#bbf7d0' : c.status === 'Delayed' ? '#fecdd3' : '#bfdbfe');
+                        const dept   = deptSt?.dept;
+                        const stage  = deptSt?.stage;
                         return (
-                          <span style={{
-                            display: 'inline-flex', alignItems: 'center', gap: '5px',
-                            fontSize: '11.5px', fontWeight: 600, padding: '4px 10px',
-                            borderRadius: '20px', background: bg, color, border: `1px solid ${border}`,
-                          }}>
-                            {icon}
-                            {label}
-                          </span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{
+                              display: 'inline-flex', alignItems: 'center', gap: '5px',
+                              fontSize: '11.5px', fontWeight: 600, padding: '4px 10px',
+                              borderRadius: '20px', background: bg, color, border: `1px solid ${border}`,
+                              width: 'fit-content',
+                            }}>
+                              {icon}
+                              {label}
+                            </span>
+                            {dept && dept !== 'Completed' && (
+                              <p style={{ fontSize: '10.5px', color: 'var(--text-4)', margin: 0, paddingLeft: '2px' }}>
+                                📍 {dept}
+                              </p>
+                            )}
+                            {stage && stage !== 'Completed' && (
+                              <p style={{ fontSize: '10px', color: 'var(--text-5)', margin: 0, paddingLeft: '2px', lineHeight: 1.3 }}>
+                                {stage}
+                              </p>
+                            )}
+                          </div>
                         );
                       })()}
                     </td>
@@ -392,17 +433,23 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh }) => {
                 {/* Status badge - mobile */}
                 {(() => {
                   const deptSt = getDeptStatus(c);
-                  const label  = deptSt?.label || c.status;
-                  const bg     = deptSt?.bg    || (isCompleted ? '#ecfdf5' : c.status === 'Delayed' ? '#fff1f2' : '#eff6ff');
+                  const label  = deptSt?.label  || c.status;
+                  const bg     = deptSt?.bg     || (isCompleted ? '#ecfdf5' : c.status === 'Delayed' ? '#fff1f2' : '#eff6ff');
                   const color  = deptSt?.color  || (isCompleted ? '#15803d' : c.status === 'Delayed' ? '#be123c' : '#1d4ed8');
                   const border = deptSt?.border || (isCompleted ? '#bbf7d0' : c.status === 'Delayed' ? '#fecdd3' : '#bfdbfe');
+                  const dept   = deptSt?.dept;
                   return (
-                    <span style={{
-                      fontSize: '11px', fontWeight: 600, padding: '3px 9px', borderRadius: '20px',
-                      background: bg, color, border: `1px solid ${border}`,
-                    }}>
-                      {label}
-                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                      <span style={{
+                        fontSize: '11px', fontWeight: 600, padding: '3px 9px', borderRadius: '20px',
+                        background: bg, color, border: `1px solid ${border}`,
+                      }}>
+                        {label}
+                      </span>
+                      {dept && dept !== 'Completed' && (
+                        <span style={{ fontSize: '10px', color: 'var(--text-4)' }}>📍 {dept}</span>
+                      )}
+                    </div>
                   );
                 })()}
 
