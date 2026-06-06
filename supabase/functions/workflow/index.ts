@@ -219,28 +219,6 @@ serve(async (req) => {
         .eq("id", trackingId)
         .maybeSingle();
 
-          "Completed": "admin",
-        };
-
-        const deptRole = stageToDeptRole[caseRow.current_stage];
-        if (!deptRole) return jsonResponse([]);
-
-        const { data: employees, error: empErr } = await supabase
-          .from("profiles")
-          .select("id, name, role")
-          .eq("role", deptRole)
-          .eq("status", "active")
-          .order("name");
-
-        if (empErr) throw empErr;
-        return jsonResponse(employees || []);
-      }
-
-      // ── ASSIGN CASE ────────────────────────────────────────────────────────────
-      if (rawBody.action === "assign") {
-        // Implementation logic
-      }
-
       data = byCaseId.data;
       error = byCaseId.error;
     }
@@ -486,7 +464,7 @@ serve(async (req) => {
 
       const trackingId = caseObj.tracking_id || caseObj.id;
       const customerName = caseObj.customer_name || "Customer";
-      const trackingUrl = `https://${(Deno.env.get("COMPANY_WEBSITE") || "rbscsolar.com").replace('www.', '').replace('https://', '')}/track?id=${encodeURIComponent(trackingId)}`;
+      const trackingUrl = `https://crm-rbscsolar.vercel.app/track?id=${encodeURIComponent(trackingId)}`;
       
       const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Associates";
       const companyEmail = Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
@@ -799,7 +777,7 @@ serve(async (req) => {
 
             const trackingId     = caseObj.tracking_id || caseObj.id;
             const customerName   = caseObj.customer_name || "Customer";
-            const trackingUrl    = `https://${companyWebsite.replace('www.', '').replace('https://', '')}/track?id=${encodeURIComponent(trackingId)}`;
+            const trackingUrl    = `https://crm-rbscsolar.vercel.app/track?id=${encodeURIComponent(trackingId)}`;
 
             // Log the trigger to case_history FIRST (so duplicate guard works even if email fails)
             await supabase.from("case_history").insert({
@@ -1444,7 +1422,7 @@ serve(async (req) => {
 
       const trackingId   = caseObj.tracking_id || caseObj.id;
       const customerName = caseObj.customer_name || "Customer";
-      const trackingUrl  = `https://${companyWebsite.replace('www.', '').replace('https://', '')}/track?id=${encodeURIComponent(trackingId)}`;
+      const trackingUrl  = `https://crm-rbscsolar.vercel.app/track?id=${encodeURIComponent(trackingId)}`;
 
       if (!brevoApiKey || !senderEmail || !customerEmail) {
         // Log the resend attempt even if email can't be sent
