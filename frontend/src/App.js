@@ -217,7 +217,7 @@ function App() {
         )}
 
         {/* Global Toast Notifications */}
-        <Toaster position="top-right" reverseOrder={false} toastOptions={{ style: { fontSize: '13px', fontFamily: 'Inter, sans-serif' } }} />
+        <Toaster position="top-right" reverseOrder={false} toastOptions={{ style: { fontSize: '13px', fontFamily: 'Inter, sans-serif' } }} containerStyle={{ zIndex: 999999 }} />
 
         {/* Low Stock Popup — only shows for admin/inventory roles with critical stock */}
         {token && <LowStockPopup />}
