@@ -455,6 +455,13 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
   const brevoApiKey = Deno.env.get("BREVO_API_KEY");
   const gmailEmail = Deno.env.get("GMAIL_EMAIL");
   
+  const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Associates";
+  const companyAddress = Deno.env.get("COMPANY_ADDRESS") || "Lucknow, Uttar Pradesh";
+  const companyPrimary = Deno.env.get("COMPANY_NAME_PRIMARY") || "RBSC";
+  const companySecondary = Deno.env.get("COMPANY_NAME_SECONDARY") || "Associates";
+  const companyWebsite = Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com";
+  const companyEmail = Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
+
   if (!brevoApiKey) throw new Error("BREVO_API_KEY not configured");
   if (!gmailEmail) throw new Error("GMAIL_EMAIL not configured");
 
