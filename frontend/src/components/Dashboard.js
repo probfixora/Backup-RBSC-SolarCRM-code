@@ -220,13 +220,21 @@ const Dashboard = ({ onLogout, title = 'Dashboard', roleBadge, viewAsUserId, vie
   }, [activeTab, chartTimeframe, customStart, customEnd, isAdmin]); // eslint-disable-line
 
   if (loading) return (
-    <div className="main-loading">
-      <div style={{ textAlign:'center' }}>
-        <div style={{ display:'flex', gap:'12px', marginBottom:'20px' }}>
-          {[1,2,3,4].map(i => <div key={i} className="skeleton" style={{ width:'160px', height:'110px', borderRadius:'14px' }} />)}
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--page-bg)' }}>
+      <Sidebar onLogout={onLogout} />
+      <main style={{ flex: 1, marginLeft: 'var(--main-offset)', padding: '28px 32px', maxWidth: '1400px', boxSizing: 'border-box' }}>
+        <Header title={title} subtitle="Overview of your projects today" roleBadge={roleBadge} onLogout={onLogout} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
+          <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+            {[1,2,3,4].map(i => (
+              <div key={i} className="skeleton" style={{ flex: '1 1 160px', height: '110px', borderRadius: '14px', minWidth: '140px' }} />
+            ))}
+          </div>
+          <div className="skeleton" style={{ height: '60px', borderRadius: '12px' }} />
+          <div className="skeleton" style={{ height: '220px', borderRadius: '14px' }} />
+          <div className="skeleton" style={{ height: '180px', borderRadius: '14px' }} />
         </div>
-        <p style={{ fontSize:'13px', color:'var(--text-4)' }}>Loading dashboard…</p>
-      </div>
+      </main>
     </div>
   );
 
