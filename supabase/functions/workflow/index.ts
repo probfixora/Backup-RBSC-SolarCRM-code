@@ -206,7 +206,7 @@ serve(async (req) => {
 
     const byTrackingId = await supabase
       .from("cases")
-      .select("id, tracking_id, current_stage, status")
+      .select("id, tracking_id, current_stage, status, is_tracking_visible")
       .eq("tracking_id", trackingId)
       .maybeSingle();
 
@@ -215,14 +215,14 @@ serve(async (req) => {
     } else {
       const byCaseId = await supabase
         .from("cases")
-        .select("id, tracking_id, current_stage, status")
+        .select("id, tracking_id, current_stage, status, is_tracking_visible")
         .eq("id", trackingId)
         .maybeSingle();
       data = byCaseId.data;
       error = byCaseId.error;
     }
 
-    if (!data) {
+    if (!data || data.is_tracking_visible === false) {
       return new Response(JSON.stringify({ message: "Tracking ID not found. Please check the ID from your email and try again." }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -405,260 +405,99 @@ serve(async (req) => {
         remarks: "Customer Registered",
       });
 
-      // ── SEND REGISTRATION CONFIRMATION EMAIL ──────────────────────────────
-      // Fire-and-forget: email failure must NEVER block case creation.
-      // We log errors but do not throw or roll back.
-      const sendRegistrationEmail = async (): Promise<void> => {
-        const brevoApiKey = Deno.env.get("BREVO_API_KEY");
-        const senderEmail  = Deno.env.get("GMAIL_EMAIL");
-        const customerEmail = newCase.email || body.email || "";
-
-        if (!brevoApiKey || !senderEmail) {
-          console.warn("[create_case] BREVO_API_KEY or GMAIL_EMAIL not set — skipping confirmation email.");
-          return;
-        }
-        if (!customerEmail) {
-          console.warn(`[create_case] No email address for case ${newCase.id} — skipping confirmation email.`);
-          return;
-        }
-
-        const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Solar";
-        const companyEmail = Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
-        const companyWebsite = Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com";
-        const companyAddress = Deno.env.get("COMPANY_ADDRESS_LINE1") || "Lucknow, Uttar Pradesh, India";
-        const companyPrimary = Deno.env.get("COMPANY_NAME_PRIMARY") || "RBSC";
-        const companySecondary = Deno.env.get("COMPANY_NAME_SECONDARY") || "Solar";
-
-        const caseId       = newCase.id;                      // e.g. CASE-0001 (DB record)
-        const customerName  = newCase.customer_name || "Customer";
-        const registeredOn  = new Date().toLocaleDateString("en-IN", {
-          day: "2-digit", month: "long", year: "numeric",
-        });
-
-        // ── Use the already-generated & saved Tracking ID ─────────────────
-        const trackingId  = trackingIdVal;  // e.g. RBSC-RAME-94721
-
-        const trackingUrl = `https://${companyWebsite.replace('www.', '').replace('https://', '')}/track?id=${encodeURIComponent(trackingIdVal)}`;
-        const htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Registration Successful — ${companyName}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}
-    .wrapper{max-width:640px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}
-    /* Header */
-    .header{background:linear-gradient(135deg,#1a1a5e 0%,#16a34a 100%);padding:28px 40px 24px;text-align:center}
-    .header-logo{display:block;margin:0 auto 10px;max-height:64px;width:auto}
-    .header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:0.3px;margin:0}
-    .header p{color:rgba(255,255,255,0.80);font-size:13px;margin-top:4px}
-    /* Badge */
-    .badge-wrap{text-align:center;margin:-18px 0 0}
-    .badge{display:inline-block;background:#16a34a;color:#fff;font-size:12px;font-weight:700;
-           letter-spacing:1px;text-transform:uppercase;padding:6px 18px;border-radius:20px;
-           box-shadow:0 2px 8px rgba(22,163,74,0.35)}
-    /* Body */
-    .body{padding:36px 40px}
-    .greeting{font-size:18px;font-weight:700;color:#1a1a5e;margin-bottom:10px}
-    .intro{font-size:14px;color:#4a5568;line-height:1.7;margin-bottom:24px}
-    /* Tracking card */
-    .tracking-card{background:linear-gradient(135deg,#eef2ff,#ecfdf5);border:1.5px solid #c7d2fe;
-                   border-radius:10px;padding:24px 28px;margin-bottom:24px;text-align:center}
-    .tracking-label{font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-    .tracking-id{font-size:30px;font-weight:700;color:#1a1a5e;letter-spacing:2px;font-family:monospace}
-    .tracking-sublabel{font-size:12px;color:#64748b;margin-top:6px}
-    /* Details table */
-    .details{width:100%;border-collapse:collapse;margin-bottom:24px;font-size:13px}
-    .details tr:not(:last-child) td{border-bottom:1px solid #e2e8f0}
-    .details td{padding:11px 14px;color:#374151}
-    .details td:first-child{font-weight:600;color:#1a1a5e;background:#f8fafc;width:42%;border-radius:4px 0 0 4px}
-    /* CTA Button */
-    .cta-wrap{text-align:center;margin-bottom:28px}
-    .cta-btn{display:inline-block;background:linear-gradient(135deg,#1a1a5e,#16a34a);color:#fff !important;
-             font-size:14px;font-weight:700;text-decoration:none;padding:14px 36px;
-             border-radius:8px;letter-spacing:0.3px;box-shadow:0 4px 12px rgba(22,163,74,0.30)}
-    /* Steps */
-    .steps-title{font-size:13px;font-weight:700;color:#1a1a5e;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px}
-    .steps{display:flex;gap:0;margin-bottom:28px;border-radius:8px;overflow:hidden}
-    .step{flex:1;padding:12px 8px;text-align:center;background:#f8fafc;border-right:1px solid #e2e8f0}
-    .step:last-child{border-right:none}
-    .step-dot{width:28px;height:28px;border-radius:50%;background:#e2e8f0;color:#94a3b8;
-              font-size:12px;font-weight:700;line-height:28px;text-align:center;margin:0 auto 6px}
-    .step-dot.active{background:#16a34a;color:#fff}
-    .step-label{font-size:10px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
-    /* Help */
-    .help{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px 20px;font-size:13px;color:#92400e;margin-bottom:24px}
-    .help strong{color:#78350f}
-    /* Footer */
-    .footer{background:#f8fafc;padding:24px 40px;text-align:center;border-top:1px solid #e2e8f0}
-    .footer-logo{font-size:16px;font-weight:700;color:#1a1a5e;margin-bottom:4px}
-    .footer-logo span{color:#16a34a}
-    .footer p{font-size:11px;color:#94a3b8;line-height:1.6;margin-top:4px}
-    .footer a{color:#6366f1;text-decoration:none}
-  </style>
-</head>
-<body>
-<div class="wrapper">
-
-  <!-- Header -->
-  <div class="header">
-    ${logoBase64 ? `<img src="data:image/png;base64,${logoBase64}" alt="${companyName} Logo" class="header-logo" />` : ""}
-    <h1>Registration Successful!</h1>
-    <p>Your solar installation has been officially registered</p>
-  </div>
-
-  <!-- Green Badge -->
-  <div class="badge-wrap" style="padding:18px 0 0">
-    <span class="badge">Confirmed</span>
-  </div>
-
-  <!-- Body -->
-  <div class="body">
-    <div class="greeting">Hello ${customerName},</div>
-    <p class="intro">
-      Welcome to <strong>${companyName}</strong>! Your details have been successfully verified and registered in our system.
-      You can track your live installation
-      case progress at any time.
-    </p>
-
-    <!-- Tracking ID Card -->
-    <div class="tracking-card">
-      <div class="tracking-label">Your Unique Tracking ID</div>
-      <div class="tracking-id">${trackingId}</div>
-      <div class="tracking-sublabel">Keep this ID safe for future reference</div>
-    </div>
-
-    <!-- Case Details -->
-    <table class="details">
-      <tr>
-        <td>Customer Name</td>
-        <td>${customerName}</td>
-      </tr>
-      <tr>
-        <td>Customer ID</td>
-        <td>${customerIdVal}</td>
-      </tr>
-      <tr>
-        <td>Registered On</td>
-        <td>${registeredOn}</td>
-      </tr>
-      <tr>
-        <td>Current Stage</td>
-        <td>📋 Registration Done</td>
-      </tr>
-      <tr>
-        <td>Assigned Team</td>
-        <td>Registration Department</td>
-      </tr>
-      <tr>
-        <td>Status</td>
-        <td><span style="color:#16a34a;font-weight:700">● In Progress</span></td>
-      </tr>
-    </table>
-
-    <!-- Track Live Button -->
-    <div class="cta-wrap">
-      <a href="${trackingUrl}" class="cta-btn">Track Installation Live</a>
-    </div>
-
-    <!-- Visual Journey -->
-    <div class="steps-title">Installation Journey</div>
-    <div class="steps">
-      <div class="step">
-        <div class="step-dot active">✓</div>
-        <div class="step-label" style="color:#16a34a">Registered</div>
-      </div>
-      <div class="step">
-        <div class="step-dot">2</div>
-        <div class="step-label">Survey</div>
-      </div>
-      <div class="step">
-        <div class="step-dot">3</div>
-        <div class="step-label">Approval</div>
-      </div>
-      <div class="step">
-        <div class="step-dot">4</div>
-        <div class="step-label">Installed</div>
-      </div>
-    </div>
-
-    <!-- Help Box -->
-    <div class="help">
-      <strong>Need Help?</strong> If you have any questions about your registration 
-      or need to update your information, please contact us at 
-      <strong>${companyEmail}</strong> and quote your Tracking ID 
-      <strong>${trackingId}</strong>.
-    </div>
-
-    <p style="font-size:13px;color:#4a5568;line-height:1.7">
-      Warm regards,<br/>
-      <strong style="color:#1a1a5e">${companyName} Team</strong><br/>
-      <span style="color:#94a3b8;font-size:12px">${companyAddress}</span>
-    </p>
-  </div>
-
-  <!-- Footer -->
-  <div class="footer">
-    <div class="footer-logo">${companyPrimary} <span>${companySecondary}</span></div>
-    <p>
-      © ${new Date().getFullYear()} ${companyName}. All rights reserved.<br/>
-      ${Deno.env.get("COMPANY_ADDRESS_LINE1") || "Lucknow, Uttar Pradesh, India"}<br/>
-      <a href="https://${companyWebsite.replace('www.', '').replace('https://', '')}">${companyWebsite}</a> &nbsp;|&nbsp; 
-      <a href="mailto:${companyEmail}">${companyEmail}</a>
-    </p>
-    <p style="margin-top:8px;color:#cbd5e1;font-size:10px">
-      This is an automated message. Please do not reply to this email.
-    </p>
-  </div>
-
-</div>
-</body>
-</html>`;
-
-        const payload = {
-          sender: { name: companyName, email: senderEmail },
-          to: [{ email: customerEmail, name: customerName }],
-          subject: `Registration Confirmed — Your Tracking ID: ${trackingId}`,
-          htmlContent,
-        };
-
-        try {
-          const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-            method: "POST",
-            headers: {
-              "api-key": brevoApiKey,
-              "Content-Type": "application/json",
-              "Accept": "application/json",
-            },
-            body: JSON.stringify(payload),
-          });
-
-          if (!res.ok) {
-            const errText = await res.text();
-            console.error(`[create_case] Brevo API error for case ${caseId}: ${errText}`);
-          } else {
-            const result = await res.json();
-            console.log(`[create_case] ✅ Confirmation email sent to ${customerEmail} for case ${caseId}. Brevo messageId: ${result.messageId}`);
-          }
-        } catch (emailErr) {
-          // Log only — never block or roll back the case creation
-          console.error(`[create_case] Failed to send confirmation email for case ${caseId}:`, emailErr);
-        }
-      };
-
-      // Kick off email in background — non-blocking
-      // @ts-ignore
-      if (typeof EdgeRuntime !== "undefined" && EdgeRuntime.waitUntil) {
-        // @ts-ignore
-        EdgeRuntime.waitUntil(sendRegistrationEmail());
-      } else {
-        sendRegistrationEmail();
-      }
+      // ── EMAIL MOVED TO WORKFLOW UPDATE_STAGE ──
+      // Email is no longer sent automatically on case creation.
       // ─────────────────────────────────────────────────────────────────────
 
       return jsonResponse(newCase, 201);
+    }
+
+    // ── RESEND TRACKING ID ────────────────────────────────────────────────
+    if (action === "resend_tracking_id") {
+      const { data: caseObj, error } = await supabase
+        .from("cases")
+        .select("*")
+        .eq("id", body.caseId)
+        .single();
+        
+      if (error || !caseObj) return jsonResponse({ message: "Case not found" }, 404);
+      if (!caseObj.customer_email) return jsonResponse({ message: "Customer email missing" }, 400);
+
+      const trackingId = caseObj.tracking_id || caseObj.id;
+      const customerName = caseObj.customer_name || "Customer";
+      const trackingUrl = `https://${(Deno.env.get("COMPANY_WEBSITE") || "rbscsolar.com").replace('www.', '').replace('https://', '')}/track?id=${encodeURIComponent(trackingId)}`;
+      
+      const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Associates";
+      const companyEmail = Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
+      const senderEmail = Deno.env.get("GMAIL_EMAIL") || companyEmail;
+      const brevoApiKey = Deno.env.get("BREVO_API_KEY");
+
+      if (!brevoApiKey || !senderEmail) {
+        return jsonResponse({ message: "Email configuration missing." }, 500);
+      }
+
+      const htmlContent = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
+<title>Your Tracking ID — ${companyName}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}.wrapper{max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}.header{background:linear-gradient(135deg,#1a1a5e 0%,#16a34a 100%);padding:28px 40px;text-align:center}.header h1{color:#fff;font-size:20px;font-weight:700}.body{padding:32px 40px}.tracking-card{background:linear-gradient(135deg,#eef2ff,#ecfdf5);border:1.5px solid #c7d2fe;border-radius:10px;padding:20px 24px;margin:20px 0;text-align:center}.tracking-label{font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.tracking-id{font-size:28px;font-weight:700;color:#1a1a5e;letter-spacing:2px;font-family:monospace}.cta-wrap{text-align:center;margin:20px 0}.cta-btn{display:inline-block;background:linear-gradient(135deg,#1a1a5e,#16a34a);color:#fff!important;font-size:14px;font-weight:700;text-decoration:none;padding:12px 32px;border-radius:8px}.footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style>
+</head><body><div class="wrapper">
+<div class="header"><h1>📋 Your Tracking ID</h1></div>
+<div class="body">
+<p style="font-size:16px;font-weight:700;color:#1a1a5e;margin-bottom:10px">Hello ${customerName},</p>
+<p style="font-size:14px;color:#4a5568;line-height:1.7;margin-bottom:16px">As requested, here is your Tracking ID to monitor your solar installation status.</p>
+<div class="tracking-card"><div class="tracking-label">Your Tracking ID</div><div class="tracking-id">${trackingId}</div><p style="font-size:12px;color:#64748b;margin-top:6px">Keep this safe for future reference</p></div>
+<div class="cta-wrap"><a href="${trackingUrl}" class="cta-btn">Track Installation Live</a></div>
+<p style="font-size:13px;color:#4a5568;line-height:1.7">If you have questions, contact us at <strong>${companyEmail}</strong> and quote your Tracking ID.</p>
+<p style="font-size:13px;color:#4a5568;margin-top:12px">Warm regards,<br/><strong style="color:#1a1a5e">${companyName} Team</strong></p>
+</div>
+<div class="footer">© ${new Date().getFullYear()} ${companyName}. This is an automated message.</div>
+</div></body></html>`;
+
+      try {
+        const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+          method: "POST",
+          headers: { "api-key": brevoApiKey, "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({
+            sender: { name: companyName, email: senderEmail },
+            to: [{ email: caseObj.customer_email, name: customerName }],
+            subject: `Your Tracking ID: ${trackingId} — ${companyName}`,
+            htmlContent,
+          }),
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          await supabase.from("email_logs").insert({
+            recipient_email: caseObj.customer_email,
+            email_type: "tracking_id_resend",
+            status: "failed",
+            error_message: errText,
+            reference_id: trackingId
+          });
+          return jsonResponse({ message: "Failed to send email." }, 500);
+        }
+
+        const result = await res.json();
+        await supabase.from("email_logs").insert({
+          recipient_email: caseObj.customer_email,
+          email_type: "tracking_id_resend",
+          status: "sent",
+          message_id: result.messageId,
+          reference_id: trackingId
+        });
+
+        // Audit Trail
+        await supabase.from("case_history").insert({
+          case_id: caseObj.id,
+          stage: caseObj.current_stage,
+          updated_by: user.name,
+          action_type: "tracking_id_resent",
+          remarks: `Tracking ID manually resent to ${caseObj.customer_email}`,
+        });
+
+        return jsonResponse({ message: "Tracking ID resent successfully!" });
+      } catch (err: any) {
+        return jsonResponse({ message: err.message }, 500);
+      }
     }
 
     // ── UPDATE STAGE ───────────────────────────────────────────────────────
@@ -747,6 +586,7 @@ serve(async (req) => {
           stage_entered_at:  new Date().toISOString(),
           escalation_level:  0,
           // ────────────────────────────────────────────────────────────────────
+          ...(finalStage === "Phone Verification Done" ? { is_tracking_visible: true } : {})
         })
         .eq("id", body.caseId)
         .select()
@@ -945,11 +785,33 @@ serve(async (req) => {
             if (!res.ok) {
               const errText = await res.text();
               console.error(`[phone_verification] Brevo error for case ${caseObj.id}: ${errText}`);
+              await supabase.from("email_logs").insert({
+                recipient_email: customerEmail,
+                email_type: "tracking_id",
+                status: "failed",
+                error_message: errText,
+                reference_id: trackingId
+              });
             } else {
+              const result = await res.json();
               console.log(`[phone_verification] ✅ Tracking ID email sent for case ${caseObj.id}`);
+              await supabase.from("email_logs").insert({
+                recipient_email: customerEmail,
+                email_type: "tracking_id",
+                status: "sent",
+                message_id: result.messageId,
+                reference_id: trackingId
+              });
             }
-          } catch (emailErr) {
+          } catch (emailErr: any) {
             console.error(`[phone_verification] Failed to send tracking ID email for case ${caseObj.id}:`, emailErr);
+            await supabase.from("email_logs").insert({
+              recipient_email: customerEmail,
+              email_type: "tracking_id",
+              status: "failed",
+              error_message: emailErr.message,
+              reference_id: trackingId
+            });
           }
         };
 
@@ -1095,6 +957,13 @@ serve(async (req) => {
         }
       }
 
+      // Fetch old case to detect changes for audit log
+      const { data: oldCase } = await supabase
+        .from("cases")
+        .select("quotation_amount, current_stage")
+        .eq("id", body.caseId)
+        .single();
+
       const { data: updated, error } = await supabase
         .from("cases")
         .update(updatePayload)
@@ -1103,6 +972,35 @@ serve(async (req) => {
         .single();
 
       if (error) throw error;
+
+      // ── Audit trail for Quotation Edit & Verification ──────────────────────
+      if (
+        updatePayload.quotation_amount !== undefined && 
+        oldCase && 
+        Number(oldCase.quotation_amount) !== Number(updatePayload.quotation_amount)
+      ) {
+        await supabase.from("case_history").insert({
+          case_id: body.caseId,
+          stage: updated.current_stage,
+          department: "Registration",
+          updated_by: user.name,
+          action_type: "quotation_edit",
+          remarks: `Quotation amount edited from ₹${oldCase.quotation_amount || 0} to ₹${updatePayload.quotation_amount}.`,
+        });
+      }
+      
+      if (updatePayload.quotation_verified === true) {
+        await supabase.from("case_history").insert({
+          case_id: body.caseId,
+          stage: updated.current_stage,
+          department: "Registration",
+          updated_by: user.name,
+          action_type: "quotation_verified",
+          remarks: `Quotation amount of ₹${updatePayload.quotation_amount || updated.quotation_amount || 0} was verified.`,
+        });
+      }
+      // ───────────────────────────────────────────────────────────────────────
+
       return jsonResponse(updated);
     }
 

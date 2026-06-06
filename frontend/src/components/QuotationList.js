@@ -169,15 +169,32 @@ const QuotationList = ({ onLogout }) => {
                       <td>{getStatusBadge(q.status)}</td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
-                          <a
-                            href={q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`}
-                            target="_blank" rel="noopener noreferrer"
+                          <button
+                            onClick={async () => {
+                              try {
+                                const url = q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`;
+                                const res = await fetch(url);
+                                const blob = await res.blob();
+                                const objectUrl = window.URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = objectUrl;
+                                link.download = `Quotation_${q.quotation_id || q.quotationId}.pdf`;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                window.URL.revokeObjectURL(objectUrl);
+                              } catch (err) {
+                                console.error('PDF download failed:', err);
+                                // Fallback
+                                window.open(q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`, '_blank');
+                              }
+                            }}
                             className="btn btn-ghost btn-sm"
                             style={{ padding: '7px 10px' }}
                             title="Download PDF"
                           >
                             <Download style={{ width: '14px', height: '14px' }} />
-                          </a>
+                          </button>
                           <select
                             value={q.status === 'Registration Completed' ? 'Approved' : q.status}
                             onChange={e => handleUpdateStatus(q.id || q._id, e.target.value)}
@@ -254,15 +271,29 @@ const QuotationList = ({ onLogout }) => {
                     <option value="Approved">Approved</option>
                     <option value="Rejected">Rejected</option>
                   </select>
-                  <a
-                    href={q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`}
-                    target="_blank" rel="noopener noreferrer"
-                    className="btn btn-primary"
-                    style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    title="Download PDF"
-                  >
-                    <Download style={{ width: '16px', height: '16px' }} />
-                  </a>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const url = q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`;
+                          const res = await fetch(url);
+                          const blob = await res.blob();
+                          const objectUrl = window.URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = objectUrl;
+                          link.download = `Quotation_${q.quotation_id || q.quotationId}.pdf`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          window.URL.revokeObjectURL(objectUrl);
+                        } catch (err) {
+                          console.error('PDF download failed:', err);
+                          window.open(q.pdf_url || q.pdfUrl || `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/Quotations/Quotation_${q.quotation_id || q.quotationId}.pdf`, '_blank');
+                        }
+                      }}
+                      className="btn btn-ghost btn-sm" style={{ padding: '8px' }} title="Download PDF"
+                    >
+                      <Download style={{ width: '16px', height: '16px' }} />
+                    </button>
                 </div>
               </div>
             ))}
