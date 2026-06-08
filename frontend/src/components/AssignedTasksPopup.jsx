@@ -1,42 +1,63 @@
 import React, { useState, useEffect } from "react";
 import { edgeFetch, EDGE } from "../lib/supabaseClient";
-import { useNavigate } from "react-router-dom";
-import { ClipboardCheck, X, ArrowRight } from "lucide-react";
+import { ClipboardCheck, X, ArrowRight, Check } from "lucide-react";
 
 const AssignedTasksPopup = () => {
   const [tasks, setTasks] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Only show once per session to avoid annoying the user on every route change
-    if (sessionStorage.getItem("tasksPopupShown") === "true") return;
-
     const fetchTasks = async () => {
       try {
         const userName = localStorage.getItem("name");
         if (!userName) return;
 
         const data = await edgeFetch(EDGE.workflow, { action: "get_all" });
-        const myTasks = data.filter(c => c.assigned_to === userName || c.assignedTo === userName);
+        const allMyTasks = data.filter(c => c.assigned_to === userName || c.assignedTo === userName);
 
-        if (myTasks.length > 0) {
-          setTasks(myTasks);
+        // Filter out tasks that have already been accepted
+        const acceptedTasksStr = localStorage.getItem("acceptedTasks") || "[]";
+        let acceptedTasks = [];
+        try {
+          acceptedTasks = JSON.parse(acceptedTasksStr);
+        } catch (e) {
+          acceptedTasks = [];
+        }
+
+        const newTasks = allMyTasks.filter(c => !acceptedTasks.includes(c.id));
+
+        if (newTasks.length > 0) {
+          setTasks(newTasks);
           setIsOpen(true);
-          sessionStorage.setItem("tasksPopupShown", "true");
         }
       } catch (err) {
         console.error("Failed to fetch assigned tasks for popup", err);
       }
     };
 
-    // Add a slight delay so it pops up after the main dashboard renders
     const timer = setTimeout(() => {
       fetchTasks();
     }, 1500);
 
     return () => clearTimeout(timer);
   }, []);
+
+  const handleAcceptTasks = () => {
+    // Save these task IDs as accepted
+    const acceptedTasksStr = localStorage.getItem("acceptedTasks") || "[]";
+    let acceptedTasks = [];
+    try {
+      acceptedTasks = JSON.parse(acceptedTasksStr);
+    } catch (e) {
+      acceptedTasks = [];
+    }
+
+    const newTaskIds = tasks.map(t => t.id);
+    const updatedAccepted = [...new Set([...acceptedTasks, ...newTaskIds])];
+    localStorage.setItem("acceptedTasks", JSON.stringify(updatedAccepted));
+
+    setIsOpen(false);
+  };
 
   if (!isOpen) return null;
 
@@ -80,6 +101,7 @@ const AssignedTasksPopup = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            transition: "all 0.2s",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "#f1f5f9";
@@ -129,14 +151,11 @@ const AssignedTasksPopup = () => {
             marginBottom: "24px",
           }}
         >
-          Admin has assigned <strong>{tasks.length}</strong> new task{tasks.length > 1 ? "s" : ""} to you. Please review and complete them as soon as possible.
+          Admin has assigned <strong>{tasks.length}</strong> new task{tasks.length > 1 ? "s" : ""} to you. Please accept them to continue your work.
         </p>
 
         <button
-          onClick={() => {
-            setIsOpen(false);
-            navigate("/cases?tab=assigned");
-          }}
+          onClick={handleAcceptTasks}
           style={{
             width: "100%",
             display: "flex",
@@ -162,7 +181,7 @@ const AssignedTasksPopup = () => {
             e.currentTarget.style.transform = "none";
           }}
         >
-          View Assigned Tasks <ArrowRight style={{ width: "16px", height: "16px" }} />
+          <Check style={{ width: "16px", height: "16px" }} /> Accept Task{tasks.length > 1 ? "s" : ""}
         </button>
       </div>
     </div>

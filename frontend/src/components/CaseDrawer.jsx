@@ -1261,7 +1261,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       <div
         style={{ width: "100%", maxWidth: "800px", maxHeight: "92vh", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
       >
-        <div style={{ backgroundColor: "#0f172a", padding: "28px 32px", color: "#ffffff", display: "flex", flexDirection: "column", gap: "16px", position: "relative", flexShrink: 0 }}>
+        <div style={{ backgroundColor: "#0f172a", padding: "16px 24px", color: "#ffffff", display: "flex", flexDirection: "column", gap: "12px", position: "relative", flexShrink: 0 }}>
           
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -1283,17 +1283,17 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
             </div>
           </div>
 
-          <h2 style={{ fontSize: "28px", fontWeight: 800, margin: "4px 0 0 0", letterSpacing: "-0.02em", color: "#f8fafc" }}>
+          <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0", letterSpacing: "-0.02em", color: "#f8fafc" }}>
             {normalized.customerName}
           </h2>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", color: "#94a3b8", fontSize: "14px", fontWeight: 500 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", color: "#94a3b8", fontSize: "14px", fontWeight: 500 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Phone size={16} style={{ color: "#64748b" }} /> {caseData.phone || "N/A"}</div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><MapPin size={16} style={{ color: "#64748b" }} /> {caseData.city || caseData.district || "N/A"}</div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Zap size={16} style={{ color: "#64748b" }} /> {caseData.plant_capacity || caseData.system_size_kw || "0"} kW - {normalized.paymentType || "N/A"}</div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "8px" }}>
             <span style={{ backgroundColor: "#064e3b", color: "#34d399", padding: "6px 16px", borderRadius: "9999px", fontSize: "13px", fontWeight: 700 }}>
               {normalized.status === "Completed" ? "Completed" : normalized.currentStage || "In Progress"}
             </span>
@@ -1324,7 +1324,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
-                  padding: "16px 20px",
+                  padding: "12px 16px",
                   fontSize: "14px",
                   fontWeight: 600,
                   border: "none",
