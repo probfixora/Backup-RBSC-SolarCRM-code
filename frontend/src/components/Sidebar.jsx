@@ -29,7 +29,6 @@ const ICONS = {
   "CRM Tasks": "ti ti-heart-handshake",
   "Audit Log": "ti ti-shield-lock",
   Support: "ti ti-headset",
-  "Assigned Tasks": "ti ti-clipboard-list",
 };
 
 /* ── Mobile bottom nav — role-specific 4 tabs ───────────────────────────── */
@@ -245,9 +244,7 @@ const getRoleGroups = (role) => {
     {
       group: "Workspace",
       items: [
-        ...items.slice(0, items.findIndex(i => i.name === "Customers") + 1),
-        { name: "Assigned Tasks", path: "/cases?filter=assigned" },
-        ...items.slice(items.findIndex(i => i.name === "Customers") + 1)
+        ...items
       ]
     }
   ];
