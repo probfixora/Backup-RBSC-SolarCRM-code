@@ -1256,42 +1256,53 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         className="w-full max-w-4xl bg-white shadow-2xl flex flex-col transform transition-transform duration-300"
         style={{ animation: "slideIn 0.3s ease-out forwards" }}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #f3f4f6", backgroundColor: "#ffffff" }}>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+            <h2 style={{ fontSize: "18px", fontWeight: "bold", color: "#111827", display: "flex", alignItems: "center", gap: "10px", margin: 0, flexWrap: "wrap" }}>
               Case Details
-              <span className="text-sm font-medium px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+              <span style={{ fontSize: "13px", fontWeight: 500, padding: "2px 10px", backgroundColor: "#eff6ff", color: "#1d4ed8", borderRadius: "9999px", border: "1px solid #dbeafe" }}>
                 #{normalized.trackingId}
               </span>
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <p style={{ fontSize: "14px", color: "#6b7280", marginTop: "4px", margin: 0 }}>
               {normalized.customerName}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            style={{ padding: "8px", color: "#9ca3af", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyItems: "center", borderRadius: "50%", marginTop: "-4px", marginRight: "-8px" }}
           >
             <X size={24} />
           </button>
         </div>
 
-        <div className="flex px-6 gap-2 border-b border-gray-100 bg-gray-50/50 overflow-x-auto custom-scrollbar">
+        <div style={{ display: "flex", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none", borderBottom: "1px solid #f3f4f6", backgroundColor: "rgba(249, 250, 251, 0.5)", padding: "0 10px" }}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-4 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
-                  isActive
-                    ? "border-blue-600 text-blue-600 bg-blue-50/50"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                }`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "14px 16px",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  border: "none",
+                  borderBottom: isActive ? "2px solid #2563eb" : "2px solid transparent",
+                  backgroundColor: isActive ? "rgba(239, 246, 255, 0.5)" : "transparent",
+                  color: isActive ? "#2563eb" : "#6b7280",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  outline: "none",
+                  transition: "all 0.2s"
+                }}
               >
                 <tab.icon
-                  size={18}
-                  className={isActive ? "text-blue-600" : "text-gray-400"}
+                  size={16}
+                  style={{ color: isActive ? "#2563eb" : "#9ca3af" }}
                 />
                 {tab.label}
               </button>
