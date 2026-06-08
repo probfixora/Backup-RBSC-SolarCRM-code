@@ -1251,32 +1251,64 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity">
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(15, 23, 42, 0.7)", backdropFilter: "blur(6px)", padding: "16px" }}>
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes modalFadeIn {
+          from { opacity: 0; transform: scale(0.95) translateY(10px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+      `}} />
       <div
-        className="w-full max-w-4xl bg-white shadow-2xl flex flex-col transform transition-transform duration-300"
-        style={{ animation: "slideIn 0.3s ease-out forwards" }}
+        style={{ width: "100%", maxWidth: "1000px", maxHeight: "92vh", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #f3f4f6", backgroundColor: "#ffffff" }}>
-          <div>
-            <h2 style={{ fontSize: "18px", fontWeight: "bold", color: "#111827", display: "flex", alignItems: "center", gap: "10px", margin: 0, flexWrap: "wrap" }}>
-              Case Details
-              <span style={{ fontSize: "13px", fontWeight: 500, padding: "2px 10px", backgroundColor: "#eff6ff", color: "#1d4ed8", borderRadius: "9999px", border: "1px solid #dbeafe" }}>
-                #{normalized.trackingId}
+        <div style={{ backgroundColor: "#0f172a", padding: "28px 32px", color: "#ffffff", display: "flex", flexDirection: "column", gap: "16px", position: "relative", flexShrink: 0 }}>
+          
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <span style={{ color: "#38bdf8", fontWeight: 800, fontSize: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                {normalized.trackingId}
               </span>
-            </h2>
-            <p style={{ fontSize: "14px", color: "#6b7280", marginTop: "4px", margin: 0 }}>
-              {normalized.customerName}
-            </p>
+              <span style={{ color: "#a855f7", fontWeight: 700, fontSize: "13px", letterSpacing: "0.02em" }}>
+                Customer ID: {normalized.customerId || "N/A"}
+              </span>
+            </div>
+            
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <button style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#ffffff", padding: "8px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)"} onMouseOut={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}>
+                <Download size={16} /> PDF
+              </button>
+              <button onClick={onClose} style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "none", color: "#ffffff", padding: "8px", borderRadius: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyItems: "center", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)"} onMouseOut={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}>
+                <X size={18} />
+              </button>
+            </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{ padding: "8px", color: "#9ca3af", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyItems: "center", borderRadius: "50%", marginTop: "-4px", marginRight: "-8px" }}
-          >
-            <X size={24} />
-          </button>
+
+          <h2 style={{ fontSize: "28px", fontWeight: 800, margin: "4px 0 0 0", letterSpacing: "-0.02em", color: "#f8fafc" }}>
+            {normalized.customerName}
+          </h2>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", color: "#94a3b8", fontSize: "14px", fontWeight: 500 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Phone size={16} style={{ color: "#64748b" }} /> {caseData.phone || "N/A"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><MapPin size={16} style={{ color: "#64748b" }} /> {caseData.city || caseData.district || "N/A"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Zap size={16} style={{ color: "#64748b" }} /> {caseData.plant_capacity || caseData.system_size_kw || "0"} kW - {normalized.paymentType || "N/A"}</div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px" }}>
+            <span style={{ backgroundColor: "#064e3b", color: "#34d399", padding: "6px 16px", borderRadius: "9999px", fontSize: "13px", fontWeight: 700 }}>
+              {normalized.status === "Completed" ? "Completed" : normalized.currentStage || "In Progress"}
+            </span>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ flex: 1, height: "4px", backgroundColor: "rgba(255,255,255,0.1)", borderRadius: "2px", overflow: "hidden", position: "relative" }}>
+                <div style={{ width: `${(Math.max(0, STAGES.indexOf(normalized.currentStage)) + 1) / STAGES.length * 100}%`, height: "100%", backgroundColor: "#f59e0b", position: "absolute", left: 0, top: 0, borderRadius: "2px" }} />
+              </div>
+              <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600, whiteSpace: "nowrap" }}>
+                Stage {Math.max(0, STAGES.indexOf(normalized.currentStage)) + 1} of {STAGES.length}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div style={{ display: "flex", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none", borderBottom: "1px solid #f3f4f6", backgroundColor: "rgba(249, 250, 251, 0.5)", padding: "0 10px" }}>
+        <div style={{ display: "flex", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none", borderBottom: "1px solid #e2e8f0", backgroundColor: "#ffffff", padding: "0 16px", flexShrink: 0 }}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -1286,14 +1318,14 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "6px",
-                  padding: "14px 16px",
+                  gap: "8px",
+                  padding: "16px 20px",
                   fontSize: "14px",
-                  fontWeight: 500,
+                  fontWeight: 600,
                   border: "none",
-                  borderBottom: isActive ? "2px solid #2563eb" : "2px solid transparent",
-                  backgroundColor: isActive ? "rgba(239, 246, 255, 0.5)" : "transparent",
-                  color: isActive ? "#2563eb" : "#6b7280",
+                  borderBottom: isActive ? "3px solid #f59e0b" : "3px solid transparent",
+                  backgroundColor: "transparent",
+                  color: isActive ? "#f59e0b" : "#64748b",
                   cursor: "pointer",
                   whiteSpace: "nowrap",
                   outline: "none",
@@ -1301,8 +1333,8 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                 }}
               >
                 <tab.icon
-                  size={16}
-                  style={{ color: isActive ? "#2563eb" : "#9ca3af" }}
+                  size={18}
+                  style={{ color: isActive ? "#f59e0b" : "#cbd5e1" }}
                 />
                 {tab.label}
               </button>
