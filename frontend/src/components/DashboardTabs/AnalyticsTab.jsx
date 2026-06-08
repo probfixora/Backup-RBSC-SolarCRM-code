@@ -121,7 +121,7 @@ const AnalyticsTab = ({ ctx }) => {
           ) : (
             <>
               {/* ── 1. HIGH-LEVEL KPIs ── */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+              <div className="dash-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
                 {[
                   { label: "Total Realized Revenue", val: fmtCurrency(totalRevenue), icon: Banknote, color: "var(--color-primary)", bg: "var(--color-primary-light)" },
                   { label: "Pipeline Revenue", val: fmtCurrency(pipelineRevenue), icon: TrendingUp, color: "var(--color-warning)", bg: "var(--color-warning-light)" },
@@ -143,7 +143,7 @@ const AnalyticsTab = ({ ctx }) => {
               </div>
 
               {/* ── 2. REVENUE CHARTS ROW ── */}
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "24px", alignItems: "stretch" }}>
+              <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "24px", alignItems: "stretch" }}>
                 
                 {/* Revenue Trend Chart */}
                 <div className="card" style={{ padding: "28px", display: "flex", flexDirection: "column" }}>
@@ -238,7 +238,7 @@ const AnalyticsTab = ({ ctx }) => {
               </div>
 
               {/* ── 3. OPERATIONAL & DEPARTMENTAL BOTTLENECKS ── */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+              <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
                 
                 {/* Case Status Distribution (Pie) */}
                 <div className="card" style={{ padding: "28px" }}>
