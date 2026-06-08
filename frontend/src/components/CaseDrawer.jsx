@@ -1259,7 +1259,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         }
       `}} />
       <div
-        style={{ width: "100%", maxWidth: "1000px", maxHeight: "92vh", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
+        style={{ width: "100%", maxWidth: "800px", maxHeight: "92vh", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
       >
         <div style={{ backgroundColor: "#0f172a", padding: "28px 32px", color: "#ffffff", display: "flex", flexDirection: "column", gap: "16px", position: "relative", flexShrink: 0 }}>
           
