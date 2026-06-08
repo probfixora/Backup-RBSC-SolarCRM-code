@@ -14,6 +14,7 @@ import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OfflineBanner from "./components/OfflineBanner";
 import LowStockPopup from "./components/LowStockPopup";
+import AssignedTasksPopup from "./components/AssignedTasksPopup";
 
 // Lazy-loaded pages/components to reduce initial bundle size
 import Cases from "./components/Cases";
@@ -208,6 +209,8 @@ function App() {
       <div className="App">
         {/* Offline detection banner — always mounted */}
         <OfflineBanner />
+        
+        {token && <AssignedTasksPopup />}
 
         {/* Admin Simulation Banner */}
         {isSimulating && (

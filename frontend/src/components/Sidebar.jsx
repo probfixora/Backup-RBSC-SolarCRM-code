@@ -29,6 +29,7 @@ const ICONS = {
   "CRM Tasks": "ti ti-heart-handshake",
   "Audit Log": "ti ti-shield-lock",
   Support: "ti ti-headset",
+  "Assigned Tasks": "ti ti-clipboard-list",
 };
 
 /* ── Mobile bottom nav — role-specific 4 tabs ───────────────────────────── */
@@ -119,6 +120,7 @@ const NAV = {
       group: "Management",
       items: [
         { name: "All Customers", path: "/cases" },
+        { name: "Assigned Tasks", path: "/cases?tab=assigned" },
         { name: "Quotation List", path: "/quotations" },
         { name: "Team", path: "/users" },
       ],
@@ -184,6 +186,7 @@ const getRoleGroups = (role) => {
         items: [
           { name: "Dashboard", path: "/technical-dashboard" },
           { name: "Customers", path: "/cases" },
+          { name: "Assigned Tasks", path: "/cases?tab=assigned" },
         ],
       },
     ];
@@ -196,6 +199,7 @@ const getRoleGroups = (role) => {
         items: [
           { name: "Dashboard", path: "/accounts-dashboard" },
           { name: "Customers", path: "/cases" },
+          { name: "Assigned Tasks", path: "/cases?tab=assigned" },
           { name: "Finance", path: "/finance-tracking" },
         ],
       },
@@ -209,6 +213,7 @@ const getRoleGroups = (role) => {
         items: [
           { name: "Dashboard", path: "/customer-service-dashboard" },
           { name: "Customers", path: "/cases" },
+          { name: "Assigned Tasks", path: "/cases?tab=assigned" },
         ],
       },
     ];
@@ -221,6 +226,7 @@ const getRoleGroups = (role) => {
         items: [
           { name: "Dashboard", path: dashMap[role] || "/admin-dashboard" },
           { name: "Customers", path: "/cases" },
+          { name: "Assigned Tasks", path: "/cases?tab=assigned" },
           { name: "Dispatch", path: "/b2c-dispatch" },
           { name: "Procurement", path: "/procurement-portal" },
         ],
@@ -240,7 +246,16 @@ const getRoleGroups = (role) => {
     items.push({ name: "Finance", path: "/finance-tracking" });
   }
   // All roles get Customers access
-  return [{ group: "Workspace", items }];
+  return [
+    {
+      group: "Workspace",
+      items: [
+        ...items.slice(0, items.findIndex(i => i.name === "Customers") + 1),
+        { name: "Assigned Tasks", path: "/cases?filter=assigned" },
+        ...items.slice(items.findIndex(i => i.name === "Customers") + 1)
+      ]
+    }
+  ];
 };
 
 /* ── Role display label ──────────────────────────────────────────────────── */

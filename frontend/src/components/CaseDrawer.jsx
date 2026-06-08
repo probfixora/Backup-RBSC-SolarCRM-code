@@ -1297,6 +1297,11 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
             <span style={{ backgroundColor: "#064e3b", color: "#34d399", padding: "6px 16px", borderRadius: "9999px", fontSize: "13px", fontWeight: 700 }}>
               {normalized.status === "Completed" ? "Completed" : normalized.currentStage || "In Progress"}
             </span>
+            {normalized.assignedTo && normalized.assignedTo === localStorage.getItem("name") && (
+              <span style={{ backgroundColor: "rgba(139, 92, 246, 0.15)", color: "#c084fc", border: "1px solid rgba(168, 85, 247, 0.3)", padding: "5px 14px", borderRadius: "9999px", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                <UserCheck size={14} /> Assigned to You
+              </span>
+            )}
             <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ flex: 1, height: "4px", backgroundColor: "rgba(255,255,255,0.1)", borderRadius: "2px", overflow: "hidden", position: "relative" }}>
                 <div style={{ width: `${(Math.max(0, STAGES.indexOf(normalized.currentStage)) + 1) / STAGES.length * 100}%`, height: "100%", backgroundColor: "#f59e0b", position: "absolute", left: 0, top: 0, borderRadius: "2px" }} />

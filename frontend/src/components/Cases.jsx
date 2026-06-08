@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Download,
   X,
+  ClipboardCheck,
 } from "lucide-react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
@@ -460,6 +461,7 @@ const Cases = ({ onLogout }) => {
 
   const tabFiltered = applyAdvancedFilters(
     (() => {
+      if (activeTab === "assigned") return searched.filter(c => c.assignedTo === localStorage.getItem("name"));
       if (activeTab === "mystage") return searched.filter(isAtMyStage);
       if (activeTab === "active") return searched.filter(isInProgress);
       if (activeTab === "delayed")
@@ -481,6 +483,12 @@ const Cases = ({ onLogout }) => {
   // Clean 4 tabs: All, In Progress (role-aware), Delayed, Completed (role-aware)
   const tabs = [
     { id: "all", label: "All Customers", icon: Layers, count: searched.length },
+    {
+      id: "assigned",
+      label: "Assigned Tasks",
+      icon: ClipboardCheck,
+      count: searched.filter((c) => c.assignedTo === localStorage.getItem("name")).length,
+    },
     {
       id: "active",
       label: "In Progress",
