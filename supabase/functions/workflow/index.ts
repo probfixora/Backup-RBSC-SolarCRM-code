@@ -56,17 +56,24 @@ for (const [stage, roles] of Object.entries(stageToAllowedRole)) {
 // ─── CORS headers ─────────────────────────────────────────────────────────────
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
 };
 
 // ─── Helper: verify JWT and get user profile ──────────────────────────────────
-async function getUser(req: Request, supabase: ReturnType<typeof createClient>) {
+async function getUser(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) throw new Error("No authorization header");
 
   const token = authHeader.replace("Bearer ", "");
-  const { data: { user }, error } = await supabase.auth.getUser(token);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
   if (error || !user) throw new Error("Unauthorized");
 
   // Get role from profiles table
@@ -84,16 +91,30 @@ async function getUser(req: Request, supabase: ReturnType<typeof createClient>) 
 
 // ─── Document Masking Helper ────────────────────────────────────────────────────
 function maskDocumentsForRole(role: string, docsObj: any) {
-  if (!docsObj || typeof docsObj !== 'object') return {};
-  const restrictedRoles = ['inventory', 'field_installation', 'electrical', 'store'];
+  if (!docsObj || typeof docsObj !== "object") return {};
+  const restrictedRoles = [
+    "inventory",
+    "field_installation",
+    "electrical",
+    "store",
+  ];
   if (!restrictedRoles.includes(role)) return docsObj;
 
-  const sensitiveKeywords = ['aadhar', 'pan', 'itr', 'salary', 'bank', 'form 16', 'gst', 'kyc'];
+  const sensitiveKeywords = [
+    "aadhar",
+    "pan",
+    "itr",
+    "salary",
+    "bank",
+    "form 16",
+    "gst",
+    "kyc",
+  ];
   const maskedDocs: any = {};
 
   for (const [key, value] of Object.entries(docsObj)) {
     const keyLower = key.toLowerCase();
-    const isSensitive = sensitiveKeywords.some(kw => keyLower.includes(kw));
+    const isSensitive = sensitiveKeywords.some((kw) => keyLower.includes(kw));
     if (!isSensitive) {
       maskedDocs[key] = value;
     }
@@ -110,56 +131,108 @@ function maskDocumentsForRole(role: string, docsObj: any) {
 //   registration     → Full access EXCEPT payment_mode (Data Privacy Rule 2026-06)
 //   banking / admin / sales → full access
 function maskCaseDataForRole(role: string, caseRow: any): any {
-  if (!caseRow || typeof caseRow !== 'object') return caseRow;
+  if (!caseRow || typeof caseRow !== "object") return caseRow;
   // Full access roles — return as-is
-  if (['admin', 'banking', 'sales'].includes(role)) return caseRow;
+  if (["admin", "banking", "sales"].includes(role)) return caseRow;
 
   // ── Registration: full access EXCEPT payment_mode (hide completely) ──────
   // Even Network Tab inspection will show payment_mode: null for this role.
-  if (role === 'registration') {
+  if (role === "registration") {
     return { ...caseRow, payment_mode: null };
   }
 
   // Fields that are ALWAYS redacted for restricted roles
   const alwaysHidden: string[] = [];
 
-  if (role === 'inventory') {
+  if (role === "inventory") {
     // Inventory sees: customer_name, tracking_id, id, current_stage, assigned_team,
     //                 load_required, status, created_at, stage_start_time,
     //                 dispatch_items, handoff_note, documents (already masked by maskDocumentsForRole)
     // Hidden: phone, alternate_phone, address, pin_code, reference, consumer_id,
     //         all finance fields, subsidy fields
     alwaysHidden.push(
-      'phone', 'alternate_phone', 'address', 'pin_code', 'reference', 'consumer_id',
-      'payment_type', 'payment_mode', 'cash_amount', 'down_payment', 'loan_amount',
-      'emi_amount', 'bank_name', 'lender_name', 'marked_delayed_by', 'marked_delayed_at',
-      'delay_reason', 'loan_account_number', 'loan_tenure',
-      'subsidy_ref_number', 'subsidy_phase1_amount', 'subsidy_phase2_amount', 'subsidy_note',
-      'installation_note', 'site_visit_date',
+      "phone",
+      "alternate_phone",
+      "address",
+      "pin_code",
+      "reference",
+      "consumer_id",
+      "payment_type",
+      "payment_mode",
+      "cash_amount",
+      "down_payment",
+      "loan_amount",
+      "emi_amount",
+      "bank_name",
+      "lender_name",
+      "marked_delayed_by",
+      "marked_delayed_at",
+      "delay_reason",
+      "loan_account_number",
+      "loan_tenure",
+      "subsidy_ref_number",
+      "subsidy_phase1_amount",
+      "subsidy_phase2_amount",
+      "subsidy_note",
+      "installation_note",
+      "site_visit_date",
     );
-  } else if (role === 'field_installation') {
+  } else if (role === "field_installation") {
     // Installation sees: customer_name, tracking_id, id, current_stage, assigned_team,
     //                    load_required, status, address, phone, geo_location,
     //                    site_visit_date, installation_note, documents (masked)
     // Hidden: financials, subsidy, alternate_phone, pin_code, reference, consumer_id
     alwaysHidden.push(
-      'alternate_phone', 'pin_code', 'reference', 'consumer_id',
-      'payment_type', 'payment_mode', 'cash_amount', 'down_payment', 'loan_amount',
-      'emi_amount', 'bank_name', 'lender_name', 'loan_account_number', 'loan_tenure',
-      'marked_delayed_by', 'marked_delayed_at', 'delay_reason',
-      'subsidy_ref_number', 'subsidy_phase1_amount', 'subsidy_phase2_amount', 'subsidy_note',
+      "alternate_phone",
+      "pin_code",
+      "reference",
+      "consumer_id",
+      "payment_type",
+      "payment_mode",
+      "cash_amount",
+      "down_payment",
+      "loan_amount",
+      "emi_amount",
+      "bank_name",
+      "lender_name",
+      "loan_account_number",
+      "loan_tenure",
+      "marked_delayed_by",
+      "marked_delayed_at",
+      "delay_reason",
+      "subsidy_ref_number",
+      "subsidy_phase1_amount",
+      "subsidy_phase2_amount",
+      "subsidy_note",
     );
-  } else if (role === 'subsidy') {
+  } else if (role === "subsidy") {
     // Subsidy sees: customer_name, tracking_id, id, current_stage, status,
     //              consumer_id, load_required, subsidy_ref_number, subsidy amounts,
     //              documents (subsidy team needs Aadhar, Bank Passbook, Electricity Bill)
     // Hidden: internal loan financials, phone, address
     alwaysHidden.push(
-      'phone', 'alternate_phone', 'address', 'pin_code', 'reference',
-      'payment_type', 'payment_mode', 'cash_amount', 'down_payment', 'loan_amount',
-      'emi_amount', 'bank_name', 'lender_name', 'loan_account_number', 'loan_tenure',
-      'marked_delayed_by', 'marked_delayed_at', 'delay_reason',
-      'installation_note', 'site_visit_date', 'dispatch_items', 'handoff_note',
+      "phone",
+      "alternate_phone",
+      "address",
+      "pin_code",
+      "reference",
+      "payment_type",
+      "payment_mode",
+      "cash_amount",
+      "down_payment",
+      "loan_amount",
+      "emi_amount",
+      "bank_name",
+      "lender_name",
+      "loan_account_number",
+      "loan_tenure",
+      "marked_delayed_by",
+      "marked_delayed_at",
+      "delay_reason",
+      "installation_note",
+      "site_visit_date",
+      "dispatch_items",
+      "handoff_note",
     );
   }
 
@@ -180,24 +253,35 @@ serve(async (req) => {
   // Create Supabase admin client (bypasses RLS)
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
   // ── PUBLIC: debug_schema ─────────────────────────────────────────────────
   const rawBody = await req.json().catch(() => ({}));
   if (rawBody.action === "debug_schema") {
-    const { data, error } = await supabase.from('case_history').select('*').limit(2);
+    const { data, error } = await supabase
+      .from("case_history")
+      .select("*")
+      .limit(2);
     // Let's just fix the bug! Remove updated_by_id!
-    return new Response(JSON.stringify({ rows: data }), { headers: corsHeaders });
+    return new Response(JSON.stringify({ rows: data }), {
+      headers: corsHeaders,
+    });
   }
 
   // ── PUBLIC: track_status ─────────────────────────────────────────────────
   if (rawBody.action === "track_status") {
-    const trackingId = (rawBody.trackingId || rawBody.caseId || "").trim().toUpperCase();
+    const trackingId = (rawBody.trackingId || rawBody.caseId || "")
+      .trim()
+      .toUpperCase();
     if (!trackingId) {
-      return new Response(JSON.stringify({ message: "Tracking ID is required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ message: "Tracking ID is required" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Try tracking_id column first (RBSC-RAME-94721 format), fallback to case_id (CASE-0001)
@@ -224,9 +308,16 @@ serve(async (req) => {
     }
 
     if (!data || data.is_tracking_visible === false) {
-      return new Response(JSON.stringify({ message: "Tracking ID not found. Please check the ID from your email and try again." }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          message:
+            "Tracking ID not found. Please check the ID from your email and try again.",
+        }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
     return new Response(
       JSON.stringify({
@@ -235,7 +326,10 @@ serve(async (req) => {
         current_stage: data.current_stage,
         status: data.status,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
   // ─────────────────────────────────────────────────────────────────────────
@@ -247,17 +341,26 @@ serve(async (req) => {
 
     // ── GET ALL CASES ──────────────────────────────────────────────────────
     if (action === "get_all") {
-      let query = supabase.from("cases").select("*").order("created_at", { ascending: false });
+      let query = supabase
+        .from("cases")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       // Admin simulating an employee role — filter by that role's stages
-      const effectiveRole = (user.role === "admin" && body.viewAsRole)
-        ? body.viewAsRole.toLowerCase()
-        : user.role;
+      const effectiveRole =
+        user.role === "admin" && body.viewAsRole
+          ? body.viewAsRole.toLowerCase()
+          : user.role;
 
       if (effectiveRole !== "admin") {
-        if (effectiveRole === "registration" || effectiveRole === "banking" ||
-            effectiveRole === "inventory"     || effectiveRole === "field_installation" ||
-            effectiveRole === "subsidy"       || effectiveRole === "sales") {
+        if (
+          effectiveRole === "registration" ||
+          effectiveRole === "banking" ||
+          effectiveRole === "inventory" ||
+          effectiveRole === "field_installation" ||
+          effectiveRole === "subsidy" ||
+          effectiveRole === "sales"
+        ) {
           // These departments need full pipeline visibility:
           //   • Registration  — creates all cases, needs to track the whole journey
           //   • Banking       — tracks loan/cash approvals even after hand-off
@@ -278,7 +381,9 @@ serve(async (req) => {
       if (body.stage) query = query.eq("current_stage", body.stage);
       if (body.team) query = query.eq("assigned_team", body.team);
       if (body.search) {
-        query = query.or(`customer_name.ilike.%${body.search}%,id.ilike.%${body.search}%`);
+        query = query.or(
+          `customer_name.ilike.%${body.search}%,id.ilike.%${body.search}%`,
+        );
       }
 
       const { data, error } = await query;
@@ -297,7 +402,8 @@ serve(async (req) => {
 
     // ── GET DEPT EMPLOYEES (for assign dropdown) ──────────────────────────────
     if (action === "get_dept_employees") {
-      if (user.role !== "admin") return jsonResponse({ message: "Unauthorized" }, 403);
+      if (user.role !== "admin")
+        return jsonResponse({ message: "Unauthorized" }, 403);
 
       const { data: caseRow } = await supabase
         .from("cases")
@@ -316,7 +422,7 @@ serve(async (req) => {
         "Plant Activated": "field_installation",
         "Sent to Subsidy": "subsidy",
         "Subsidy Registration Completed": "subsidy",
-        "Completed": "admin",
+        Completed: "admin",
       };
 
       const deptRole = stageToDeptRole[caseRow.current_stage];
@@ -348,18 +454,22 @@ serve(async (req) => {
       // - Others: can read cases AT their stage OR that have already PASSED their last stage
       //   (so departments can open the drawer for cases in their "Completed" tab)
       if (user.role !== "admin" && user.role !== "registration") {
-        const myStages = (roleStageMap[user.role] || []);
+        const myStages = roleStageMap[user.role] || [];
         const myLastStageIdx = Math.max(
-          ...myStages.map((s: string) => workflowStages.indexOf(s))
+          ...myStages.map((s: string) => workflowStages.indexOf(s)),
         );
         const caseStageIdx = workflowStages.indexOf(caseData.current_stage);
         // Allow access if:
         //   a) case is currently at one of my stages, OR
         //   b) case has passed my last stage (I've already handed it off — read-only)
-        const canRead = myStages.includes(caseData.current_stage) ||
-                        (myLastStageIdx >= 0 && caseStageIdx > myLastStageIdx);
+        const canRead =
+          myStages.includes(caseData.current_stage) ||
+          (myLastStageIdx >= 0 && caseStageIdx > myLastStageIdx);
         if (!canRead) {
-          return jsonResponse({ message: "Access restricted to your department's cases." }, 403);
+          return jsonResponse(
+            { message: "Access restricted to your department's cases." },
+            403,
+          );
         }
       }
 
@@ -367,7 +477,7 @@ serve(async (req) => {
         .from("case_history")
         .select("*")
         .eq("case_id", body.caseId)
-        .order("timestamp", { ascending: true });  // chronological order
+        .order("timestamp", { ascending: true }); // chronological order
 
       const { data: comments } = await supabase
         .from("case_comments")
@@ -376,15 +486,22 @@ serve(async (req) => {
         .order("created_at", { ascending: false });
 
       caseData.documents = maskDocumentsForRole(user.role, caseData.documents);
-      const maskedCase   = maskCaseDataForRole(user.role, caseData);
+      const maskedCase = maskCaseDataForRole(user.role, caseData);
 
-      return jsonResponse({ case: maskedCase, history: history || [], comments: comments || [] });
+      return jsonResponse({
+        case: maskedCase,
+        history: history || [],
+        comments: comments || [],
+      });
     }
 
     // ── CREATE CASE ────────────────────────────────────────────────────────
     if (action === "create_case") {
       if (user.role !== "registration" && user.role !== "admin") {
-        return jsonResponse({ message: "Only Registration department can create cases" }, 403);
+        return jsonResponse(
+          { message: "Only Registration department can create cases" },
+          403,
+        );
       }
 
       const { data: newCase, error } = await supabase
@@ -398,14 +515,14 @@ serve(async (req) => {
           consumer_id: body.consumerId || "",
           pin_code: body.pinCode || "",
           load_required: body.loadRequired,
-          payment_type: body.paymentType || 'cash',
+          payment_type: body.paymentType || "cash",
           current_stage: "Registration Done",
           assigned_team: "Registration",
           stage_start_time: new Date().toISOString(),
           created_by: user.id,
           sales_person: body.salesPerson || user.name,
           system_specs: body.systemSpecs || {},
-          documents: body.documents || {}
+          documents: body.documents || {},
         })
         .select()
         .single();
@@ -413,25 +530,33 @@ serve(async (req) => {
       if (error) throw error;
 
       // ── Generate & save branded tracking_id ──────────────────────────────
-      const customerName   = body.customerName || "";
-      const nameSlug       = customerName.replace(/\s+/g, "").toUpperCase().replace(/[^A-Z]/g, "").substring(0, 4).padEnd(4, "X");
-      const randomDigits   = String(Math.floor(10000 + Math.random() * 90000));
-      const trackingIdVal  = `${Deno.env.get("ID_PREFIX") || "RBSC"}-${nameSlug}-${randomDigits}`; // e.g. RBSC-RAME-94721
+      const customerName = body.customerName || "";
+      const nameSlug = customerName
+        .replace(/\s+/g, "")
+        .toUpperCase()
+        .replace(/[^A-Z]/g, "")
+        .substring(0, 4)
+        .padEnd(4, "X");
+      const randomDigits = String(Math.floor(10000 + Math.random() * 90000));
+      const trackingIdVal = `${Deno.env.get("ID_PREFIX") || "RBSC"}-${nameSlug}-${randomDigits}`; // e.g. RBSC-RAME-94721
 
       // ── Generate Customer ID: [NAME4]-[DDMMYYYY]-[XXXXX] ─────────────────
-      const now            = new Date();
-      const dd   = String(now.getDate()).padStart(2, "0");
-      const mm   = String(now.getMonth() + 1).padStart(2, "0");
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, "0");
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
       const yyyy = String(now.getFullYear());
-      const custRandom     = String(Math.floor(10000 + Math.random() * 90000));
-      const customerIdVal  = `${nameSlug}-${dd}${mm}${yyyy}-${custRandom}`; // e.g. RAME-23052026-94721
+      const custRandom = String(Math.floor(10000 + Math.random() * 90000));
+      const customerIdVal = `${nameSlug}-${dd}${mm}${yyyy}-${custRandom}`; // e.g. RAME-23052026-94721
       // ─────────────────────────────────────────────────────────────────────
 
       // Store tracking_id and customer_id in the cases table
-      await supabase.from("cases").update({
-        tracking_id: trackingIdVal,
-        customer_id: customerIdVal,
-      }).eq("id", newCase.id);
+      await supabase
+        .from("cases")
+        .update({
+          tracking_id: trackingIdVal,
+          customer_id: customerIdVal,
+        })
+        .eq("id", newCase.id);
       // ─────────────────────────────────────────────────────────────────────
 
       // Create history entry with department
@@ -458,16 +583,19 @@ serve(async (req) => {
         .select("*")
         .eq("id", body.caseId)
         .single();
-        
-      if (error || !caseObj) return jsonResponse({ message: "Case not found" }, 404);
-      if (!caseObj.customer_email) return jsonResponse({ message: "Customer email missing" }, 400);
+
+      if (error || !caseObj)
+        return jsonResponse({ message: "Case not found" }, 404);
+      if (!caseObj.customer_email)
+        return jsonResponse({ message: "Customer email missing" }, 400);
 
       const trackingId = caseObj.tracking_id || caseObj.id;
       const customerName = caseObj.customer_name || "Customer";
       const trackingUrl = `https://rbscsolarcrm.probfixora.co.in/track?id=${encodeURIComponent(trackingId)}`;
-      
+
       const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Associates";
-      const companyEmail = Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
+      const companyEmail =
+        Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
       const senderEmail = Deno.env.get("GMAIL_EMAIL") || companyEmail;
       const brevoApiKey = Deno.env.get("BREVO_API_KEY");
 
@@ -494,7 +622,11 @@ serve(async (req) => {
       try {
         const res = await fetch("https://api.brevo.com/v3/smtp/email", {
           method: "POST",
-          headers: { "api-key": brevoApiKey, "Content-Type": "application/json", "Accept": "application/json" },
+          headers: {
+            "api-key": brevoApiKey,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify({
             sender: { name: companyName, email: senderEmail },
             to: [{ email: caseObj.customer_email, name: customerName }],
@@ -510,7 +642,7 @@ serve(async (req) => {
             email_type: "tracking_id_resend",
             status: "failed",
             error_message: errText,
-            reference_id: trackingId
+            reference_id: trackingId,
           });
           return jsonResponse({ message: "Failed to send email." }, 500);
         }
@@ -521,7 +653,7 @@ serve(async (req) => {
           email_type: "tracking_id_resend",
           status: "sent",
           message_id: result.messageId,
-          reference_id: trackingId
+          reference_id: trackingId,
         });
 
         // Audit Trail
@@ -550,44 +682,60 @@ serve(async (req) => {
 
       const currentStageRaw = caseObj.current_stage?.trim();
       const normalizedStage = workflowStages.find(
-        (s) => s.toLowerCase() === currentStageRaw.toLowerCase()
+        (s) => s.toLowerCase() === currentStageRaw.toLowerCase(),
       );
-      if (!normalizedStage) return jsonResponse({ message: `Invalid workflow state: "${currentStageRaw}"` }, 400);
+      if (!normalizedStage)
+        return jsonResponse(
+          { message: `Invalid workflow state: "${currentStageRaw}"` },
+          400,
+        );
 
       const currentIndex = workflowStages.indexOf(normalizedStage);
 
       // ── DOCUMENT GATE: Registration Done → next stage requires all docs Verified ──
-      if (normalizedStage === "Registration Done" || normalizedStage === "Phone Verification Done") {
+      if (
+        normalizedStage === "Registration Done" ||
+        normalizedStage === "Phone Verification Done"
+      ) {
         const docStatuses = caseObj.document_statuses || {};
         const docs = caseObj.documents || {};
         const unverified = Object.keys(docs).filter(
-          (docName) => (docStatuses[docName] || "Yellow") !== "Green"
+          (docName) => (docStatuses[docName] || "Yellow") !== "Green",
         );
         if (unverified.length > 0) {
-          return jsonResponse({
-            message: "Document not verified kindly verify first then proceed",
-            unverifiedDocs: unverified,
-          }, 400);
+          return jsonResponse(
+            {
+              message: "Document not verified kindly verify first then proceed",
+              unverifiedDocs: unverified,
+            },
+            400,
+          );
         }
 
         // ── QUOTATION VERIFICATION GATE ───────────────────────────────────────
         // Quotation must be verified before case can move to next stage
         if (!caseObj.quotation_verified) {
-          return jsonResponse({
-            message: "Quotation amount must be verified before proceeding. Please verify the quotation amount first.",
-          }, 400);
+          return jsonResponse(
+            {
+              message:
+                "Quotation amount must be verified before proceeding. Please verify the quotation amount first.",
+            },
+            400,
+          );
         }
         // ─────────────────────────────────────────────────────────────────────
       }
       // ──────────────────────────────────────────────────────────────────────
 
-
       // RBAC check
       const allowedRoles = stageToAllowedRole[normalizedStage] || [];
       if (user.role !== "admin" && !allowedRoles.includes(user.role)) {
-        return jsonResponse({
-          message: `Unauthorized: Your role (${user.role}) cannot update cases at "${normalizedStage}"`,
-        }, 403);
+        return jsonResponse(
+          {
+            message: `Unauthorized: Your role (${user.role}) cannot update cases at "${normalizedStage}"`,
+          },
+          403,
+        );
       }
 
       if (currentIndex === workflowStages.length - 1) {
@@ -595,37 +743,48 @@ serve(async (req) => {
       }
 
       const expectedNextStage = workflowStages[currentIndex + 1];
-      if (expectedNextStage.toLowerCase() !== body.newStage?.trim().toLowerCase()) {
-        return jsonResponse({
-          message: `Invalid transition. From ${normalizedStage}, you can only move to ${expectedNextStage}`,
-        }, 400);
+      if (
+        expectedNextStage.toLowerCase() !== body.newStage?.trim().toLowerCase()
+      ) {
+        return jsonResponse(
+          {
+            message: `Invalid transition. From ${normalizedStage}, you can only move to ${expectedNextStage}`,
+          },
+          400,
+        );
       }
 
       // ── SPECIAL: "Subsidy Registration Completed" auto-completes the case ──
-      const isSubsidyComplete = expectedNextStage === "Subsidy Registration Completed";
+      const isSubsidyComplete =
+        expectedNextStage === "Subsidy Registration Completed";
 
-      const newStatus = (expectedNextStage === "Completed" || isSubsidyComplete)
-        ? "Completed"
-        : (caseObj.status === "Delayed" && caseObj.marked_delayed_at ? "Delayed" : "In Progress");
+      const newStatus =
+        expectedNextStage === "Completed" || isSubsidyComplete
+          ? "Completed"
+          : caseObj.status === "Delayed" && caseObj.marked_delayed_at
+            ? "Delayed"
+            : "In Progress";
 
       const finalStage = isSubsidyComplete ? "Completed" : expectedNextStage;
-      const finalTeam  = stageToTeam[finalStage] || "Admin";
+      const finalTeam = stageToTeam[finalStage] || "Admin";
 
       const { data: updated, error: updateError } = await supabase
         .from("cases")
         .update({
-          current_stage:   finalStage,
-          assigned_team:   finalTeam,
+          current_stage: finalStage,
+          assigned_team: finalTeam,
           stage_start_time: new Date().toISOString(),
-          status:          newStatus,
+          status: newStatus,
           // ── Escalation timer reset ───────────────────────────────────────────
           // Reset stage_entered_at so the pg_cron escalation job calculates
           // staleness from when the case arrived at this new stage, not creation.
           // Also reset escalation_level to 0 (clean slate for new department).
-          stage_entered_at:  new Date().toISOString(),
-          escalation_level:  0,
+          stage_entered_at: new Date().toISOString(),
+          escalation_level: 0,
           // ────────────────────────────────────────────────────────────────────
-          ...(finalStage === "Phone Verification Done" ? { is_tracking_visible: true } : {})
+          ...(finalStage === "Phone Verification Done"
+            ? { is_tracking_visible: true }
+            : {}),
         })
         .eq("id", body.caseId)
         .select()
@@ -634,28 +793,32 @@ serve(async (req) => {
       if (updateError) throw updateError;
 
       // History: log the stage transition with department info
-      const historyStage = isSubsidyComplete ? "Subsidy Registration Completed" : caseObj.current_stage;
-      const historyDept  = stageToTeam[historyStage] || "Unknown";
+      const historyStage = isSubsidyComplete
+        ? "Subsidy Registration Completed"
+        : caseObj.current_stage;
+      const historyDept = stageToTeam[historyStage] || "Unknown";
       await supabase.from("case_history").insert({
-        case_id:        caseObj.id,
-        stage:          historyStage,
-        department:     historyDept,
-        updated_by:     user.name,
-        action_type:    "stage_update",
-        remarks:        isSubsidyComplete
-          ? (body.remarks || "Subsidy Registration Completed — Customer marked as Completed")
+        case_id: caseObj.id,
+        stage: historyStage,
+        department: historyDept,
+        updated_by: user.name,
+        action_type: "stage_update",
+        remarks: isSubsidyComplete
+          ? body.remarks ||
+            "Subsidy Registration Completed — Customer marked as Completed"
           : body.remarks,
       });
 
       // If subsidy complete, add a second history entry marking as Completed
       if (isSubsidyComplete) {
         await supabase.from("case_history").insert({
-          case_id:        caseObj.id,
-          stage:          "Completed",
-          department:     "Admin",
-          updated_by:     "System (Auto)",
-          action_type:    "system_auto",
-          remarks:        "Customer automatically marked Completed after Subsidy Registration",
+          case_id: caseObj.id,
+          stage: "Completed",
+          department: "Admin",
+          updated_by: "System (Auto)",
+          action_type: "system_auto",
+          remarks:
+            "Customer automatically marked Completed after Subsidy Registration",
         });
       }
 
@@ -687,26 +850,53 @@ serve(async (req) => {
 
           if (specs) {
             // Find inventory items roughly matching the specs
-            const { data: invItems } = await supabase.from("inventory").select("*").eq("is_active", true);
+            const { data: invItems } = await supabase
+              .from("inventory")
+              .select("*")
+              .eq("is_active", true);
             const itemsToDeduct = [];
-            
+
             if (invItems) {
               // 1. Panels
               if (specs.panelCount) {
-                const panel = invItems.find(i => i.category?.toLowerCase() === 'solar panel');
-                if (panel) itemsToDeduct.push({ item: panel, qty: Number(specs.panelCount) });
+                const panel = invItems.find(
+                  (i) => i.category?.toLowerCase() === "solar panel",
+                );
+                if (panel)
+                  itemsToDeduct.push({
+                    item: panel,
+                    qty: Number(specs.panelCount),
+                  });
               }
               // 2. Inverter
               if (specs.inverterBrand) {
-                const inv = invItems.find(i => i.category?.toLowerCase() === 'inverter' && i.brand?.toLowerCase() === specs.inverterBrand?.toLowerCase())
-                            || invItems.find(i => i.category?.toLowerCase() === 'inverter');
+                const inv =
+                  invItems.find(
+                    (i) =>
+                      i.category?.toLowerCase() === "inverter" &&
+                      i.brand?.toLowerCase() ===
+                        specs.inverterBrand?.toLowerCase(),
+                  ) ||
+                  invItems.find(
+                    (i) => i.category?.toLowerCase() === "inverter",
+                  );
                 if (inv) itemsToDeduct.push({ item: inv, qty: 1 }); // usually 1 inverter
               }
               // 3. Battery
               if (specs.batteryBrand && specs.batteryCount) {
-                const bat = invItems.find(i => i.category?.toLowerCase() === 'battery' && i.brand?.toLowerCase() === specs.batteryBrand?.toLowerCase())
-                            || invItems.find(i => i.category?.toLowerCase() === 'battery');
-                if (bat) itemsToDeduct.push({ item: bat, qty: Number(specs.batteryCount) });
+                const bat =
+                  invItems.find(
+                    (i) =>
+                      i.category?.toLowerCase() === "battery" &&
+                      i.brand?.toLowerCase() ===
+                        specs.batteryBrand?.toLowerCase(),
+                  ) ||
+                  invItems.find((i) => i.category?.toLowerCase() === "battery");
+                if (bat)
+                  itemsToDeduct.push({
+                    item: bat,
+                    qty: Number(specs.batteryCount),
+                  });
               }
 
               // Deduct and log
@@ -714,8 +904,11 @@ serve(async (req) => {
                 if (qty > 0) {
                   const newStock = Math.max(0, (item.stock || 0) - qty);
                   const newRes = (item.reserved_quantity || 0) + qty;
-                  await supabase.from("inventory").update({ stock: newStock, reserved_quantity: newRes }).eq("id", item.id);
-                  
+                  await supabase
+                    .from("inventory")
+                    .update({ stock: newStock, reserved_quantity: newRes })
+                    .eq("id", item.id);
+
                   // Transaction log
                   await supabase.from("inventory_transactions").insert({
                     inventory_id: item.id,
@@ -740,7 +933,8 @@ serve(async (req) => {
                   department: "Inventory",
                   updated_by: "System (Auto)",
                   action_type: "system_auto",
-                  remarks: "Inventory automatically calculated and reserved based on system specs.",
+                  remarks:
+                    "Inventory automatically calculated and reserved based on system specs.",
                 });
               }
             }
@@ -764,33 +958,39 @@ serve(async (req) => {
               .maybeSingle();
 
             if (existingTrigger) {
-              console.log(`[phone_verification] Tracking ID email already sent for case ${caseObj.id} — skipping duplicate.`);
+              console.log(
+                `[phone_verification] Tracking ID email already sent for case ${caseObj.id} — skipping duplicate.`,
+              );
               return;
             }
 
-            const brevoApiKey  = Deno.env.get("BREVO_API_KEY");
-            const senderEmail  = Deno.env.get("GMAIL_EMAIL");
+            const brevoApiKey = Deno.env.get("BREVO_API_KEY");
+            const senderEmail = Deno.env.get("GMAIL_EMAIL");
             const customerEmail = caseObj.email || "";
-            const companyName  = Deno.env.get("COMPANY_NAME") || "RBSC Solar";
-            const companyEmail = Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
-            const companyWebsite = Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com";
+            const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Solar";
+            const companyEmail =
+              Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
+            const companyWebsite =
+              Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com";
 
-            const trackingId     = caseObj.tracking_id || caseObj.id;
-            const customerName   = caseObj.customer_name || "Customer";
-            const trackingUrl    = `https://rbscsolarcrm.probfixora.co.in/track?id=${encodeURIComponent(trackingId)}`;
+            const trackingId = caseObj.tracking_id || caseObj.id;
+            const customerName = caseObj.customer_name || "Customer";
+            const trackingUrl = `https://rbscsolarcrm.probfixora.co.in/track?id=${encodeURIComponent(trackingId)}`;
 
             // Log the trigger to case_history FIRST (so duplicate guard works even if email fails)
             await supabase.from("case_history").insert({
-              case_id:     caseObj.id,
-              stage:       "Phone Verification Done",
-              department:  "Registration",
-              updated_by:  "System (Auto)",
+              case_id: caseObj.id,
+              stage: "Phone Verification Done",
+              department: "Registration",
+              updated_by: "System (Auto)",
               action_type: "tracking_id_sent",
-              remarks:     `Tracking ID ${trackingId} sent to customer via email.`,
+              remarks: `Tracking ID ${trackingId} sent to customer via email.`,
             });
 
             if (!brevoApiKey || !senderEmail || !customerEmail) {
-              console.warn(`[phone_verification] Email config missing or no customer email for case ${caseObj.id} — logged trigger but skipped email.`);
+              console.warn(
+                `[phone_verification] Email config missing or no customer email for case ${caseObj.id} — logged trigger but skipped email.`,
+              );
               return;
             }
 
@@ -812,7 +1012,11 @@ serve(async (req) => {
 
             const res = await fetch("https://api.brevo.com/v3/smtp/email", {
               method: "POST",
-              headers: { "api-key": brevoApiKey, "Content-Type": "application/json", "Accept": "application/json" },
+              headers: {
+                "api-key": brevoApiKey,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
               body: JSON.stringify({
                 sender: { name: companyName, email: senderEmail },
                 to: [{ email: customerEmail, name: customerName }],
@@ -823,33 +1027,40 @@ serve(async (req) => {
 
             if (!res.ok) {
               const errText = await res.text();
-              console.error(`[phone_verification] Brevo error for case ${caseObj.id}: ${errText}`);
+              console.error(
+                `[phone_verification] Brevo error for case ${caseObj.id}: ${errText}`,
+              );
               await supabase.from("email_logs").insert({
                 recipient_email: customerEmail,
                 email_type: "tracking_id",
                 status: "failed",
                 error_message: errText,
-                reference_id: trackingId
+                reference_id: trackingId,
               });
             } else {
               const result = await res.json();
-              console.log(`[phone_verification] ✅ Tracking ID email sent for case ${caseObj.id}`);
+              console.log(
+                `[phone_verification] ✅ Tracking ID email sent for case ${caseObj.id}`,
+              );
               await supabase.from("email_logs").insert({
                 recipient_email: customerEmail,
                 email_type: "tracking_id",
                 status: "sent",
                 message_id: result.messageId,
-                reference_id: trackingId
+                reference_id: trackingId,
               });
             }
           } catch (emailErr: any) {
-            console.error(`[phone_verification] Failed to send tracking ID email for case ${caseObj.id}:`, emailErr);
+            console.error(
+              `[phone_verification] Failed to send tracking ID email for case ${caseObj.id}:`,
+              emailErr,
+            );
             await supabase.from("email_logs").insert({
               recipient_email: customerEmail,
               email_type: "tracking_id",
               status: "failed",
               error_message: emailErr.message,
-              reference_id: trackingId
+              reference_id: trackingId,
             });
           }
         };
@@ -867,7 +1078,6 @@ serve(async (req) => {
 
       return jsonResponse(updated);
     }
-
 
     // ── MARK / UNMARK DELAYED ─────────────────────────────────────────────
     if (action === "mark_delayed") {
@@ -887,7 +1097,8 @@ serve(async (req) => {
           marked_delayed_at: null,
         };
       } else {
-        if (!body.reason?.trim()) return jsonResponse({ message: "A delay reason is required." }, 400);
+        if (!body.reason?.trim())
+          return jsonResponse({ message: "A delay reason is required." }, 400);
         updatePayload = {
           status: "Delayed",
           delay_reason: body.reason.trim(),
@@ -910,7 +1121,9 @@ serve(async (req) => {
         stage: caseObj.current_stage,
         updated_by: user.name,
         action_type: body.unmark ? "delay_cleared" : "delay_flagged",
-        remarks: body.unmark ? "Delay flag removed" : `Marked as Delayed: ${body.reason.trim()}`,
+        remarks: body.unmark
+          ? "Delay flag removed"
+          : `Marked as Delayed: ${body.reason.trim()}`,
       });
 
       return jsonResponse(updated);
@@ -918,16 +1131,17 @@ serve(async (req) => {
 
     // ── ADD COMMENT ────────────────────────────────────────────────────────
     if (action === "add_comment") {
-      if (!body.text?.trim()) return jsonResponse({ message: "Comment text is required." }, 400);
+      if (!body.text?.trim())
+        return jsonResponse({ message: "Comment text is required." }, 400);
 
       const insertPayload: Record<string, unknown> = {
-        case_id:      body.caseId,
-        text:         body.text.trim(),
-        author:       user.name,
-        role:         user.role,
+        case_id: body.caseId,
+        text: body.text.trim(),
+        author: user.name,
+        role: user.role,
         // New fields — both optional; defaults handled by migration column defaults
         comment_type: body.comment_type || "note",
-        parent_id:    body.parent_id || null,
+        parent_id: body.parent_id || null,
       };
 
       const { data: comment, error } = await supabase
@@ -945,7 +1159,7 @@ serve(async (req) => {
       const { data, error } = await supabase
         .from("case_comments")
         .select("*")
-        .eq("case_id", body.caseId)   // Fixed: was filtering by id, now by case_id
+        .eq("case_id", body.caseId) // Fixed: was filtering by id, now by case_id
         .order("created_at", { ascending: true }); // Oldest first so thread tree builds correctly
       if (error) throw error;
       return jsonResponse(data || []);
@@ -953,19 +1167,19 @@ serve(async (req) => {
 
     // ── LOG DOWNLOAD (audit trail for PDF downloads) ────────────────────────
     if (action === "log_download") {
-      if (!body.caseId) return jsonResponse({ message: "caseId is required" }, 400);
+      if (!body.caseId)
+        return jsonResponse({ message: "caseId is required" }, 400);
       const { error } = await supabase.from("case_history").insert({
-        case_id:     body.caseId,
-        stage:       body.stage    || "N/A",
-        department:  body.dept     || user.role,
-        updated_by:  user.name,
+        case_id: body.caseId,
+        stage: body.stage || "N/A",
+        department: body.dept || user.role,
+        updated_by: user.name,
         action_type: "download_details",
-        remarks:     `PDF case details downloaded by ${user.name} (${user.role})`,
+        remarks: `PDF case details downloaded by ${user.name} (${user.role})`,
       });
       if (error) throw error;
       return jsonResponse({ ok: true });
     }
-
 
     // ── UPDATE CASE DETAILS ────────────────────────────────────────────────
     if (action === "update_details") {
@@ -980,19 +1194,19 @@ serve(async (req) => {
         documentStatuses: "document_statuses",
         // ── Verification fields ──────────────────────────────────────────────
         quotationVerified: "quotation_verified",
-        quotationAmount:   "quotation_amount",
-        financeVerified:   "finance_verified",
-        accountsVerified:  "accounts_verified",
+        quotationAmount: "quotation_amount",
+        financeVerified: "finance_verified",
+        accountsVerified: "accounts_verified",
       };
 
       const updatePayload: Record<string, unknown> = {};
       for (const [jsKey, dbKey] of Object.entries(allowedFields)) {
         if (body[jsKey] !== undefined) {
-           if (body[jsKey] === "" && dbKey === "site_visit_date") {
-              updatePayload[dbKey] = null;
-           } else {
-              updatePayload[dbKey] = body[jsKey];
-           }
+          if (body[jsKey] === "" && dbKey === "site_visit_date") {
+            updatePayload[dbKey] = null;
+          } else {
+            updatePayload[dbKey] = body[jsKey];
+          }
         }
       }
 
@@ -1014,9 +1228,10 @@ serve(async (req) => {
 
       // ── Audit trail for Quotation Edit & Verification ──────────────────────
       if (
-        updatePayload.quotation_amount !== undefined && 
-        oldCase && 
-        Number(oldCase.quotation_amount) !== Number(updatePayload.quotation_amount)
+        updatePayload.quotation_amount !== undefined &&
+        oldCase &&
+        Number(oldCase.quotation_amount) !==
+          Number(updatePayload.quotation_amount)
       ) {
         await supabase.from("case_history").insert({
           case_id: body.caseId,
@@ -1027,7 +1242,7 @@ serve(async (req) => {
           remarks: `Quotation amount edited from ₹${oldCase.quotation_amount || 0} to ₹${updatePayload.quotation_amount}.`,
         });
       }
-      
+
       if (updatePayload.quotation_verified === true) {
         await supabase.from("case_history").insert({
           case_id: body.caseId,
@@ -1043,11 +1258,16 @@ serve(async (req) => {
       return jsonResponse(updated);
     }
 
-
     // ── UPDATE FINANCE ─────────────────────────────────────────────────────
     if (action === "update_finance") {
       if (user.role !== "admin" && user.role !== "banking") {
-        return jsonResponse({ message: "Unauthorized: Only Banking & Finance or Admin can update finance details." }, 403);
+        return jsonResponse(
+          {
+            message:
+              "Unauthorized: Only Banking & Finance or Admin can update finance details.",
+          },
+          403,
+        );
       }
 
       const allowedFields: Record<string, string> = {
@@ -1070,17 +1290,29 @@ serve(async (req) => {
       for (const [jsKey, dbKey] of Object.entries(allowedFields)) {
         if (body[jsKey] !== undefined) {
           if (body[jsKey] === "") {
-             if (dbKey === "bank_visited_date") {
-                updatePayload[dbKey] = null;
-             } else {
-                updatePayload[dbKey] = ["down_payment", "cash_amount", "loan_amount", "emi_amount"].includes(dbKey) ? 0 : "";
-             }
+            if (dbKey === "bank_visited_date") {
+              updatePayload[dbKey] = null;
+            } else {
+              updatePayload[dbKey] = [
+                "down_payment",
+                "cash_amount",
+                "loan_amount",
+                "emi_amount",
+              ].includes(dbKey)
+                ? 0
+                : "";
+            }
           } else if (dbKey === "payment_type") {
-             updatePayload[dbKey] = String(body[jsKey]).toLowerCase();
+            updatePayload[dbKey] = String(body[jsKey]).toLowerCase();
           } else {
-             updatePayload[dbKey] = ["down_payment", "cash_amount", "loan_amount", "emi_amount"].includes(dbKey) 
-               ? Number(body[jsKey]) 
-               : body[jsKey];
+            updatePayload[dbKey] = [
+              "down_payment",
+              "cash_amount",
+              "loan_amount",
+              "emi_amount",
+            ].includes(dbKey)
+              ? Number(body[jsKey])
+              : body[jsKey];
           }
         }
       }
@@ -1103,7 +1335,7 @@ serve(async (req) => {
         .single();
 
       if (error) throw error;
-      
+
       await supabase.from("case_history").insert({
         case_id: body.caseId,
         stage: updated.current_stage,
@@ -1111,29 +1343,32 @@ serve(async (req) => {
         action_type: "finance_update",
         remarks: body.remarks || `Updated financial details.`,
       });
-      
+
       return jsonResponse(updated);
     }
 
     // ── ADD PAYMENT ENTRY ──────────────────────────────────────────────────────
     if (action === "add_payment") {
-      if (!['admin', 'accounts', 'banking'].includes(user.role)) {
+      if (!["admin", "accounts", "banking"].includes(user.role)) {
         return jsonResponse({ message: "Unauthorized" }, 403);
       }
       const { caseId, paymentDate, amount, paymentType: pType, notes } = body;
       if (!caseId || !paymentDate || !amount) {
-        return jsonResponse({ message: "caseId, paymentDate, and amount are required" }, 400);
+        return jsonResponse(
+          { message: "caseId, paymentDate, and amount are required" },
+          400,
+        );
       }
 
       const { data: newPayment, error: pmtErr } = await supabase
         .from("payment_history")
         .insert({
-          case_id:      caseId,
+          case_id: caseId,
           payment_date: paymentDate,
-          amount:       Number(amount),
+          amount: Number(amount),
           payment_type: pType || "installment",
-          notes:        notes || "",
-          recorded_by:  user.name,
+          notes: notes || "",
+          recorded_by: user.name,
         })
         .select()
         .single();
@@ -1141,10 +1376,10 @@ serve(async (req) => {
       if (pmtErr) throw pmtErr;
 
       await supabase.from("case_history").insert({
-        case_id:     caseId,
-        updated_by:  user.name,
+        case_id: caseId,
+        updated_by: user.name,
         action_type: "payment_recorded",
-        remarks:     `Payment of ₹${Number(amount).toLocaleString('en-IN')} recorded (${pType || 'installment'}) on ${paymentDate}.`,
+        remarks: `Payment of ₹${Number(amount).toLocaleString("en-IN")} recorded (${pType || "installment"}) on ${paymentDate}.`,
       });
 
       return jsonResponse(newPayment);
@@ -1152,7 +1387,8 @@ serve(async (req) => {
 
     // ── GET PAYMENTS ───────────────────────────────────────────────────────────
     if (action === "get_payments") {
-      if (!body.caseId) return jsonResponse({ message: "caseId required" }, 400);
+      if (!body.caseId)
+        return jsonResponse({ message: "caseId required" }, 400);
 
       const { data: payments, error: pmtErr } = await supabase
         .from("payment_history")
@@ -1167,7 +1403,9 @@ serve(async (req) => {
     // ── GET INVENTORY ───────────────────────────────────────────
     if (action === "get_inventory") {
       const { data: invData, error: invErr } = await supabase
-        .from("inventory").select("*").order("name");
+        .from("inventory")
+        .select("*")
+        .order("name");
       if (invErr) throw invErr;
 
       // Also fetch quotation specs for the given case (to auto-populate dispatch)
@@ -1183,30 +1421,32 @@ serve(async (req) => {
         if (caseRow) {
           // Prefer system_specs if already filled
           const ss = caseRow.system_specs;
-          if (ss && typeof ss === 'object' && Object.keys(ss).length > 0) {
+          if (ss && typeof ss === "object" && Object.keys(ss).length > 0) {
             quotationSpecs = ss;
           } else if (caseRow.customer_name) {
             // Fall back to quotations table (most recent quotation for this customer)
             const { data: quot } = await supabase
               .from("quotations")
-              .select("product_name, panel_count, panel_unit, inverter_brand, inverter_kw, battery_brand, battery_count, battery_capacity, structure, bos, product_category")
+              .select(
+                "product_name, panel_count, panel_unit, inverter_brand, inverter_kw, battery_brand, battery_count, battery_capacity, structure, bos, product_category",
+              )
               .ilike("customer_name", caseRow.customer_name)
               .order("created_at", { ascending: false })
               .limit(1)
               .maybeSingle();
             if (quot) {
               quotationSpecs = {
-                productName:     quot.product_name,
+                productName: quot.product_name,
                 productCategory: quot.product_category,
-                panelCount:      quot.panel_count,
-                panelUnit:       quot.panel_unit,
-                inverterBrand:   quot.inverter_brand,
-                inverterKw:      quot.inverter_kw,
-                batteryBrand:    quot.battery_brand,
-                batteryCount:    quot.battery_count,
+                panelCount: quot.panel_count,
+                panelUnit: quot.panel_unit,
+                inverterBrand: quot.inverter_brand,
+                inverterKw: quot.inverter_kw,
+                batteryBrand: quot.battery_brand,
+                batteryCount: quot.battery_count,
                 batteryCapacity: quot.battery_capacity,
-                structure:       quot.structure,
-                bos:             quot.bos,
+                structure: quot.structure,
+                bos: quot.bos,
               };
             }
           }
@@ -1218,8 +1458,18 @@ serve(async (req) => {
 
     // ── DISPATCH MATERIALS ──────────────────────────────────────────────────
     if (action === "dispatch_materials") {
-      if (user.role !== "admin" && user.role !== "store" && user.role !== "inventory") {
-        return jsonResponse({ message: "Unauthorized: Only Store/Inventory or Admin can dispatch materials." }, 403);
+      if (
+        user.role !== "admin" &&
+        user.role !== "store" &&
+        user.role !== "inventory"
+      ) {
+        return jsonResponse(
+          {
+            message:
+              "Unauthorized: Only Store/Inventory or Admin can dispatch materials.",
+          },
+          403,
+        );
       }
 
       const { caseId, items, vehicleNumber, driverName, notes } = body;
@@ -1228,10 +1478,17 @@ serve(async (req) => {
       }
 
       for (const item of items) {
-        const { data: invItem } = await supabase.from("inventory").select("stock").eq("id", item.id).single();
+        const { data: invItem } = await supabase
+          .from("inventory")
+          .select("stock")
+          .eq("id", item.id)
+          .single();
         if (invItem) {
           const newStock = Math.max(0, invItem.stock - item.quantity);
-          await supabase.from("inventory").update({ stock: newStock }).eq("id", item.id);
+          await supabase
+            .from("inventory")
+            .update({ stock: newStock })
+            .eq("id", item.id);
         }
       }
 
@@ -1245,7 +1502,7 @@ serve(async (req) => {
           vehicle_number: vehicleNumber || "",
           driver_name: driverName || "",
           notes: notes || "",
-          dispatched_items: items
+          dispatched_items: items,
         })
         .select()
         .single();
@@ -1257,7 +1514,7 @@ serve(async (req) => {
         stage: "Sent to Store",
         updated_by: user.name,
         action_type: "dispatch",
-        remarks: `Dispatched materials via vehicle ${vehicleNumber || 'N/A'}.`,
+        remarks: `Dispatched materials via vehicle ${vehicleNumber || "N/A"}.`,
       });
 
       return jsonResponse(dispatchRecord);
@@ -1286,7 +1543,9 @@ serve(async (req) => {
         stage: caseObj.current_stage,
         updated_by: user.name,
         action_type: "assignment_changed",
-        remarks: body.assignedTo ? `Case assigned to ${body.assignedTo}` : "Assignment removed",
+        remarks: body.assignedTo
+          ? `Case assigned to ${body.assignedTo}`
+          : "Assignment removed",
       });
 
       return jsonResponse(updated);
@@ -1302,7 +1561,10 @@ serve(async (req) => {
       if (!caseObj) return jsonResponse({ message: "Case not found." }, 404);
 
       const newPriority = caseObj.priority === "urgent" ? "normal" : "urgent";
-      await supabase.from("cases").update({ priority: newPriority }).eq("id", body.caseId);
+      await supabase
+        .from("cases")
+        .update({ priority: newPriority })
+        .eq("id", body.caseId);
       return jsonResponse({ priority: newPriority });
     }
 
@@ -1316,13 +1578,23 @@ serve(async (req) => {
       if (!caseObj) return jsonResponse({ message: "Case not found." }, 404);
 
       if (caseObj.current_stage !== "Registration Done") {
-        return jsonResponse({ message: "Case can only be deleted at the Registration Done stage." }, 403);
+        return jsonResponse(
+          {
+            message: "Case can only be deleted at the Registration Done stage.",
+          },
+          403,
+        );
       }
 
       const isAdmin = user.role === "admin";
       const isCreator = caseObj.created_by === user.id;
       if (!isAdmin && !isCreator) {
-        return jsonResponse({ message: "Only the admin or the case creator can delete this case." }, 403);
+        return jsonResponse(
+          {
+            message: "Only the admin or the case creator can delete this case.",
+          },
+          403,
+        );
       }
 
       await supabase.from("cases").delete().eq("id", body.caseId);
@@ -1345,36 +1617,56 @@ serve(async (req) => {
       const checklist = caseObj[listName] || [];
       const updatedList = checklist.map((item: any) =>
         item._id === itemId
-          ? { ...item, checked: !item.checked, checkedBy: !item.checked ? user.name : null }
-          : item
+          ? {
+              ...item,
+              checked: !item.checked,
+              checkedBy: !item.checked ? user.name : null,
+            }
+          : item,
       );
 
-      await supabase.from("cases").update({ [listName]: updatedList }).eq("id", body.caseId);
+      await supabase
+        .from("cases")
+        .update({ [listName]: updatedList })
+        .eq("id", body.caseId);
       return jsonResponse(updatedList);
     }
 
     // ── SUBMIT CUSTOMER FEEDBACK (admin only) ──────────────────────────────
     if (action === "submit_feedback") {
-      if (user.role !== "admin") return jsonResponse({ message: "Forbidden" }, 403);
+      if (user.role !== "admin")
+        return jsonResponse({ message: "Forbidden" }, 403);
 
-      const { caseId, customerName, rating, feedback_text, installation_quality,
-              team_behavior, timeline_satisfaction, submitted_by } = body;
+      const {
+        caseId,
+        customerName,
+        rating,
+        feedback_text,
+        installation_quality,
+        team_behavior,
+        timeline_satisfaction,
+        submitted_by,
+      } = body;
 
-      if (!caseId)             return jsonResponse({ message: "caseId required" }, 400);
+      if (!caseId) return jsonResponse({ message: "caseId required" }, 400);
       if (!rating || rating < 1 || rating > 5)
         return jsonResponse({ message: "rating must be 1-5" }, 400);
 
       const { data, error } = await supabase
         .from("customer_feedback")
         .insert({
-          case_id:               caseId,
-          customer_name:         customerName || "",
-          rating:                Number(rating),
-          feedback_text:         feedback_text || "",
-          installation_quality:  installation_quality ? Number(installation_quality) : null,
-          team_behavior:         team_behavior ? Number(team_behavior) : null,
-          timeline_satisfaction: timeline_satisfaction ? Number(timeline_satisfaction) : null,
-          submitted_by:          submitted_by || "admin",
+          case_id: caseId,
+          customer_name: customerName || "",
+          rating: Number(rating),
+          feedback_text: feedback_text || "",
+          installation_quality: installation_quality
+            ? Number(installation_quality)
+            : null,
+          team_behavior: team_behavior ? Number(team_behavior) : null,
+          timeline_satisfaction: timeline_satisfaction
+            ? Number(timeline_satisfaction)
+            : null,
+          submitted_by: submitted_by || "admin",
         })
         .select()
         .single();
@@ -1385,7 +1677,8 @@ serve(async (req) => {
 
     // ── GET FEEDBACK FOR A CASE (admin only) ───────────────────────────────
     if (action === "get_feedback") {
-      if (user.role !== "admin") return jsonResponse({ message: "Forbidden" }, 403);
+      if (user.role !== "admin")
+        return jsonResponse({ message: "Forbidden" }, 403);
 
       const { caseId } = body;
       if (!caseId) return jsonResponse({ message: "caseId required" }, 400);
@@ -1403,7 +1696,13 @@ serve(async (req) => {
     // ── RESEND TRACKING ID (registration/admin fallback) ──────────────────
     if (action === "resend_tracking_id") {
       if (user.role !== "admin" && user.role !== "registration") {
-        return jsonResponse({ message: "Unauthorized: Only Registration or Admin can resend tracking ID." }, 403);
+        return jsonResponse(
+          {
+            message:
+              "Unauthorized: Only Registration or Admin can resend tracking ID.",
+          },
+          403,
+        );
       }
 
       const { data: caseObj, error: caseErr } = await supabase
@@ -1411,30 +1710,39 @@ serve(async (req) => {
         .select("*")
         .eq("id", body.caseId)
         .single();
-      if (caseErr || !caseObj) return jsonResponse({ message: "Case not found" }, 404);
+      if (caseErr || !caseObj)
+        return jsonResponse({ message: "Case not found" }, 404);
 
-      const brevoApiKey  = Deno.env.get("BREVO_API_KEY");
-      const senderEmail  = Deno.env.get("GMAIL_EMAIL");
+      const brevoApiKey = Deno.env.get("BREVO_API_KEY");
+      const senderEmail = Deno.env.get("GMAIL_EMAIL");
       const customerEmail = caseObj.email || "";
-      const companyName  = Deno.env.get("COMPANY_NAME") || "RBSC Solar";
-      const companyEmail = Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
-      const companyWebsite = Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com";
+      const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Solar";
+      const companyEmail =
+        Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
+      const companyWebsite =
+        Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com";
 
-      const trackingId   = caseObj.tracking_id || caseObj.id;
+      const trackingId = caseObj.tracking_id || caseObj.id;
       const customerName = caseObj.customer_name || "Customer";
-      const trackingUrl  = `https://rbscsolarcrm.probfixora.co.in/track?id=${encodeURIComponent(trackingId)}`;
+      const trackingUrl = `https://rbscsolarcrm.probfixora.co.in/track?id=${encodeURIComponent(trackingId)}`;
 
       if (!brevoApiKey || !senderEmail || !customerEmail) {
         // Log the resend attempt even if email can't be sent
         await supabase.from("case_history").insert({
-          case_id:     body.caseId,
-          stage:       caseObj.current_stage,
-          department:  "Registration",
-          updated_by:  user.name,
+          case_id: body.caseId,
+          stage: caseObj.current_stage,
+          department: "Registration",
+          updated_by: user.name,
           action_type: "tracking_id_resent",
-          remarks:     `Manual resend attempted by ${user.name} — email not configured or no customer email on file.`,
+          remarks: `Manual resend attempted by ${user.name} — email not configured or no customer email on file.`,
         });
-        return jsonResponse({ message: "Email config missing or no customer email — resend logged but not sent." }, 200);
+        return jsonResponse(
+          {
+            message:
+              "Email config missing or no customer email — resend logged but not sent.",
+          },
+          200,
+        );
       }
 
       const htmlContent = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
@@ -1455,7 +1763,11 @@ serve(async (req) => {
 
       const res = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
-        headers: { "api-key": brevoApiKey, "Content-Type": "application/json", "Accept": "application/json" },
+        headers: {
+          "api-key": brevoApiKey,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({
           sender: { name: companyName, email: senderEmail },
           to: [{ email: customerEmail, name: customerName }],
@@ -1466,12 +1778,12 @@ serve(async (req) => {
 
       const emailOk = res.ok;
       await supabase.from("case_history").insert({
-        case_id:     body.caseId,
-        stage:       caseObj.current_stage,
-        department:  "Registration",
-        updated_by:  user.name,
+        case_id: body.caseId,
+        stage: caseObj.current_stage,
+        department: "Registration",
+        updated_by: user.name,
         action_type: "tracking_id_resent",
-        remarks:     emailOk
+        remarks: emailOk
           ? `Tracking ID ${trackingId} manually resent to ${customerEmail} by ${user.name}.`
           : `Resend attempted by ${user.name} — email gateway error.`,
       });
@@ -1479,17 +1791,28 @@ serve(async (req) => {
       if (!emailOk) {
         const errText = await res.text();
         console.error(`[resend_tracking_id] Brevo error: ${errText}`);
-        return jsonResponse({ message: "Email gateway error — resend logged." }, 200);
+        return jsonResponse(
+          { message: "Email gateway error — resend logged." },
+          200,
+        );
       }
 
-      return jsonResponse({ ok: true, message: `Tracking ID resent to ${customerEmail}` });
+      return jsonResponse({
+        ok: true,
+        message: `Tracking ID resent to ${customerEmail}`,
+      });
     }
 
     return jsonResponse({ message: "Unknown action" }, 400);
-
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : (err as any).message || "Internal error";
-    const status = message.includes("Unauthorized") || message.includes("inactive") ? 401 : 500;
+    const message =
+      err instanceof Error
+        ? err.message
+        : (err as any).message || "Internal error";
+    const status =
+      message.includes("Unauthorized") || message.includes("inactive")
+        ? 401
+        : 500;
     return jsonResponse({ message, details: err }, status);
   }
 });

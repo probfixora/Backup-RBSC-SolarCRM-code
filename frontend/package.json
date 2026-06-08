@@ -1,6 +1,7 @@
 {
   "name": "crm-frontend",
   "version": "0.1.0",
+  "author": "Nikhil Tiwari",
   "private": true,
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",

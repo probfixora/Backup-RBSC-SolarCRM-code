@@ -13,33 +13,43 @@ import { logoBase64 } from "../quotation/logoBase64.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
 };
 
-async function getAdminUser(req: Request, supabase: ReturnType<typeof createClient>) {
+async function getAdminUser(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) throw new Error("Unauthorized");
   const token = authHeader.replace("Bearer ", "");
-  const { data: { user }, error } = await supabase.auth.getUser(token);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
   if (error || !user) throw new Error("Unauthorized");
   const { data: profile } = await supabase
     .from("profiles")
     .select("name, role, status")
     .eq("id", user.id)
     .single();
-  if (!profile || profile.status === "inactive") throw new Error("Unauthorized");
-  if (profile.role?.toLowerCase() !== "admin") throw new Error("Admin access required");
+  if (!profile || profile.status === "inactive")
+    throw new Error("Unauthorized");
+  if (profile.role?.toLowerCase() !== "admin")
+    throw new Error("Admin access required");
   return { ...user, name: profile.name, role: profile.role?.toLowerCase() };
 }
 
 serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response("ok", { headers: corsHeaders });
 
   // Admin client — uses service role, bypasses RLS
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
   try {
@@ -53,7 +63,10 @@ serve(async (req: Request) => {
 
       // Validation
       if (!name || !email || !role) {
-        return jsonResponse({ message: "Name, email, and role are required" }, 400);
+        return jsonResponse(
+          { message: "Name, email, and role are required" },
+          400,
+        );
       }
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -61,7 +74,20 @@ serve(async (req: Request) => {
         return jsonResponse({ message: "Invalid email format" }, 400);
       }
 
-      const validRoles = ["admin", "sales", "registration", "banking", "inventory", "procurement", "field_installation", "subsidy", "electrical", "technical", "accounts", "customer_service"];
+      const validRoles = [
+        "admin",
+        "sales",
+        "registration",
+        "banking",
+        "inventory",
+        "procurement",
+        "field_installation",
+        "subsidy",
+        "electrical",
+        "technical",
+        "accounts",
+        "customer_service",
+      ];
       if (!validRoles.includes(role)) {
         return jsonResponse({ message: `Invalid role: ${role}` }, 400);
       }
@@ -71,16 +97,23 @@ serve(async (req: Request) => {
       const employeeId = "EMP-" + Math.floor(1000 + Math.random() * 9000);
 
       // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: email.toLowerCase().trim(),
-        password,
-        user_metadata: { name, role },
-        email_confirm: true, // skip email verification for internal tool
-      });
+      const { data: authData, error: authError } =
+        await supabase.auth.admin.createUser({
+          email: email.toLowerCase().trim(),
+          password,
+          user_metadata: { name, role },
+          email_confirm: true, // skip email verification for internal tool
+        });
 
       if (authError) {
-        if (authError.message.includes("already registered") || authError.message.includes("already exists")) {
-          return jsonResponse({ message: "An employee with this email already exists" }, 400);
+        if (
+          authError.message.includes("already registered") ||
+          authError.message.includes("already exists")
+        ) {
+          return jsonResponse(
+            { message: "An employee with this email already exists" },
+            400,
+          );
         }
         throw authError;
       }
@@ -105,12 +138,20 @@ serve(async (req: Request) => {
       try {
         const brevoApiKey = Deno.env.get("BREVO_API_KEY");
         const gmailEmail = Deno.env.get("GMAIL_EMAIL");
-        
+
         if (!brevoApiKey || !gmailEmail) {
-          console.error("BREVO_API_KEY or GMAIL_EMAIL not set. Cannot send onboarding email.");
+          console.error(
+            "BREVO_API_KEY or GMAIL_EMAIL not set. Cannot send onboarding email.",
+          );
         } else {
-          const joinedDate = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
-          const portalUrl = Deno.env.get("FRONTEND_URL") || "https://rbscsolarcrm.probfixora.co.in";
+          const joinedDate = new Date().toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          });
+          const portalUrl =
+            Deno.env.get("FRONTEND_URL") ||
+            "https://rbscsolarcrm.probfixora.co.in";
           const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -213,7 +254,10 @@ serve(async (req: Request) => {
 </html>`;
 
           const payload = {
-            sender: { name: `${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}`, email: gmailEmail },
+            sender: {
+              name: `${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}`,
+              email: gmailEmail,
+            },
             to: [{ email: email.toLowerCase().trim() }],
             subject: `Welcome to ${Deno.env.get("COMPANY_NAME") || "RBSC Solar"} – Your Employee Account is Ready`,
             htmlContent: html,
@@ -224,7 +268,7 @@ serve(async (req: Request) => {
             headers: {
               "api-key": brevoApiKey,
               "Content-Type": "application/json",
-              "Accept": "application/json",
+              Accept: "application/json",
             },
             body: JSON.stringify(payload),
           });
@@ -234,25 +278,30 @@ serve(async (req: Request) => {
             console.error(`Brevo API error: ${errorData}`);
           } else {
             const result = await res.json();
-            console.log(`✅ Onboarding email sent via Brevo to ${email}, Message ID: ${result.messageId}`);
+            console.log(
+              `✅ Onboarding email sent via Brevo to ${email}, Message ID: ${result.messageId}`,
+            );
           }
         }
       } catch (err) {
         console.error("Failed to send onboarding email:", err);
       }
 
-      return jsonResponse({
-        message: "User created successfully",
-        user: {
-          id: authData.user.id,
-          name,
-          email: authData.user.email,
-          role,
-          status: "active",
-          isFirstLogin: true,
-          employeeId,
+      return jsonResponse(
+        {
+          message: "User created successfully",
+          user: {
+            id: authData.user.id,
+            name,
+            email: authData.user.email,
+            role,
+            status: "active",
+            isFirstLogin: true,
+            employeeId,
+          },
         },
-      }, 201);
+        201,
+      );
     }
 
     // ── LIST ALL USERS ─────────────────────────────────────────────────────
@@ -260,15 +309,19 @@ serve(async (req: Request) => {
       // Get from profiles (has role + status + employee_id)
       const { data: profiles, error } = await supabase
         .from("profiles")
-        .select("id, name, role, status, is_first_login, created_at, employee_id");
+        .select(
+          "id, name, role, status, is_first_login, created_at, employee_id",
+        );
       if (error) throw error;
 
       const profileMap = new Map();
       for (const p of profiles) profileMap.set(p.id, p);
 
       // Get emails from auth admin
-      const { data: { users: authUsers } } = await supabase.auth.admin.listUsers();
-      
+      const {
+        data: { users: authUsers },
+      } = await supabase.auth.admin.listUsers();
+
       const users = authUsers.map((u: any) => {
         const p = profileMap.get(u.id);
         return {
@@ -331,17 +384,29 @@ serve(async (req: Request) => {
     // ── RESET PASSWORD ─────────────────────────────────────────────────────
     if (action === "reset_password") {
       const { userId, newPassword } = body;
-      if (!userId || !newPassword) return jsonResponse({ message: "userId and newPassword required" }, 400);
+      if (!userId || !newPassword)
+        return jsonResponse(
+          { message: "userId and newPassword required" },
+          400,
+        );
 
       if (newPassword.length < 6) {
-        return jsonResponse({ message: "Password must be at least 6 characters" }, 400);
+        return jsonResponse(
+          { message: "Password must be at least 6 characters" },
+          400,
+        );
       }
 
-      const { error } = await supabase.auth.admin.updateUserById(userId, { password: newPassword });
+      const { error } = await supabase.auth.admin.updateUserById(userId, {
+        password: newPassword,
+      });
       if (error) throw error;
 
       // Mark first login again if resetting
-      await supabase.from("profiles").update({ is_first_login: true }).eq("id", userId);
+      await supabase
+        .from("profiles")
+        .update({ is_first_login: true })
+        .eq("id", userId);
 
       return jsonResponse({ message: "Password reset successfully" });
     }
@@ -350,10 +415,15 @@ serve(async (req: Request) => {
     if (action === "complete_first_login") {
       const authHeader = req.headers.get("Authorization");
       const token = (authHeader || "").replace("Bearer ", "");
-      const { data: { user } } = await supabase.auth.getUser(token);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser(token);
       if (!user) return jsonResponse({ message: "Unauthorized" }, 401);
 
-      await supabase.from("profiles").update({ is_first_login: false }).eq("id", user.id);
+      await supabase
+        .from("profiles")
+        .update({ is_first_login: false })
+        .eq("id", user.id);
       return jsonResponse({ message: "First login marked complete" });
     }
 
@@ -361,11 +431,16 @@ serve(async (req: Request) => {
     if (action === "update_own_name") {
       const authHeader = req.headers.get("Authorization");
       const token = (authHeader || "").replace("Bearer ", "");
-      const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-      if (authErr || !user) return jsonResponse({ message: "Unauthorized" }, 401);
+      const {
+        data: { user },
+        error: authErr,
+      } = await supabase.auth.getUser(token);
+      if (authErr || !user)
+        return jsonResponse({ message: "Unauthorized" }, 401);
 
       const { name } = body;
-      if (!name || !name.trim()) return jsonResponse({ message: "Name cannot be empty" }, 400);
+      if (!name || !name.trim())
+        return jsonResponse({ message: "Name cannot be empty" }, 400);
 
       const { error } = await supabase
         .from("profiles")
@@ -380,7 +455,8 @@ serve(async (req: Request) => {
     return jsonResponse({ message: `Unknown action: ${action}` }, 400);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal error";
-    const status = message.includes("Unauthorized") || message.includes("Admin") ? 403 : 500;
+    const status =
+      message.includes("Unauthorized") || message.includes("Admin") ? 403 : 500;
     return jsonResponse({ message }, status);
   }
 });

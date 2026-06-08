@@ -1,4 +1,3 @@
-
 // @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // @ts-ignore
@@ -11,22 +10,30 @@ import { qrBase64 } from "./qrBase64.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
 };
 
-async function getUser(req: Request, supabase: ReturnType<typeof createClient>) {
+async function getUser(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) throw new Error("Unauthorized");
   const token = authHeader.replace("Bearer ", "");
-  const { data: { user }, error } = await supabase.auth.getUser(token);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
   if (error || !user) throw new Error("Unauthorized");
   const { data: profile } = await supabase
     .from("profiles")
     .select("name, role, status")
     .eq("id", user.id)
     .single();
-  if (!profile || profile.status === "inactive") throw new Error("Unauthorized");
+  if (!profile || profile.status === "inactive")
+    throw new Error("Unauthorized");
   return { ...user, name: profile.name, role: profile.role?.toLowerCase() };
 }
 
@@ -37,7 +44,10 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     month: "short",
     year: "numeric",
   });
-  const price = Number(q.product_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const price = Number(q.product_price || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
   const totalWatt = q.total_watt || 0;
   const projectType = q.product_category || "On Grid";
   const title = q.product_brand
@@ -52,8 +62,6 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       <p style="margin-top:12px;">The ${brandName} solar panel has been installed at the request of your buyer/customer. We will assist with the warranty, but the responsibility will rest with the buyer/customer.</p>
     </div>
   `;
-
-
 
   // The Header HTML that repeats on top of each page (logo LEFT, company info RIGHT)
   const pageHeader = `
@@ -127,10 +135,11 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     </div>
     <div style="flex:1; line-height:1.8; text-align:right;">
       <div><strong>Company Name:</strong> ${q.customer_occupation || "N/A"}</div>
-      ${q.customer_occupation && q.customer_occupation !== "N/A"
-      ? `<div><strong>Address:</strong> ${q.customer_address}</div>`
-      : ""
-    }
+      ${
+        q.customer_occupation && q.customer_occupation !== "N/A"
+          ? `<div><strong>Address:</strong> ${q.customer_address}</div>`
+          : ""
+      }
       <div><strong>GSTIN:</strong> ${q.customer_gstin || "N/A"}</div>
     </div>
   </div>
@@ -179,8 +188,9 @@ function generateProposalHTML(q: any, logoBase64: string): string {
         <td>${q.inverter_warranty || "8 Years"}</td>
         <td>Included</td>
       </tr>
-      ${q.battery_brand
-      ? `
+      ${
+        q.battery_brand
+          ? `
       <tr>
         <td>3</td>
         <td style="text-align:left;">Battery: ${q.battery_brand}</td>
@@ -189,8 +199,8 @@ function generateProposalHTML(q: any, logoBase64: string): string {
         <td>${q.battery_warranty || "Standard"}</td>
         <td>Included</td>
       </tr>`
-      : ""
-    }
+          : ""
+      }
       <tr>
         <td>${q.battery_brand ? 4 : 3}</td>
         <td style="text-align:left;">Structure</td>
@@ -218,7 +228,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       <tr>
         <td>${q.battery_brand ? 7 : 6}</td>
         <td style="text-align:left;">Installation and Net Mettering</td>
-        <td>${q.installation && q.installation !== 'Included' ? q.installation : '--'}</td>
+        <td>${q.installation && q.installation !== "Included" ? q.installation : "--"}</td>
         <td>--</td>
         <td>--</td>
         <td>Included</td>
@@ -419,25 +429,31 @@ async function generatePDF(q: Record<string, unknown>): Promise<Uint8Array> {
 
   // Attempt 1: If Browserless Key is provided (Preferred Puppeteer method)
   if (browserlessKey) {
-    const res = await fetch(`https://chrome.browserless.io/pdf?token=${browserlessKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        html: html,
-        options: {
-          format: "A4",
-          printBackground: true,
-          margin: { top: "0mm", bottom: "0mm", left: "0mm", right: "0mm" } // margins handled in CSS
-        },
-        gotoOptions: {
-          waitUntil: "networkidle0" // Wait for Tailwind CDN
-        }
-      })
-    });
+    const res = await fetch(
+      `https://chrome.browserless.io/pdf?token=${browserlessKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          html: html,
+          options: {
+            format: "A4",
+            printBackground: true,
+            margin: { top: "0mm", bottom: "0mm", left: "0mm", right: "0mm" }, // margins handled in CSS
+          },
+          gotoOptions: {
+            waitUntil: "networkidle0", // Wait for Tailwind CDN
+          },
+        }),
+      },
+    );
     if (res.ok) {
       return new Uint8Array(await res.arrayBuffer());
     } else {
-      console.error("Browserless API failed, falling back...", await res.text());
+      console.error(
+        "Browserless API failed, falling back...",
+        await res.text(),
+      );
     }
   }
 
@@ -445,25 +461,34 @@ async function generatePDF(q: Record<string, unknown>): Promise<Uint8Array> {
   const fallbackRes = await fetch("https://api.pdfshift.io/v3/convert/pdf", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ source: `<!DOCTYPE html>\n` + html })
+    body: JSON.stringify({ source: `<!DOCTYPE html>\n` + html }),
   });
 
   if (fallbackRes.ok) {
     return new Uint8Array(await fallbackRes.arrayBuffer());
   }
 
-  throw new Error("PDF generation failed. Please configure BROWSERLESS_API_KEY for robust Puppeteer PDF generation.");
+  throw new Error(
+    "PDF generation failed. Please configure BROWSERLESS_API_KEY for robust Puppeteer PDF generation.",
+  );
 }
 
 // ─── Email via Brevo HTTP API ──────────────────────────────────────────────────
-async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: string, supabase?: any) {
+async function sendEmail(
+  q: any,
+  pdfBytes: Uint8Array | null,
+  approvalToken?: string,
+  supabase?: any,
+) {
   const brevoApiKey = Deno.env.get("BREVO_API_KEY");
   const gmailEmail = Deno.env.get("GMAIL_EMAIL");
-  
+
   const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Associates";
-  const companyAddress = Deno.env.get("COMPANY_ADDRESS") || "Lucknow, Uttar Pradesh";
+  const companyAddress =
+    Deno.env.get("COMPANY_ADDRESS") || "Lucknow, Uttar Pradesh";
   const companyPrimary = Deno.env.get("COMPANY_NAME_PRIMARY") || "RBSC";
-  const companySecondary = Deno.env.get("COMPANY_NAME_SECONDARY") || "Associates";
+  const companySecondary =
+    Deno.env.get("COMPANY_NAME_SECONDARY") || "Associates";
   const companyWebsite = Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com";
   const companyEmail = Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
 
@@ -471,10 +496,20 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
   if (!gmailEmail) throw new Error("GMAIL_EMAIL not configured");
 
   // Convert Uint8Array to base64 for the PDF attachment
-  const b64 = pdfBytes ? btoa(Array.from(pdfBytes).map(b => String.fromCharCode(b)).join('')) : null;
+  const b64 = pdfBytes
+    ? btoa(
+        Array.from(pdfBytes)
+          .map((b) => String.fromCharCode(b))
+          .join(""),
+      )
+    : null;
 
-  const dateStr = new Date(q.created_at).toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' });
-  const price = Number(q.product_price || 0).toLocaleString('en-IN');
+  const dateStr = new Date(q.created_at).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+  const price = Number(q.product_price || 0).toLocaleString("en-IN");
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -514,7 +549,7 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
   <div class="header">
     ${logoBase64 ? `<img src="data:image/png;base64,${logoBase64}" alt="${companyName}" class="header-logo"/>` : ""}
     <h1>Solar Quotation</h1>
-    <p>${companyName} — ${companyAddress.split(',')[0]}</p>
+    <p>${companyName} — ${companyAddress.split(",")[0]}</p>
   </div>
   <div class="divider-bar"></div>
   <div class="body">
@@ -535,7 +570,9 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
       </table>
     </div>
 
-    ${approvalToken ? `
+    ${
+      approvalToken
+        ? `
     <div style="margin: 32px 0; text-align: center; background: #f8fafc; padding: 24px; border-radius: 12px; border: 1.5px dashed #cbd5e1;">
       <h3 style="margin-top: 0; color: #1a1a5e; font-size: 16px; margin-bottom: 12px;">Approve Your Quotation</h3>
       <p style="font-size: 13px; color: #475569; margin-bottom: 20px; line-height: 1.6;">
@@ -545,7 +582,9 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
         Review &amp; Approve Quotation
       </a>
     </div>
-    ` : ''}
+    `
+        : ""
+    }
 
     <p class="intro">If you have any questions, please contact us quoting your Quotation ID <strong>${q.quotation_id}</strong>.</p>
     
@@ -559,7 +598,7 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
     <div class="footer-logo">${companyPrimary} <span>${companySecondary}</span></div>
     <p>
       &copy; ${new Date().getFullYear()} ${companyName}. All rights reserved.<br/>
-      <a href="https://${companyWebsite.replace('www.', '').replace('https://', '')}">${companyWebsite}</a> &nbsp;|&nbsp;
+      <a href="https://${companyWebsite.replace("www.", "").replace("https://", "")}">${companyWebsite}</a> &nbsp;|&nbsp;
       <a href="mailto:${companyEmail}">${companyEmail}</a>
     </p>
     <p style="margin-top:8px;color:#cbd5e1;font-size:10px">This is an automated message. Please do not reply.</p>
@@ -576,7 +615,9 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
   };
 
   if (b64) {
-    payload.attachment = [{ name: `Quotation_${q.quotation_id}.pdf`, content: b64 }];
+    payload.attachment = [
+      { name: `Quotation_${q.quotation_id}.pdf`, content: b64 },
+    ];
   }
 
   try {
@@ -585,7 +626,7 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
       headers: {
         "api-key": brevoApiKey,
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify(payload),
     });
@@ -596,8 +637,10 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
     }
 
     const result = await res.json();
-    console.log(`✅ Quotation email sent via Brevo to ${q.customer_email}, Message ID: ${result.messageId}`);
-    
+    console.log(
+      `✅ Quotation email sent via Brevo to ${q.customer_email}, Message ID: ${result.messageId}`,
+    );
+
     // Log success
     if (supabase) {
       await supabase.from("email_logs").insert({
@@ -605,7 +648,7 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
         email_type: "quotation",
         status: "sent",
         message_id: result.messageId,
-        reference_id: q.quotation_id
+        reference_id: q.quotation_id,
       });
     }
   } catch (err: any) {
@@ -617,7 +660,7 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
         email_type: "quotation",
         status: "failed",
         error_message: err.message,
-        reference_id: q.quotation_id
+        reference_id: q.quotation_id,
       });
     }
     throw err;
@@ -626,11 +669,12 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
 
 // ─── Main handler ─────────────────────────────────────────────────────────────
 serve(async (req: any) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response("ok", { headers: corsHeaders });
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
   try {
@@ -646,10 +690,15 @@ serve(async (req: any) => {
     // ── CREATE QUOTATION ───────────────────────────────────────────────────
     if (action === "create") {
       if (!user || (user.role !== "sales" && user.role !== "admin")) {
-        return jsonResponse({ message: "Only sales team can create quotations" }, 403);
+        return jsonResponse(
+          { message: "Only sales team can create quotations" },
+          403,
+        );
       }
 
-      const dateStrForId = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+      const dateStrForId = new Date()
+        .toLocaleDateString("en-GB")
+        .replace(/\//g, "-");
       const uniqueNum = Math.floor(10000 + Math.random() * 90000);
       const newQuotationId = `${Deno.env.get("ID_PREFIX") || "RBSC"}-${dateStrForId}-${uniqueNum}`;
 
@@ -696,18 +745,26 @@ serve(async (req: any) => {
       // Generate PDF, upload to storage, send email in the background
       const processPdfAndEmail = async () => {
         try {
-          const fullQuotationData = { ...quotation, wiring: body.wiring, earthing: body.earthing, installation: body.installation, bos: body.bos };
-          
+          const fullQuotationData = {
+            ...quotation,
+            wiring: body.wiring,
+            earthing: body.earthing,
+            installation: body.installation,
+            bos: body.bos,
+          };
+
           let pdfBytes: Uint8Array | null = null;
           try {
             pdfBytes = await generatePDF(fullQuotationData);
           } catch (pdfErr) {
             console.error("PDF generation skipped/failed:", pdfErr);
           }
-          
+
           // Ensure customer email is present before sending
           if (!quotation.customer_email) {
-            console.log("No customer email provided for quotation, skipping email.");
+            console.log(
+              "No customer email provided for quotation, skipping email.",
+            );
           }
 
           // Upload PDF to Supabase Storage (Quotations bucket)
@@ -719,7 +776,7 @@ serve(async (req: any) => {
                 contentType: "application/pdf",
                 upsert: true, // Overwrite if exists
               });
-            
+
             if (storageError) {
               console.error("Failed to upload PDF to storage:", storageError);
             } else {
@@ -731,16 +788,16 @@ serve(async (req: any) => {
           let approvalToken = "";
           if (quotation.customer_email) {
             const { data: tokenData, error: tokenError } = await supabase
-              .from('customer_portal_tokens')
+              .from("customer_portal_tokens")
               .insert({
                 quotation_id: quotation.quotation_id,
                 customer_email: quotation.customer_email,
                 customer_name: quotation.customer_name,
-                created_by: quotation.employee_name || 'Sales Team'
+                created_by: quotation.employee_name || "Sales Team",
               })
-              .select('token')
+              .select("token")
               .single();
-              
+
             if (!tokenError && tokenData) {
               approvalToken = tokenData.token;
             }
@@ -748,7 +805,9 @@ serve(async (req: any) => {
 
           // Send Email in the background
           if (quotation.customer_email) {
-            sendEmail(quotation, pdfBytes, approvalToken, supabase).catch(e => console.error("Background email failed:", e));
+            sendEmail(quotation, pdfBytes, approvalToken, supabase).catch((e) =>
+              console.error("Background email failed:", e),
+            );
           }
         } catch (err) {
           console.error("PDF/Email error:", err);
@@ -757,20 +816,30 @@ serve(async (req: any) => {
 
       // Start the background process using EdgeRuntime.waitUntil for true background execution
       // @ts-ignore
-      if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+      if (typeof EdgeRuntime !== "undefined" && EdgeRuntime.waitUntil) {
         // @ts-ignore
         EdgeRuntime.waitUntil(processPdfAndEmail());
       } else {
         processPdfAndEmail();
       }
 
-      return jsonResponse({ success: true, message: "Quotation created successfully.", data: quotation }, 201);
+      return jsonResponse(
+        {
+          success: true,
+          message: "Quotation created successfully.",
+          data: quotation,
+        },
+        201,
+      );
     }
 
     // ── GET ALL QUOTATIONS ─────────────────────────────────────────────────
     if (action === "list") {
       if (!user) return jsonResponse({ message: "Unauthorized" }, 401);
-      let query = supabase.from("quotations").select("*").order("created_at", { ascending: false });
+      let query = supabase
+        .from("quotations")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (user.role === "sales") {
         query = query.eq("created_by", user.id);
@@ -800,8 +869,10 @@ serve(async (req: any) => {
       if (!user) return jsonResponse({ message: "Unauthorized" }, 401);
       const updatePayload: Record<string, unknown> = {};
       if (body.status) updatePayload.status = body.status;
-      if (body.currentDepartment) updatePayload.current_department = body.currentDepartment;
-      if (body.customer_occupation) updatePayload.customer_occupation = body.customer_occupation;
+      if (body.currentDepartment)
+        updatePayload.current_department = body.currentDepartment;
+      if (body.customer_occupation)
+        updatePayload.customer_occupation = body.customer_occupation;
       if (body.documents) updatePayload.documents = body.documents;
 
       const { data, error } = await supabase
@@ -812,7 +883,10 @@ serve(async (req: any) => {
         .single();
 
       if (error) {
-        return jsonResponse({ message: `Quotation update failed: ${error.message}` }, 400);
+        return jsonResponse(
+          { message: `Quotation update failed: ${error.message}` },
+          400,
+        );
       }
       return jsonResponse({ success: true, data });
     }
@@ -822,17 +896,27 @@ serve(async (req: any) => {
       if (!body.portal_token || !body.id) {
         return jsonResponse({ message: "Invalid request" }, 400);
       }
-      const { data: tRow } = await supabase.from('customer_portal_tokens').select('*').eq('token', body.portal_token).single();
+      const { data: tRow } = await supabase
+        .from("customer_portal_tokens")
+        .select("*")
+        .eq("token", body.portal_token)
+        .single();
       if (!tRow) {
         return jsonResponse({ message: "Unauthorized" }, 403);
       }
-      
-      const { error: updErr } = await supabase.from("quotations").update({
-        status: "Approved"
-      }).eq("id", body.id);
+
+      const { error: updErr } = await supabase
+        .from("quotations")
+        .update({
+          status: "Approved",
+        })
+        .eq("id", body.id);
 
       if (updErr) {
-        return jsonResponse({ message: `Failed to approve quotation: ${updErr.message}` }, 400);
+        return jsonResponse(
+          { message: `Failed to approve quotation: ${updErr.message}` },
+          400,
+        );
       }
       return jsonResponse({ success: true });
     }
@@ -842,17 +926,27 @@ serve(async (req: any) => {
       if (!body.portal_token || !body.id) {
         return jsonResponse({ message: "Invalid request" }, 400);
       }
-      const { data: tRow } = await supabase.from('customer_portal_tokens').select('*').eq('token', body.portal_token).single();
+      const { data: tRow } = await supabase
+        .from("customer_portal_tokens")
+        .select("*")
+        .eq("token", body.portal_token)
+        .single();
       if (!tRow) {
         return jsonResponse({ message: "Unauthorized" }, 403);
       }
-      
-      const { error: updErr } = await supabase.from("quotations").update({
-        status: "Rejected"
-      }).eq("id", body.id);
+
+      const { error: updErr } = await supabase
+        .from("quotations")
+        .update({
+          status: "Rejected",
+        })
+        .eq("id", body.id);
 
       if (updErr) {
-        return jsonResponse({ message: `Failed to decline quotation: ${updErr.message}` }, 400);
+        return jsonResponse(
+          { message: `Failed to decline quotation: ${updErr.message}` },
+          400,
+        );
       }
       return jsonResponse({ success: true });
     }
@@ -866,7 +960,11 @@ serve(async (req: any) => {
         authorized = true;
       } else if (body.portal_token) {
         // Verify portal token (Expiration removed as per request)
-        const { data: tRow } = await supabase.from('customer_portal_tokens').select('*').eq('token', body.portal_token).single();
+        const { data: tRow } = await supabase
+          .from("customer_portal_tokens")
+          .select("*")
+          .eq("token", body.portal_token)
+          .single();
         if (tRow) {
           authorized = true;
           portalTokenRow = tRow;
@@ -874,90 +972,163 @@ serve(async (req: any) => {
       }
 
       if (!authorized) {
-        return jsonResponse({ message: "Only sales, admin, or valid portal token can send to registration" }, 403);
+        return jsonResponse(
+          {
+            message:
+              "Only sales, admin, or valid portal token can send to registration",
+          },
+          403,
+        );
       }
 
-      const { data: q, error: qErr } = await supabase.from("quotations").select("*").eq("id", body.id).single();
+      const { data: q, error: qErr } = await supabase
+        .from("quotations")
+        .select("*")
+        .eq("id", body.id)
+        .single();
       if (qErr) return jsonResponse({ message: "Quotation not found" }, 404);
 
       // ── Generate & save branded tracking_id & customer_id ────────────────
-      const customerName   = q.customer_name || "";
-      const nameSlug       = customerName.replace(/\s+/g, "").toUpperCase().replace(/[^A-Z]/g, "").substring(0, 4).padEnd(4, "X");
-      const randomDigits   = String(Math.floor(10000 + Math.random() * 90000));
-      const trackingIdVal  = `${Deno.env.get("ID_PREFIX") || "RBSC"}-${nameSlug}-${randomDigits}`; 
+      const customerName = q.customer_name || "";
+      const nameSlug = customerName
+        .replace(/\s+/g, "")
+        .toUpperCase()
+        .replace(/[^A-Z]/g, "")
+        .substring(0, 4)
+        .padEnd(4, "X");
+      const randomDigits = String(Math.floor(10000 + Math.random() * 90000));
+      const trackingIdVal = `${Deno.env.get("ID_PREFIX") || "RBSC"}-${nameSlug}-${randomDigits}`;
 
-      const now            = new Date();
-      const dd   = String(now.getDate()).padStart(2, "0");
-      const mm   = String(now.getMonth() + 1).padStart(2, "0");
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, "0");
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
       const yyyy = String(now.getFullYear());
-      const custRandom     = String(Math.floor(10000 + Math.random() * 90000));
-      const customerIdVal  = `${nameSlug}-${dd}${mm}${yyyy}-${custRandom}`; 
+      const custRandom = String(Math.floor(10000 + Math.random() * 90000));
+      const customerIdVal = `${nameSlug}-${dd}${mm}${yyyy}-${custRandom}`;
       // ─────────────────────────────────────────────────────────────────────
 
-      const { data: newCase, error: caseErr } = await supabase.from("cases").insert({
-        customer_name: q.customer_name,
-        phone: q.customer_mobile,
-        email: q.customer_email,
-        address: q.customer_address,
-        load_required: Number(q.total_watt || 0),
-        payment_type: 'cash', // Default fallback
-        assigned_team: 'Registration',
-        status: 'In Progress',
-        current_stage: 'Registration Done',
-        documents: q.documents || {},
-        created_by: q.created_by || user?.id || null,
-        sales_person: q.employee_name || null,
-        tracking_id: trackingIdVal,
-        customer_id: customerIdVal,
-        // ── Quotation reference & amount auto-filled from quotation ─────────
-        quotation_id_ref: q.quotation_id || q.id || '',
-        quotation_amount: Number(q.product_price || q.total_amount || 0),
-        // ────────────────────────────────────────────────────────────────────
-      }).select().single();
+      const { data: newCase, error: caseErr } = await supabase
+        .from("cases")
+        .insert({
+          customer_name: q.customer_name,
+          phone: q.customer_mobile,
+          email: q.customer_email,
+          address: q.customer_address,
+          load_required: Number(q.total_watt || 0),
+          payment_type: "cash", // Default fallback
+          assigned_team: "Registration",
+          status: "In Progress",
+          current_stage: "Registration Done",
+          documents: q.documents || {},
+          created_by: q.created_by || user?.id || null,
+          sales_person: q.employee_name || null,
+          tracking_id: trackingIdVal,
+          customer_id: customerIdVal,
+          // ── Quotation reference & amount auto-filled from quotation ─────────
+          quotation_id_ref: q.quotation_id || q.id || "",
+          quotation_amount: Number(q.product_price || q.total_amount || 0),
+          // ────────────────────────────────────────────────────────────────────
+        })
+        .select()
+        .single();
 
-      if (caseErr) return jsonResponse({ message: `Case creation failed: ${caseErr.message}` }, 400);
+      if (caseErr)
+        return jsonResponse(
+          { message: `Case creation failed: ${caseErr.message}` },
+          400,
+        );
 
       // Manually insert case history so the user name appears instead of "System"
       await supabase.from("case_history").insert({
         case_id: newCase.id,
         stage: "Registration Done",
         department: "Registration",
-        updated_by: user?.name || (portalTokenRow?.customer_name || "Customer"),
-        remarks: "Sent to Registration from Sales"
+        updated_by: user?.name || portalTokenRow?.customer_name || "Customer",
+        remarks: "Sent to Registration from Sales",
       });
 
-      const { error: updErr } = await supabase.from("quotations").update({
-        current_department: "Registration",
-        status: "Approved"
-      }).eq("id", body.id);
+      const { error: updErr } = await supabase
+        .from("quotations")
+        .update({
+          current_department: "Registration",
+          status: "Approved",
+        })
+        .eq("id", body.id);
 
       if (updErr) {
         // Rollback created case if quotation update fails
         await supabase.from("cases").delete().eq("id", newCase.id);
-        return jsonResponse({ message: `Quotation update failed: ${updErr.message}` }, 400);
+        return jsonResponse(
+          { message: `Quotation update failed: ${updErr.message}` },
+          400,
+        );
       }
 
       // ── EMAIL MOVED TO WORKFLOW UPDATE_STAGE ──
       // Email is no longer sent automatically on quotation conversion.
 
-
-      return jsonResponse({ success: true, caseId: newCase.id || newCase.tracking_id });
+      return jsonResponse({
+        success: true,
+        caseId: newCase.id || newCase.tracking_id,
+      });
     }
 
     // ── CATALOG PRODUCTS (static lookup) ──────────────────────────────────
     if (action === "catalog_products") {
       const products = [
-        { id: "p1", name: "Luminous 335W Mono", watt: 335, price: 15000, categoryId: "Off Grid", brandId: "Luminous" },
-        { id: "p2", name: "Luminous 440W Bifacial", watt: 440, price: 20000, categoryId: "On Grid", brandId: "Luminous" },
-        { id: "p3", name: "Tata 330W Poly", watt: 330, price: 12000, categoryId: "Off Grid", brandId: "Tata Power" },
-        { id: "p4", name: "Tata 545W Mono", watt: 545, price: 25000, categoryId: "On Grid", brandId: "Tata Power" },
-        { id: "p5", name: "Adani 330W Poly", watt: 330, price: 11000, categoryId: "Off Grid", brandId: "Adani" },
-        { id: "p6", name: "Adani 540W Mono", watt: 540, price: 24000, categoryId: "On Grid", brandId: "Adani" },
+        {
+          id: "p1",
+          name: "Luminous 335W Mono",
+          watt: 335,
+          price: 15000,
+          categoryId: "Off Grid",
+          brandId: "Luminous",
+        },
+        {
+          id: "p2",
+          name: "Luminous 440W Bifacial",
+          watt: 440,
+          price: 20000,
+          categoryId: "On Grid",
+          brandId: "Luminous",
+        },
+        {
+          id: "p3",
+          name: "Tata 330W Poly",
+          watt: 330,
+          price: 12000,
+          categoryId: "Off Grid",
+          brandId: "Tata Power",
+        },
+        {
+          id: "p4",
+          name: "Tata 545W Mono",
+          watt: 545,
+          price: 25000,
+          categoryId: "On Grid",
+          brandId: "Tata Power",
+        },
+        {
+          id: "p5",
+          name: "Adani 330W Poly",
+          watt: 330,
+          price: 11000,
+          categoryId: "Off Grid",
+          brandId: "Adani",
+        },
+        {
+          id: "p6",
+          name: "Adani 540W Mono",
+          watt: 540,
+          price: 24000,
+          categoryId: "On Grid",
+          brandId: "Adani",
+        },
       ];
       const filtered = products.filter(
         (p) =>
           (!body.categoryId || p.categoryId === body.categoryId) &&
-          (!body.brandId || p.brandId === body.brandId)
+          (!body.brandId || p.brandId === body.brandId),
       );
       return jsonResponse(filtered);
     }
@@ -972,7 +1143,10 @@ serve(async (req: any) => {
     } else {
       message = JSON.stringify(err);
     }
-    return jsonResponse({ message }, message.includes("Unauthorized") ? 401 : 500);
+    return jsonResponse(
+      { message },
+      message.includes("Unauthorized") ? 401 : 500,
+    );
   }
 });
 

@@ -1,106 +1,102 @@
-# RBSC Solar CRM
+# RBSC Solar CRM System
 
-A comprehensive Customer Relationship Management (CRM) system designed specifically for solar energy companies. This platform manages the entire lifecycle of a solar installation project, from initial customer registration and quotation generation to installation, financing, and subsidy processing.
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![React](https://img.shields.io/badge/React-19.0-61DAFB.svg?logo=react)
+![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC.svg?logo=tailwind-css)
+![Supabase](https://img.shields.io/badge/Supabase-Edge-3ECF8E.svg?logo=supabase)
+![Cloudflare](https://img.shields.io/badge/Cloudflare-Pages-F38020.svg?logo=cloudflare)
 
-![RBSC Solar CRM](frontend/public/logo192.png) <!-- Update with an actual screenshot or logo path if available -->
+An enterprise-grade Customer Relationship Management (CRM) platform custom-built for **RBSC Solar**. This comprehensive system handles the end-to-end workflow of solar installations—from initial lead capture and quotation generation to dispatch, installation, and financial tracking.
+
+---
 
 ## 🌟 Key Features
 
-- **Role-Based Access Control (RBAC):** Customized dashboards and permissions for various departments including Admin, Sales, Registration, Banking/Finance, Store/Inventory, Installation, Electrical, and Subsidy.
-- **Dynamic Case Registration:** Intelligent form that adapts required document checklists based on the customer's occupation (Salaried, Pensioner, Business Owner).
-- **Automated Quotation System:** Generates professional PDF quotations based on selected solar panels, inverters, and battery configurations, and automatically emails them to customers.
-- **Financial Tracking:** Dedicated modules to track loan approvals, cash payments, EMIs, and down payments.
-- **Inventory & Store Management:** Track solar panels, inverters, and balance of systems (BOS), along with dispatch tracking for approved cases.
-- **Real-Time Stage History:** Detailed audit logs and timelines for every case to ensure transparency and smooth handoffs between departments.
-- **Cloud Document Storage:** Secure uploading and management of customer documents using Supabase Storage.
+- **Dynamic Case Management:** Intelligent workflows that adapt based on the customer's occupation (Salaried, Pensioner, Business Owner) and dictate required documentation.
+- **Automated Quotations:** Instantly generates professional PDF quotations based on selected hardware (panels, inverters, battery configurations) and automatically dispatches them to customers via email.
+- **Financial Tracking:** Dedicated ledgers for tracking loan approvals, cash payments, EMIs, subsidies, and down payments.
+- **Inventory & Dispatch Control:** Track stock levels for solar panels, inverters, and BOS components. Streamlines B2B and B2C dispatch processes.
+- **Real-Time Audit Logs:** Detailed stage history and timeline tracking for every case to ensure internal transparency across departments.
+- **Cloud Document Storage:** Secure and scalable customer document management powered by Supabase Storage.
+- **Customer Portal:** Secure tracking and quotation approval portal for end-customers.
 
-## 🛠️ Technology Stack
+---
 
-**Frontend:**
-- [React.js](https://reactjs.org/) (v19)
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-- [React Router](https://reactrouter.com/) for navigation
-- [Lucide React](https://lucide.dev/) for iconography
-- [React Hot Toast](https://react-hot-toast.com/) for notifications
+## 🛠️ Architecture & Technology Stack
 
-**Backend & Database:**
-- [Supabase](https://supabase.com/) - Open source Firebase alternative
-- PostgreSQL (Database & Row Level Security)
-- Supabase Edge Functions (Deno/TypeScript) for backend logic, PDF generation, and email workflows
-- Supabase Storage for secure document and PDF management
+The application uses a modern decoupled architecture:
 
-## 🚀 Getting Started
+### Frontend (Client-Side)
+- **Framework:** React.js (v19) 
+- **Styling:** Tailwind CSS
+- **Routing:** React Router v7
+- **Icons & UI:** Lucide React, React Hot Toast
+- **Hosting:** Cloudflare Pages (Global Edge CDN)
+
+### Backend & Database
+- **Database:** Supabase (PostgreSQL) with Row Level Security (RLS)
+- **Backend Logic:** Supabase Edge Functions (Deno/TypeScript) 
+- **File Storage:** Supabase Storage buckets
+- **Email Service:** Brevo API integration
+
+---
+
+## 🚀 Local Development Setup
 
 ### Prerequisites
-
 - Node.js (v18 or higher)
 - npm or yarn
-- A Supabase account and project
+- Supabase CLI (for local backend development)
 
-### Local Setup
+### 1. Clone & Install
+```bash
+# Navigate to the frontend directory
+cd frontend
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Nikhiltiwaridotin/Internship_project.git
-   cd Internship_project
-   ```
-
-2. **Frontend Setup**
-   ```bash
-   cd frontend
-   npm install
-   ```
-
-3. **Environment Variables**
-   Create a `.env` file in the `frontend` directory and add your Supabase credentials:
-   ```env
-   REACT_APP_SUPABASE_URL=your_supabase_project_url
-   REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-4. **Run the Frontend**
-   ```bash
-   npm start
-   ```
-   The application will be available at `http://localhost:3000`.
-
-### Backend Setup (Supabase)
-
-1. Ensure you have the [Supabase CLI](https://supabase.com/docs/guides/cli) installed.
-2. Link your local repository to your Supabase project:
-   ```bash
-   npx supabase link --project-ref your_project_ref
-   ```
-3. Push the database schema and migrations:
-   ```bash
-   npx supabase db push
-   ```
-4. Deploy the Edge Functions (e.g., workflow, quotation generation):
-   ```bash
-   npx supabase functions deploy
-   ```
-
-## 📂 Project Structure
-
-```
-├── frontend/                 # React frontend application
-│   ├── src/
-│   │   ├── components/       # Reusable UI components and page views
-│   │   ├── lib/              # Utility functions and Supabase client setup
-│   │   ├── App.js            # Main application router
-│   │   └── index.js          # React entry point
-│   └── package.json          # Frontend dependencies
-├── supabase/                 # Supabase backend configuration
-│   ├── functions/            # Deno Edge Functions (business logic, emails, PDFs)
-│   └── migrations/           # PostgreSQL schema migrations
-└── README.md                 # Project documentation
+# Install dependencies
+npm install
 ```
 
-## 🔒 Security
+### 2. Environment Variables
+Create a `.env` file in the `frontend/` directory with the following keys:
+```env
+REACT_APP_SUPABASE_URL=your_supabase_project_url
+REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-- All database access from the frontend is restricted using Supabase Row Level Security (RLS) policies.
-- Sensitive business logic and external API calls (like sending emails) are handled securely via Supabase Edge Functions.
+### 3. Start Development Server
+```bash
+npm start
+```
+The application will launch at `http://localhost:3000`.
 
-## 📄 License
+---
 
-This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
+## 📦 Deployment
+
+This project is configured for seamless deployment to **Cloudflare Pages**.
+
+1. Connect your GitHub repository to Cloudflare Pages.
+2. Set the **Root directory** to `frontend`.
+3. Set the **Build command** to `npm run build`.
+4. Set the **Build output directory** to `build`.
+5. Add your `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_ANON_KEY` as environment variables in the Cloudflare dashboard.
+
+### Deploying Backend Functions
+To deploy updates to the backend workflows, use the Supabase CLI:
+```bash
+supabase functions deploy workflow
+supabase functions deploy quotation
+supabase functions deploy admin
+```
+
+---
+
+## 👨‍💻 Authorship & Maintenance
+
+Architected, Developed, and Maintained by **Nikhil Tiwari**.
+
+For technical queries, maintenance, or feature requests, please refer to the technical handover documentation.
+
+---
+*© 2026 RBSC Solar. All rights reserved.*
