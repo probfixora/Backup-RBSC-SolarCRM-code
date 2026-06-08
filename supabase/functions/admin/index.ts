@@ -110,7 +110,7 @@ serve(async (req: Request) => {
           console.error("BREVO_API_KEY or GMAIL_EMAIL not set. Cannot send onboarding email.");
         } else {
           const joinedDate = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
-          const portalUrl = Deno.env.get("FRONTEND_URL") || "https://crm-rbscsolar.vercel.app";
+          const portalUrl = Deno.env.get("FRONTEND_URL") || "https://rbscsolarcrm.probfixora.co.in";
           const html = `<!DOCTYPE html>
 <html lang="en">
 <head>

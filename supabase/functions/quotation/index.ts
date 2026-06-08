@@ -541,7 +541,7 @@ async function sendEmail(q: any, pdfBytes: Uint8Array | null, approvalToken?: st
       <p style="font-size: 13px; color: #475569; margin-bottom: 20px; line-height: 1.6;">
         Click below to review your quotation and proceed with the installation process. You will be able to approve or decline the quotation directly through our secure portal.
       </p>
-      <a href="https://crm-rbscsolar.vercel.app/portal/${approvalToken}" style="display: inline-block; background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);">
+      <a href="https://rbscsolarcrm.probfixora.co.in/portal/${approvalToken}" style="display: inline-block; background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);">
         Review &amp; Approve Quotation
       </a>
     </div>
