@@ -86,14 +86,13 @@ const getMobileNav = (role, dashPath) => {
     sales: [home, quote, quotes, clients],
     registration: [home, newCase, clients, support],
     banking: [home, finance, clients, support],
-    inventory: [home, dispatch, clients, support],
+    inventory: [home, dispatch, procure, clients],
     field_installation: [home, clients, track, support],
     electrical: [home, clients, support, support],
     subsidy: [home, clients, support, support],
     technical: [home, clients, support, support],
     accounts: [home, finance, clients, support],
     customer_service: [home, clients, support, support],
-    procurement: [home, procure, clients, support],
   };
   // Remove duplicates for roles with only 2 middle tabs
   const tabs = maps[role] || [home, clients, support, support];
@@ -155,7 +154,6 @@ const getRoleGroups = (role) => {
     technical: "/technical-dashboard",
     accounts: "/accounts-dashboard",
     customer_service: "/customer-service-dashboard",
-    procurement: "/procurement-dashboard",
   };
 
   if (role === "sales") {
@@ -224,19 +222,7 @@ const getRoleGroups = (role) => {
           { name: "Dashboard", path: dashMap[role] || "/admin-dashboard" },
           { name: "Customers", path: "/cases" },
           { name: "Dispatch", path: "/b2c-dispatch" },
-        ],
-      },
-    ];
-  }
-
-  if (role === "procurement") {
-    return [
-      {
-        group: "Workspace",
-        items: [
-          { name: "Dashboard", path: "/procurement-dashboard" },
           { name: "Procurement", path: "/procurement-portal" },
-          { name: "Customers", path: "/dispatch-customers" },
         ],
       },
     ];
@@ -265,7 +251,6 @@ const getRoleLabel = (role) => {
   if (role === "technical") return "Technical QA";
   if (role === "accounts") return "Accounts";
   if (role === "customer_service") return "Customer Service";
-  if (role === "procurement") return "Procurement";
   return role.charAt(0).toUpperCase() + role.slice(1);
 };
 
@@ -282,7 +267,6 @@ const ROLE_COLORS = {
   technical: "#06B6D4",
   accounts: "#84CC16",
   customer_service: "#A78BFA",
-  procurement: "#3B82F6",
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════

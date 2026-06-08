@@ -708,7 +708,6 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh }) => {
           const trackingId =
             c.tracking_id || c.trackingId || c.caseId || c.case_id || "—";
           const customerId = c.customer_id || c.customerId || "—";
-          const deptSt = getDeptStatus(c);
           const dayLabel = daysInStage(c.stageStartTime || c.stage_start_time);
           const canUpdate = canUpdateCase(c);
           const isCompleted =

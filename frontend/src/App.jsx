@@ -74,10 +74,8 @@ const DashboardRedirect = () => {
           : role === "banking"
             ? "/banking-dashboard"
             : role === "inventory"
-              ? "/b2c-dispatch"
-              : role === "procurement"
-                ? "/procurement-dashboard"
-                : role === "field_installation"
+              ? "/inventory-dashboard"
+              : role === "field_installation"
                   ? "/installation-dashboard"
                   : role === "electrical"
                     ? "/electrical-dashboard"
@@ -516,7 +514,7 @@ function App() {
           <Route
             path="/procurement-dashboard"
             element={
-              <ProtectedRoute role={["admin", "procurement"]}>
+              <ProtectedRoute role={["admin", "inventory"]}>
                 <ProcurementDashboard onLogout={handleLogout} />
               </ProtectedRoute>
             }
@@ -524,7 +522,7 @@ function App() {
           <Route
             path="/procurement-portal"
             element={
-              <ProtectedRoute role={["admin", "procurement"]}>
+              <ProtectedRoute role={["admin", "inventory"]}>
                 <ProcurementPortal onLogout={handleLogout} />
               </ProtectedRoute>
             }
@@ -540,7 +538,7 @@ function App() {
           <Route
             path="/dispatch-customers"
             element={
-              <ProtectedRoute role={["admin", "procurement", "inventory"]}>
+              <ProtectedRoute role={["admin", "inventory"]}>
                 <DispatchCustomers onLogout={handleLogout} />
               </ProtectedRoute>
             }
