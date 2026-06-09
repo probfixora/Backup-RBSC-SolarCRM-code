@@ -113,7 +113,8 @@ export default function CreateCase({ onLogout }) {
     const capNum = parseInt(String(bCap).replace(/Ah$/i, ""), 10) || 0;
     let price = 0;
     if (capNum === 150) price = 15000;
-    if (capNum === 200) price = 19000;
+    else if (capNum === 200) price = 19000;
+    else price = capNum * 100;
     setF((p) => ({
       ...p,
       batteryBrand: bBrand,
