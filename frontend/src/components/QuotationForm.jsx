@@ -599,45 +599,60 @@ export default function QuotationForm() {
       const token = localStorage.getItem("token"); // eslint-disable-line no-unused-vars
 
       // Map flat form state → nested schema expected by backend
-      const payload = {
-        action: "create",
-        customerName: f.customerName,
-        customerMobile: f.mobile,
-        customerEmail: f.email,
-        customerAddress: f.address,
-        electricalDivision: f.electricalDivision,
-        electricalNumber: f.electricalNo,
-        electricalLoad: f.electricalLoad,
-        productCategory: f.subCategory, // mapped for backward compatibility
-        productBrand: f.panelBrand,
-        productName: f.productName || f.panelBrand,
-        panelUnit: f.panelUnit,
-        panelCount: f.panelCount,
-        totalWatt: f.totalWatt,
-        productPrice: Number(f.productPrice),
-        panelWarranty: f.panelWarranty,
-        inverterBrand: f.gtiInverter,
-        inverterKw: f.inverterKw,
-        inverterWarranty: f.inverterWarranty,
-        inverterPrice: Number(f.inverterPrice) || 0,
-        batteryBrand:
-          f.batteryBrand && f.batteryCapacity
-            ? `${f.batteryBrand} ${f.batteryCapacity}`.trim()
-            : null,
-        batteryCount: f.batteryQty || 0,
-        batteryWarranty: f.batteryWarranty || null,
-        batteryCapacity: f.totalBatCapacity || 0,
-        batteryPrice: f.totalBatPrice || 0,
-        structure: f.structureBrand
-          ? `${f.structureBrand} ${f.structureSize}`.trim()
-          : "",
-        bos: f.bos,
-        wiring: (f.wireSize || f.wireMake || f.wire_core_material || f.wire_armouring)
-          ? `${f.wireSize ? f.wireSize + ' Square MM ' : ''}${f.wireMake || ""} ${f.wire_core_material ? '(' + f.wire_core_material + (f.wire_armouring ? ' - ' + f.wire_armouring : '') + ')' : ''}`.replace(/\s+/g, ' ').trim()
-          : "",
-        wireCoreM: `${f.wireMake || ""} ${f.wire_core_material || ""} ${f.wireSize || ""}`.trim(),
-        wireArmouring: f.wire_armouring,
-        earthing: f.earthing ? String(f.earthing) : "",
+        const buildWiring = () => {
+          if (!f.wireSize && !f.wireMake && !f.wire_core_material && !f.wire_armouring) return "";
+          const sizeStr = f.wireSize ? f.wireSize.replace(/sq mm/i, "").trim() : "";
+          const makeStr = f.wireMake ? f.wireMake : "Havells/Polycap/KEI";
+          
+          let res = sizeStr ? `${sizeStr} Square MM<br/>` : "";
+          res += `(${makeStr})`;
+          
+          let extra = f.wire_core_material || "";
+          if (f.wire_armouring) extra += (extra ? " - " : "") + f.wire_armouring;
+          
+          if (extra) {
+            res += `<br/>(${extra})`;
+          }
+          return res;
+        };
+
+        const payload = {
+          action: "create",
+          customerName: f.customerName,
+          customerMobile: f.mobile,
+          customerEmail: f.email,
+          customerAddress: f.address,
+          electricalDivision: f.electricalDivision,
+          electricalNumber: f.electricalNo,
+          electricalLoad: f.electricalLoad,
+          productCategory: f.subCategory, // mapped for backward compatibility
+          productBrand: f.panelBrand,
+          productName: f.productName || f.panelBrand,
+          panelUnit: f.panelUnit,
+          panelCount: f.panelCount,
+          totalWatt: f.totalWatt,
+          productPrice: Number(f.productPrice),
+          panelWarranty: f.panelWarranty,
+          inverterBrand: f.gtiInverter,
+          inverterKw: f.inverterKw,
+          inverterWarranty: f.inverterWarranty,
+          inverterPrice: Number(f.inverterPrice) || 0,
+          batteryBrand:
+            f.batteryBrand && f.batteryCapacity
+              ? `${f.batteryBrand} ${f.batteryCapacity}`.trim()
+              : null,
+          batteryCount: f.batteryQty || 0,
+          batteryWarranty: f.batteryWarranty || null,
+          batteryCapacity: f.totalBatCapacity || 0,
+          batteryPrice: f.totalBatPrice || 0,
+          structure: f.structureBrand
+            ? `${f.structureBrand} ${f.structureSize}`.trim()
+            : "",
+          bos: f.bos,
+          wiring: buildWiring(),
+          wireCoreM: `${f.wireMake || ""} ${f.wire_core_material || ""} ${f.wireSize || ""}`.trim(),
+          wireArmouring: f.wire_armouring,
+          earthing: f.earthing ? String(f.earthing) : "",
         installation: f.installation,
         employeeId: f.employeeId,
         employeeName: f.employeeName,

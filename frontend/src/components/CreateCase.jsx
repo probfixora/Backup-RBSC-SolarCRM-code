@@ -217,6 +217,23 @@ export default function CreateCase({ onLogout }) {
       const parseKw = (val) =>
         parseInt(String(val).replace(/kW$/i, ""), 10) || 0;
 
+      const buildWiring = () => {
+        if (!f.wireSize && !f.wireMake && !f.wire_core_material && !f.wire_armouring) return "";
+        const sizeStr = f.wireSize ? f.wireSize.replace(/sq mm/i, "").trim() : "";
+        const makeStr = f.wireMake ? f.wireMake : "Havells/Polycap/KEI";
+        
+        let res = sizeStr ? `${sizeStr} Square MM<br/>` : "";
+        res += `(${makeStr})`;
+        
+        let extra = f.wire_core_material || "";
+        if (f.wire_armouring) extra += (extra ? " - " : "") + f.wire_armouring;
+        
+        if (extra) {
+          res += `<br/>(${extra})`;
+        }
+        return res;
+      };
+
       const systemSpecs = {
         productCategory: f.subCategory,
         productBrand: f.panelBrand,
@@ -241,9 +258,7 @@ export default function CreateCase({ onLogout }) {
           ? `${f.structureBrand} ${f.structureSize}`.trim()
           : "",
         bos: f.bos,
-        wiring: (f.wireSize || f.wireMake || f.wire_core_material || f.wire_armouring)
-          ? `${f.wireSize ? f.wireSize + ' Square MM ' : ''}${f.wireMake || ""} ${f.wire_core_material ? '(' + f.wire_core_material + (f.wire_armouring ? ' - ' + f.wire_armouring : '') + ')' : ''}`.replace(/\s+/g, ' ').trim()
-          : "",
+        wiring: buildWiring(),
         wireCoreM: `${f.wireMake || ""} ${f.wire_core_material || ""} ${f.wireSize || ""}`.trim(),
         wireArmouring: f.wire_armouring,
         earthing: f.earthing ? String(f.earthing) : "",
