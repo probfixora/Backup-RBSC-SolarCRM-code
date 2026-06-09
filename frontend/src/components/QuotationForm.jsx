@@ -26,14 +26,14 @@ const BRANDS = [
   "INA Solar Panel",
   "Vikram Solar Panel",
   "Credence Solar Panel",
-  "MV Solar Panel",
+  "EMMVEE Solar Panel",
   "Waree Solar Panel",
 ];
 const BLANK_BRANDS = [
   "INA Solar Panel",
   "Vikram Solar Panel",
   "Credence Solar Panel",
-  "MV Solar Panel",
+  "EMMVEE Solar Panel",
   "Waree Solar Panel",
 ];
 const PRODUCT_CATEGORIES = ["Topcon", "Bifacial"];
@@ -154,7 +154,7 @@ const BRAND_WATT = {
   "INA Solar Panel": 535,
   "Vikram Solar Panel": 540,
   "Credence Solar Panel": 535,
-  "MV Solar Panel": 545,
+  "EMMVEE Solar Panel": 545,
   "Waree Solar Panel": 545,
 };
 const BRAND_PRICE_PER_PANEL = {
@@ -167,7 +167,7 @@ const BRAND_PRICE_PER_PANEL = {
   "INA Solar Panel": 10500,
   "Vikram Solar Panel": 11000,
   "Credence Solar Panel": 10800,
-  "MV Solar Panel": 11200,
+  "EMMVEE Solar Panel": 11200,
   "Waree Solar Panel": 11000,
 };
 
@@ -495,7 +495,7 @@ export default function QuotationForm() {
     const panels = kw * 2;
     const watt = BRAND_WATT[brand] || 545;
     // Use admin-defined wattage mapping if available, else brand default
-    const totalWatt = wattMappings[kw] ? wattMappings[kw] : kw * watt;
+    const totalWatt = wattMappings[kw] ? wattMappings[kw] : panels * watt;
     const price = BRAND_PRICE_PER_PANEL[brand] || 11000;
     return { panelCount: panels, totalWatt, totalPrice: panels * price };
   };
@@ -505,12 +505,12 @@ export default function QuotationForm() {
   };
 
   const onPanelCount = (n) => {
-    const kw = parseInt(f.panelUnit) || 0;
     const price = BRAND_PRICE_PER_PANEL[f.panelBrand] || 11000;
+    const watt = BRAND_WATT[f.panelBrand] || 545;
     setF((p) => ({
       ...p,
       panelCount: n,
-      totalWatt: kw * 1000,
+      totalWatt: n * watt,
       totalPrice: n * price,
     }));
   };

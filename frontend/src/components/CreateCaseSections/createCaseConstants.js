@@ -23,7 +23,7 @@ export const BRANDS = [
   "INA Solar Panel",
   "Vikram Solar Panel",
   "Credence Solar Panel",
-  "MV Solar Panel",
+  "EMMVEE Solar Panel",
   "Waree Solar Panel",
 ];
 
@@ -31,7 +31,7 @@ export const BLANK_BRANDS = [
   "INA Solar Panel",
   "Vikram Solar Panel",
   "Credence Solar Panel",
-  "MV Solar Panel",
+  "EMMVEE Solar Panel",
   "Waree Solar Panel",
 ];
 
@@ -57,7 +57,7 @@ export const BRAND_WATT = {
   "INA Solar Panel": 535,
   "Vikram Solar Panel": 540,
   "Credence Solar Panel": 535,
-  "MV Solar Panel": 545,
+  "EMMVEE Solar Panel": 545,
   "Waree Solar Panel": 545,
 };
 
@@ -71,7 +71,7 @@ export const BRAND_PRICE_PER_PANEL = {
   "INA Solar Panel": 10500,
   "Vikram Solar Panel": 11000,
   "Credence Solar Panel": 10800,
-  "MV Solar Panel": 11200,
+  "EMMVEE Solar Panel": 11200,
   "Waree Solar Panel": 11000,
 };
 
