@@ -205,7 +205,10 @@ const Dashboard = ({
         // ── NORMAL MODE: original data fetching ──
         const reqs = [
           edgeFetch(EDGE.analytics, { action: "stats" }),
-          edgeFetch(EDGE.analytics, { action: "activity" }),
+          edgeFetch(EDGE.analytics, { 
+            action: "activity", 
+            ...(!isAdmin && { viewAsUserName: userName }) 
+          }),
           edgeFetch(EDGE.workflow, { action: "get_all" }),
           edgeFetch(EDGE.analytics, { action: "pipeline" }),
           edgeFetch(EDGE.analytics, { action: "monthly_summary" }),
@@ -215,7 +218,7 @@ const Dashboard = ({
           reqs.push(edgeFetch(EDGE.analytics, { action: "performance" }));
         }
         if (userRole === "sales") {
-          reqs.push(edgeFetch(EDGE.quotation, { action: "list" }));
+          reqs.push(edgeFetch(EDGE.quotation, { action: "list", salesPerson: !isAdmin ? userName : undefined }));
         }
 
         const results = await Promise.allSettled(reqs);
