@@ -606,8 +606,11 @@ export default function QuotationForm() {
           let res = sizeStr ? `${sizeStr} Square MM<br/>` : "";
           res += `(Havells/Polycap/KEI)`;
           
-          if (f.wire_armouring) {
-            res += `<br/>(${f.wire_armouring})`;
+          let extra = f.wire_core_material || "";
+          if (f.wire_armouring) extra += (extra ? " - " : "") + f.wire_armouring;
+          
+          if (extra) {
+            res += `<br/>(${extra})`;
           }
           return res;
         };
@@ -642,7 +645,7 @@ export default function QuotationForm() {
           batteryCapacity: f.totalBatCapacity || 0,
           batteryPrice: f.totalBatPrice || 0,
           structure: f.structureBrand
-            ? `${f.structureBrand} ${f.structureSize}`.trim()
+            ? `${f.structureBrand} ${f.structureSize ? (f.structureSize.toLowerCase().endsWith('mm') ? f.structureSize : f.structureSize + ' mm') : ''}`.trim()
             : "",
           bos: f.bos,
           wiring: buildWiring(),
