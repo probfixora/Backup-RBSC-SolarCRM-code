@@ -143,20 +143,18 @@ const SystemComponentsSection = ({ ctx }) => {
               </select>
             </F>
           </div>
-          {f.wire_core_material && (
-            <div style={{ marginTop: 10 }}>
-              <F label="Armored / Unarmored">
-                <select
-                  style={S.sel}
-                  value={f.wire_armouring}
-                  onChange={(e) => set("wire_armouring", e.target.value)}
-                >
-                  <option value="">Select Option</option>
-                  {WIRE_ARMOUR.map((o) => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </F>
-            </div>
-          )}
+          <div style={{ marginTop: 10 }}>
+            <F label="Armored / Unarmored">
+              <select
+                style={S.sel}
+                value={f.wire_armouring}
+                onChange={(e) => set("wire_armouring", e.target.value)}
+              >
+                <option value="">Select Option</option>
+                {WIRE_ARMOUR.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </F>
+          </div>
         </div>
       </div>
 

@@ -134,13 +134,9 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       <div><strong>Address:</strong> ${q.customer_address}</div>
     </div>
     <div style="flex:1; line-height:1.8; text-align:right;">
-      <div><strong>Company Name:</strong> ${q.customer_occupation || "N/A"}</div>
-      ${
-        q.customer_occupation && q.customer_occupation !== "N/A"
-          ? `<div><strong>Address:</strong> ${q.customer_address}</div>`
-          : ""
-      }
-      <div><strong>GSTIN:</strong> ${q.customer_gstin || "N/A"}</div>
+      <div><strong>Company Name:</strong> RBSC Associates</div>
+      <div><strong>Address:</strong> Office no. 11, Bhopal House Lalbagh, Hazratganj, Lucknow 226001, India</div>
+      <div><strong>GSTIN:</strong> 09AATFR0415M1ZQ</div>
     </div>
   </div>
   ${lightDivider}

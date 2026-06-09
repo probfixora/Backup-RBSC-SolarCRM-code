@@ -40,7 +40,7 @@ export const SUB_CATEGORIES = ["Off Grid", "On Grid", "Hybrid", "On Grid Commerc
 
 // ── Component specs ───────────────────────────────────────────────────────────
 export const WIRE_MAKES = ["Polycab", "Havells", "KEI", "Finolex"];
-export const WIRE_SIZES = ["2 Sq mm", "3 Sq mm", "4 Sq mm", "6 Sq mm"];
+export const WIRE_SIZES = ["2", "3", "4", "6"];
 export const STRUCTURE_BRANDS = ["Jindal", "Apollo"];
 export const STRUCTURE_SIZES = ["80mm"];
 export const BATTERY_BRANDS = ["Luminous", "Exide", "Sarotech"];
