@@ -160,8 +160,8 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     <thead>
       <tr>
         <th style="width:6%;">Sr. No</th>
-        <th style="text-align:left; width:38%;">Item Description</th>
-        <th style="width:14%;">Capacity</th>
+        <th style="text-align:left; width:34%;">Item Description</th>
+        <th style="width:18%;">Capacity</th>
         <th style="width:10%;">Quantity</th>
         <th style="width:14%;">Warranty</th>
         <th style="width:18%;">Price (INR)</th>

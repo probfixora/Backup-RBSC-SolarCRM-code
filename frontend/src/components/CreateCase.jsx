@@ -220,16 +220,12 @@ export default function CreateCase({ onLogout }) {
       const buildWiring = () => {
         if (!f.wireSize && !f.wireMake && !f.wire_core_material && !f.wire_armouring) return "";
         const sizeStr = f.wireSize ? f.wireSize.replace(/sq mm/i, "").trim() : "";
-        const makeStr = f.wireMake ? f.wireMake : "Havells/Polycap/KEI";
         
         let res = sizeStr ? `${sizeStr} Square MM<br/>` : "";
-        res += `(${makeStr})`;
+        res += `(Havells/Polycap/KEI)`;
         
-        let extra = f.wire_core_material || "";
-        if (f.wire_armouring) extra += (extra ? " - " : "") + f.wire_armouring;
-        
-        if (extra) {
-          res += `<br/>(${extra})`;
+        if (f.wire_armouring) {
+          res += `<br/>(${f.wire_armouring})`;
         }
         return res;
       };
