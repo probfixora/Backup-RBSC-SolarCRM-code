@@ -90,8 +90,8 @@ const Dashboard = ({
   useEffect(() => {
     const load = async () => {
       try {
-        if (isSimulating) {
-          // ── SIMULATION MODE: fetch data scoped to the specific employee ──
+        if (isSimulating || !isAdmin) {
+          // ── EMPLOYEE SCOPED VIEW (also used for admin simulation) ──
           const [empStats, empCases, empActivity, empQuotes] =
             await Promise.allSettled([
               edgeFetch(EDGE.analytics, {
