@@ -183,7 +183,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       <tr>
         <td>2</td>
         <td style="text-align:left;">GTI Inverter: ${q.inverter_brand}</td>
-        <td>${q.inverter_kw}kW</td>
+        <td>${String(q.inverter_kw || "").replace(/kw/gi, "").trim()} kW</td>
         <td>1</td>
         <td>${q.inverter_warranty || "8 Years"}</td>
         <td>Included</td>
@@ -220,7 +220,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       <tr>
         <td>${q.battery_brand ? 6 : 5}</td>
         <td style="text-align:left;">Earthing</td>
-        <td>${q.earthing || "2.5 Square MM copper"}</td>
+        <td>${q.earthing || "2.5"}</td>
         <td>--</td>
         <td>--</td>
         <td>Included</td>
@@ -578,7 +578,7 @@ async function sendEmail(
       <p style="font-size: 13px; color: #475569; margin-bottom: 20px; line-height: 1.6;">
         Click below to review your quotation and proceed with the installation process. You will be able to approve or decline the quotation directly through our secure portal.
       </p>
-      <a href="https://rbscsolarcrm.probfixora.co.in/portal/${approvalToken}" style="display: inline-block; background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);">
+      <a href="https://rbscsolarcrm.probfixora.co.in/customer-portal?token=${approvalToken}" style="display: inline-block; background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);">
         Review &amp; Approve Quotation
       </a>
     </div>

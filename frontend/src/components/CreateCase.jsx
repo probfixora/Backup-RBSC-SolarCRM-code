@@ -241,9 +241,12 @@ export default function CreateCase({ onLogout }) {
           ? `${f.structureBrand} ${f.structureSize}`.trim()
           : "",
         bos: f.bos,
-        wireCoreM: `${f.wireMake} ${f.wire_core_material} ${f.wireSize}`.trim(),
+        wiring: (f.wireSize || f.wireMake || f.wire_core_material || f.wire_armouring)
+          ? `${f.wireSize ? f.wireSize + ' Square MM ' : ''}${f.wireMake || ""} ${f.wire_core_material ? '(' + f.wire_core_material + (f.wire_armouring ? ' - ' + f.wire_armouring : '') + ')' : ''}`.replace(/\s+/g, ' ').trim()
+          : "",
+        wireCoreM: `${f.wireMake || ""} ${f.wire_core_material || ""} ${f.wireSize || ""}`.trim(),
         wireArmouring: f.wire_armouring,
-        earthing: f.earthing ? `${f.earthing} Square MM copper` : "",
+        earthing: f.earthing ? String(f.earthing) : "",
         installation: f.installation,
       };
 
