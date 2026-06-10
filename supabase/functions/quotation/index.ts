@@ -277,6 +277,26 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     </div>
   </div>
 
+  ${(function() {
+    const isAdani = q.product_brand && q.product_brand.toLowerCase().includes("adani");
+    const loadStr = String(q.electrical_load || "0");
+    const loadInKw = parseFloat(loadStr.replace(/[^0-9.]/g, "")) || 0;
+    const allowedPanels = loadInKw * 2;
+    const actualPanels = parseInt(q.panel_count, 10) || 0;
+    
+    if (isAdani && loadInKw > 0 && actualPanels > allowedPanels) {
+      return `
+      <div style="margin-top:15px; border: 2px solid red; padding: 8px; text-align:center;">
+        <div style="color:red; font-size:13px; font-weight:bold; margin-bottom:5px;">DISCLAIMER / चेतावनी</div>
+        <div style="color:red; font-size:11px; line-height:1.5;">
+          आपने मानक क्षमता (${allowedPanels} पैनल) से अधिक ${actualPanels} पैनल लगवाए हैं। इसके कारण सिस्टम की वारंटी समाप्त होती है और भविष्य में होने वाली किसी भी समस्या के लिए कंपनी की कोई जिम्मेदारी नहीं होगी। सम्पूर्ण जिम्मेदारी क्रेता/उपभोक्ता की होगी।<br/>
+          You have installed ${actualPanels} panels, which exceeds the standard capacity of ${allowedPanels} panels. As a result, the warranty is voided and the company will take no responsibility for any future issues. All responsibility lies with the buyer/customer.
+        </div>
+      </div>`;
+    }
+    return "";
+  })()}
+
   <!-- ═══════════════════ PAGE 2 ═══════════════════ -->
   <div class="page-break"></div>
   ${pageHeader}
@@ -284,7 +304,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
   <h3 style="font-size:12px; font-weight:bold; margin-bottom:8px;">Key Highlights</h3>
   <ul style="font-size:10.5px; line-height:1.6; text-align:justify;">
     <li><strong>Premium Grade A Cells</strong> – Ensures top-tier performance and long-term durability.</li>
-    <li><strong>Dual-side Power Generation</strong> – Bifacial design captures light from both front and rear, boosting total output. In lab tests, a rear-side gain of 10–25% increases peak power from 545Wp to up to ~681Wp.</li>
+    <li><strong>Dual-side Power Generation</strong> – Bifacial design captures light from both front and rear, boosting total output. In lab tests, a rear-side gain of up to 10% increases peak power from 545Wp to up to ~681Wp.</li>
     <li><strong>Anti-Reflection (AR) Coated Glass</strong> – Reduces glare, enhances light absorption, and improves low-light performance.</li>
     <li><strong>Excellent Low-Light Generation</strong> – Optimized to perform even in cloudy or early/late daylight conditions.</li>
     <li><strong>Transparent White Backsheet</strong> – Increases light reflection for the bifacial rear side.</li>
