@@ -277,7 +277,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     </div>
   </div>
 
-  ${(function() {
+  ${/* (function() {
     const isAdani = q.product_brand && q.product_brand.toLowerCase().includes("adani");
     const loadStr = String(q.electrical_load || "0");
     const loadInKw = parseFloat(loadStr.replace(/[^0-9.]/g, "")) || 0;
@@ -295,7 +295,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       </div>`;
     }
     return "";
-  })()}
+  })() */ ""}
 
   <!-- ═══════════════════ PAGE 2 ═══════════════════ -->
   <div class="page-break"></div>
