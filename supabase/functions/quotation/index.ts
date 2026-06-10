@@ -185,9 +185,8 @@ function generateProposalHTML(q: any, logoBase64: string): string {
         <td>${q.inverter_warranty || "8 Years"}</td>
         <td>Included</td>
       </tr>
-      ${
-        q.battery_brand
-          ? `
+      ${q.battery_brand
+      ? `
       <tr>
         <td>3</td>
         <td style="text-align:left;">Battery: ${q.battery_brand}</td>
@@ -196,8 +195,8 @@ function generateProposalHTML(q: any, logoBase64: string): string {
         <td>${q.battery_warranty || "Standard"}</td>
         <td>Included</td>
       </tr>`
-          : ""
-      }
+      : ""
+    }
       <tr>
         <td>${q.battery_brand ? 4 : 3}</td>
         <td style="text-align:left;">Structure</td>
@@ -209,7 +208,11 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       <tr>
         <td>${q.battery_brand ? 5 : 4}</td>
         <td style="text-align:left;">Wiring</td>
-        <td>${q.wiring || "6 Square MM (Havells/Polycap/KEI)"}</td>
+        <td>
+          ${q.wiring_size || "6"} Square MM
+          (${q.wiring_brand || "Havells/Polycap/KEI"})
+          (${q.wiring_material || "Copper"} - ${q.wiring_type || "Unarmoured"})
+        </td>
         <td>--</td>
         <td>--</td>
         <td>Included</td>
@@ -224,7 +227,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       </tr>
       <tr>
         <td>${q.battery_brand ? 7 : 6}</td>
-        <td style="text-align:left;">Installation and Net Mettering</td>
+        <td style="text-align:left;">Installation and Net Metering</td>
         <td>${q.installation && q.installation !== "Included" ? q.installation : "--"}</td>
         <td>--</td>
         <td>--</td>
@@ -245,7 +248,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
   <div style="margin-top:10px; font-size:12px;">
     <strong>Total Quotation Amount: ₹${price}</strong>
   </div>
-  <div style="font-size:10px; margin-top:6px;">*Transportations extra as per actual from Lucknow.</div>
+  <div style="font-size:10px; margin-top:6px;">*Transportation Charges Extra As Per Actual From Lucknow.</div>
 
   ${disclaimerHTML}
 
@@ -277,15 +280,16 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     </div>
   </div>
 
-  ${/* (function() {
-    const isAdani = q.product_brand && q.product_brand.toLowerCase().includes("adani");
-    const loadStr = String(q.electrical_load || "0");
-    const loadInKw = parseFloat(loadStr.replace(/[^0-9.]/g, "")) || 0;
-    const allowedPanels = loadInKw * 2;
-    const actualPanels = parseInt(q.panel_count, 10) || 0;
-    
-    if (isAdani && loadInKw > 0 && actualPanels > allowedPanels) {
-      return `
+  ${/*
+    (function () {
+      const isAdani = q.product_brand && q.product_brand.toLowerCase().includes("adani");
+      const loadStr = String(q.electrical_load || "0");
+      const loadInKw = parseFloat(loadStr.replace(/[^0-9.]/g, "")) || 0;
+      const allowedPanels = loadInKw * 2;
+      const actualPanels = parseInt(q.panel_count, 10) || 0;
+
+      if (isAdani && loadInKw > 0 && actualPanels > allowedPanels) {
+        return `
       <div style="margin-top:15px; border: 2px solid red; padding: 8px; text-align:center;">
         <div style="color:red; font-size:13px; font-weight:bold; margin-bottom:5px;">DISCLAIMER / चेतावनी</div>
         <div style="color:red; font-size:11px; line-height:1.5;">
@@ -293,9 +297,9 @@ function generateProposalHTML(q: any, logoBase64: string): string {
           You have installed ${actualPanels} panels, which exceeds the standard capacity of ${allowedPanels} panels. As a result, the warranty is voided and the company will take no responsibility for any future issues. All responsibility lies with the buyer/customer.
         </div>
       </div>`;
-    }
-    return "";
-  })() */ ""}
+      }
+      return "";
+    })()*/}
 
   <!-- ═══════════════════ PAGE 2 ═══════════════════ -->
   <div class="page-break"></div>
@@ -515,10 +519,10 @@ async function sendEmail(
   // Convert Uint8Array to base64 for the PDF attachment
   const b64 = pdfBytes
     ? btoa(
-        Array.from(pdfBytes)
-          .map((b) => String.fromCharCode(b))
-          .join(""),
-      )
+      Array.from(pdfBytes)
+        .map((b) => String.fromCharCode(b))
+        .join(""),
+    )
     : null;
 
   const dateStr = new Date(q.created_at).toLocaleDateString("en-IN", {
@@ -587,9 +591,8 @@ async function sendEmail(
       </table>
     </div>
 
-    ${
-      approvalToken
-        ? `
+    ${approvalToken
+      ? `
     <div style="margin: 32px 0; text-align: center; background: #f8fafc; padding: 24px; border-radius: 12px; border: 1.5px dashed #cbd5e1;">
       <h3 style="margin-top: 0; color: #1a1a5e; font-size: 16px; margin-bottom: 12px;">Approve Your Quotation</h3>
       <p style="font-size: 13px; color: #475569; margin-bottom: 20px; line-height: 1.6;">
@@ -600,7 +603,7 @@ async function sendEmail(
       </a>
     </div>
     `
-        : ""
+      : ""
     }
 
     <p class="intro">If you have any questions, please contact us quoting your Quotation ID <strong>${q.quotation_id}</strong>.</p>
