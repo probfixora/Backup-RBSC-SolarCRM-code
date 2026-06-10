@@ -278,7 +278,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     </div>
   </div>
 
-  ${/*
+  ${"" /*
     (function () {
       const isAdani = q.product_brand && q.product_brand.toLowerCase().includes("adani");
       const loadStr = String(q.electrical_load || "0");
