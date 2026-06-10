@@ -55,7 +55,8 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     : `${projectType} Solar Panel`;
 
   // Disclaimer for the solar panel brand
-  const brandName = q.product_brand || "Adani";
+  const brandNameRaw = q.product_brand || "Adani";
+  const brandName = brandNameRaw.replace(/solar panel/gi, "").trim();
   const disclaimerHTML = `
     <div style="margin-top:16px; font-size:10px; line-height:1.6; color:#000;">
       <p>${brandName} का सोलर पैनल आपके क्रेता/उपभोक्ता के कहने पर लगाया गया है। वारंटी के लिये हम मदद करे, लेकिन जिम्मेदारी क्रेता/उपभोक्ता की होगी।</p>
