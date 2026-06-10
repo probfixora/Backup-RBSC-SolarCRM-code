@@ -298,75 +298,83 @@ const ApprovedQuotations = ({ onLogout }) => {
                       </td>
                     </tr>
                   ) : (
-                    filtered.map((q, idx) => (
-                      <tr key={q.id}>
-                        <td style={{ color: "var(--text-4)", fontWeight: 500 }}>
-                          {idx + 1}
-                        </td>
-                        <td>
-                          <p
-                            style={{
-                              fontSize: "14px",
-                              fontWeight: 600,
-                              color: "var(--text-1)",
-                              marginBottom: "2px",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {q.customer_name}
-                          </p>
-                        </td>
-                        <td>
-                          <span
-                            style={{
-                              fontSize: "13px",
-                              color: "var(--color-text-secondary)",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {q.customer_mobile || "—"}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            style={{
-                              fontFamily: "monospace",
-                              fontSize: "12.5px",
-                              fontWeight: 700,
-                              color: "var(--color-primary)",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {q.quotation_id}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          <span className="badge badge-green">
-                            <CheckCircle
-                              style={{ width: "11px", height: "11px" }}
-                            />
-                            Approved
-                          </span>
-                        </td>
-                        <td style={{ textAlign: "right" }}>
-                          <button
-                            id={`upload-btn-${q.id}`}
-                            onClick={() => openModal(q)}
-                            className="btn btn-primary btn-sm"
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
-                          >
-                            <UploadCloud
-                              style={{ width: "13px", height: "13px" }}
-                            />
-                            Upload Customer
-                          </button>
-                        </td>
-                      </tr>
-                    ))
+                    filtered.map((q, idx) => {
+                      const qKw = getKw(q);
+                      const qProfile = q.customer_occupation === "Business" ? "Business" : "Job/Service";
+                      const qReqDocs = getRequiredDocuments(qKw, qProfile);
+                      const qUploadedCount = qReqDocs.filter((d) => q.documents?.[d]).length;
+                      const qIsComplete = qReqDocs.length > 0 && qUploadedCount === qReqDocs.length;
+
+                      return (
+                        <tr key={q.id}>
+                          <td style={{ color: "var(--text-4)", fontWeight: 500 }}>
+                            {idx + 1}
+                          </td>
+                          <td>
+                            <p
+                              style={{
+                                fontSize: "14px",
+                                fontWeight: 600,
+                                color: "var(--text-1)",
+                                marginBottom: "2px",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {q.customer_name}
+                            </p>
+                          </td>
+                          <td>
+                            <span
+                              style={{
+                                fontSize: "13px",
+                                color: "var(--color-text-secondary)",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {q.customer_mobile || "—"}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              style={{
+                                fontFamily: "monospace",
+                                fontSize: "12.5px",
+                                fontWeight: 700,
+                                color: "var(--color-primary)",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {q.quotation_id}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            <span className="badge badge-green">
+                              <CheckCircle
+                                style={{ width: "11px", height: "11px" }}
+                              />
+                              Approved
+                            </span>
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            <button
+                              id={`upload-btn-${q.id}`}
+                              onClick={() => openModal(q)}
+                              className="btn btn-primary btn-sm"
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <UploadCloud
+                                style={{ width: "13px", height: "13px" }}
+                              />
+                              {qIsComplete ? "Verify Documents" : "Upload Document"}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -414,137 +422,145 @@ const ApprovedQuotations = ({ onLogout }) => {
                 No approved customers found
               </div>
             ) : (
-              filtered.map((q, idx) => (
-                <div
-                  key={q.id}
-                  style={{
-                    background: "var(--surface)",
-                    padding: "16px",
-                    borderRadius: "12px",
-                    border: "1px solid var(--border)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "12px",
-                    boxShadow: "var(--shadow-sm)",
-                  }}
-                >
+              filtered.map((q, idx) => {
+                const qKw = getKw(q);
+                const qProfile = q.customer_occupation === "Business" ? "Business" : "Job/Service";
+                const qReqDocs = getRequiredDocuments(qKw, qProfile);
+                const qUploadedCount = qReqDocs.filter((d) => q.documents?.[d]).length;
+                const qIsComplete = qReqDocs.length > 0 && qUploadedCount === qReqDocs.length;
+
+                return (
                   <div
+                    key={q.id}
                     style={{
+                      background: "var(--surface)",
+                      padding: "16px",
+                      borderRadius: "12px",
+                      border: "1px solid var(--border)",
                       display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
+                      flexDirection: "column",
+                      gap: "12px",
+                      boxShadow: "var(--shadow-sm)",
                     }}
                   >
                     <div
                       style={{
                         display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
                       }}
                     >
-                      <span
+                      <div
                         style={{
-                          fontSize: "11px",
-                          color: "var(--text-4)",
-                          fontWeight: 700,
-                          width: "16px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
                         }}
                       >
-                        #{idx + 1}
-                      </span>
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            color: "var(--text-4)",
+                            fontWeight: 700,
+                            width: "16px",
+                          }}
+                        >
+                          #{idx + 1}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "15px",
+                            fontWeight: 700,
+                            color: "var(--text-1)",
+                          }}
+                        >
+                          {q.customer_name}
+                        </span>
+                      </div>
                       <span
-                        style={{
-                          fontSize: "15px",
-                          fontWeight: 700,
-                          color: "var(--text-1)",
-                        }}
+                        className="badge badge-green"
+                        style={{ padding: "4px 8px" }}
                       >
-                        {q.customer_name}
+                        <CheckCircle style={{ width: "11px", height: "11px" }} />
+                        Approved
                       </span>
                     </div>
-                    <span
-                      className="badge badge-green"
-                      style={{ padding: "4px 8px" }}
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "8px",
+                        background: "var(--surface-2)",
+                        padding: "12px",
+                        borderRadius: "8px",
+                      }}
                     >
-                      <CheckCircle style={{ width: "11px", height: "11px" }} />
-                      Approved
-                    </span>
-                  </div>
-
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "8px",
-                      background: "var(--surface-2)",
-                      padding: "12px",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "11px",
-                          color: "var(--text-4)",
-                          textTransform: "uppercase",
-                          fontWeight: 600,
-                        }}
-                      >
-                        Mobile
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            color: "var(--text-4)",
+                            textTransform: "uppercase",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Mobile
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "13px",
+                            color: "var(--color-text-secondary)",
+                            marginTop: "4px",
+                          }}
+                        >
+                          {q.customer_mobile || "—"}
+                        </div>
                       </div>
-                      <div
-                        style={{
-                          fontSize: "13px",
-                          color: "var(--color-text-secondary)",
-                          marginTop: "4px",
-                        }}
-                      >
-                        {q.customer_mobile || "—"}
-                      </div>
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "11px",
-                          color: "var(--text-4)",
-                          textTransform: "uppercase",
-                          fontWeight: 600,
-                        }}
-                      >
-                        Quotation ID
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: "monospace",
-                          fontSize: "12.5px",
-                          fontWeight: 700,
-                          color: "var(--color-primary)",
-                          marginTop: "4px",
-                        }}
-                      >
-                        {q.quotation_id}
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            color: "var(--text-4)",
+                            textTransform: "uppercase",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Quotation ID
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: "monospace",
+                            fontSize: "12.5px",
+                            fontWeight: 700,
+                            color: "var(--color-primary)",
+                            marginTop: "4px",
+                          }}
+                        >
+                          {q.quotation_id}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <button
-                    id={`upload-btn-${q.id}-mob`}
-                    onClick={() => openModal(q)}
-                    className="btn btn-primary"
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: "8px",
-                      width: "100%",
-                      marginTop: "4px",
-                    }}
-                  >
-                    <UploadCloud style={{ width: "15px", height: "15px" }} />
-                    Upload Customer Documents
-                  </button>
-                </div>
-              ))
+                    <button
+                      id={`upload-btn-${q.id}-mob`}
+                      onClick={() => openModal(q)}
+                      className="btn btn-primary"
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: "8px",
+                        width: "100%",
+                        marginTop: "4px",
+                      }}
+                    >
+                      <UploadCloud style={{ width: "15px", height: "15px" }} />
+                      {qIsComplete ? "Verify Documents" : "Upload Document"}
+                    </button>
+                  </div>
+                );
+              })
             )}
           </div>
         </>
@@ -867,7 +883,7 @@ const ApprovedQuotations = ({ onLogout }) => {
                   opacity: !isComplete ? 0.55 : 1,
                 }}
               >
-                {sendingToReg ? "Processing…" : "Send to Registration →"}
+                {sendingToReg ? "Processing…" : "Verify Documents & Send to Registration →"}
               </button>
             </div>
           </div>

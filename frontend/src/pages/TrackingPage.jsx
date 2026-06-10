@@ -9,8 +9,7 @@ import TrackingFooter from "./TrackingSections/TrackingFooter";
 
 import { STAGES, stageIndex } from "./TrackingSections/TrackingConstants";
 
-const WORKFLOW_URL = `${process.env.REACT_APP_SUPABASE_URL}/functions/v1/workflow`;
-const ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY;
+import { EDGE } from "../lib/supabaseClient";
 
 export default function TrackingPage() {
   const [searchParams] = useSearchParams();
@@ -30,12 +29,10 @@ export default function TrackingPage() {
       setError("");
       setResult(null);
       try {
-        const res = await fetch(WORKFLOW_URL, {
+        const res = await fetch(EDGE.workflow, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            apikey: ANON_KEY,
-            Authorization: `Bearer ${ANON_KEY}`,
           },
           body: JSON.stringify({ action: "track_status", trackingId: id }),
         });

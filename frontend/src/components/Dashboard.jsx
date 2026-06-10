@@ -112,6 +112,7 @@ const Dashboard = ({
                 ? edgeFetch(EDGE.quotation, {
                     action: "list",
                     salesPerson: userName,
+                    userId: userId,
                   })
                 : Promise.resolve([]),
             ]);

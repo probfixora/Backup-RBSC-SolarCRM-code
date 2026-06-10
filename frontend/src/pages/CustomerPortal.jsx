@@ -220,35 +220,51 @@ export default function CustomerPortal() {
     }
     setUploading(true);
     try {
-      let currentCaseId = tokenData.case_id;
-
       if (caseData?.is_quotation_only) {
+        const quotationId = caseData.quotation_pk;
+        const newCaseDocs = {};
+
+        for (const [docName, file] of Object.entries(docs)) {
+          if (!file) continue;
+          const sanitized = docName.replace(/[^a-zA-Z0-9]/g, "_");
+          const fileName = `quotation-docs/${quotationId}/${Date.now()}_${sanitized}_${file.name}`;
+          const { error: uploadError } = await supabase.storage
+            .from("customer-docs")
+            .upload(fileName, file, { upsert: true });
+          if (uploadError) throw uploadError;
+          const { data: urlData } = supabase.storage
+            .from("customer-docs")
+            .getPublicUrl(fileName);
+
+          newCaseDocs[docName] = urlData.publicUrl;
+        }
+
         const res = await supabase.functions.invoke("quotation", {
           body: {
-            action: "send_to_registration",
-            id: caseData.quotation_pk,
+            action: "customer_documents_uploaded",
+            id: quotationId,
+            documents: newCaseDocs,
             portal_token: token,
           },
         });
-        if (
-          res.error ||
-          (res.data &&
-            res.data.message &&
-            !res.data.success &&
-            !res.data.data &&
-            !res.data.caseId)
-        ) {
+
+        if (res.error || (res.data && !res.data.success)) {
           throw new Error(
-            res.error?.message || res.data?.message || "Failed to create case",
+            res.error?.message || res.data?.message || "Failed to update quotation docs",
           );
         }
-        currentCaseId =
-          res.data.caseId || res.data.data?.id || res.data.data?.caseId;
+
         await supabase
           .from("customer_portal_tokens")
-          .update({ case_id: currentCaseId })
+          .update({ documents_uploaded_at: new Date().toISOString() })
           .eq("token", token);
+
+        setUploadDone(true);
+        setUploading(false);
+        return;
       }
+
+      const currentCaseId = tokenData.case_id;
 
       const insertRows = [];
       const newCaseDocs = {};

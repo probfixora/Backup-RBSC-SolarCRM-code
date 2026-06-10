@@ -863,6 +863,8 @@ serve(async (req: any) => {
         query = query.eq("created_by", user.id);
       } else if (user.role === "registration") {
         query = query.eq("current_department", "Registration");
+      } else if (user.role === "admin" && body.userId) {
+        query = query.eq("created_by", body.userId);
       }
 
       const { data, error } = await query;
@@ -963,6 +965,47 @@ serve(async (req: any) => {
       if (updErr) {
         return jsonResponse(
           { message: `Failed to decline quotation: ${updErr.message}` },
+          400,
+        );
+      }
+      return jsonResponse({ success: true });
+    }
+
+    // ── CUSTOMER UPLOADED DOCS TO QUOTATION ─────────────────────────────────
+    if (action === "customer_documents_uploaded") {
+      if (!body.portal_token || !body.id || !body.documents) {
+        return jsonResponse({ message: "Invalid request" }, 400);
+      }
+      const { data: tRow } = await supabase
+        .from("customer_portal_tokens")
+        .select("*")
+        .eq("token", body.portal_token)
+        .single();
+      if (!tRow) {
+        return jsonResponse({ message: "Unauthorized" }, 403);
+      }
+
+      const { data: q } = await supabase
+        .from("quotations")
+        .select("documents")
+        .eq("id", body.id)
+        .single();
+
+      const newDocs = {
+        ...(q?.documents || {}),
+        ...body.documents,
+      };
+
+      const { error: updErr } = await supabase
+        .from("quotations")
+        .update({
+          documents: newDocs,
+        })
+        .eq("id", body.id);
+
+      if (updErr) {
+        return jsonResponse(
+          { message: `Failed to update quotation documents: ${updErr.message}` },
           400,
         );
       }
