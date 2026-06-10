@@ -601,18 +601,10 @@ export default function QuotationForm() {
 
       // Map flat form state → nested schema expected by backend
         const buildWiring = () => {
-          if (!f.wireSize && !f.wireMake && !f.wire_core_material && !f.wire_armouring) return "";
-          const sizeStr = f.wireSize ? f.wireSize.replace(/sq mm/i, "").trim() : "";
-          
-          let res = sizeStr ? `${sizeStr} Square MM<br/>` : "";
-          res += `(Havells/Polycap/KEI)`;
-          
-          let extra = f.wire_core_material || "";
-          if (f.wire_armouring) extra += (extra ? " - " : "") + f.wire_armouring;
-          
-          if (extra) {
-            res += `<br/>(${extra})`;
-          }
+          const sizeStr = f.wireSize ? f.wireSize.replace(/sq mm/i, "").trim() : "6";
+          let res = `${sizeStr} Square MM<br/>`;
+          res += `(${f.wireMake || "Havells/Polycap/KEI"})<br/>`;
+          res += `(${f.wire_core_material || "Copper"} - ${f.wire_armouring || "Unarmoured"})`;
           return res;
         };
 

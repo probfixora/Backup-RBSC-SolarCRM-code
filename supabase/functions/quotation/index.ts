@@ -50,9 +50,9 @@ function generateProposalHTML(q: any, logoBase64: string): string {
   });
   const totalWatt = q.total_watt || 0;
   const projectType = q.product_category || "On Grid";
-  const title = q.product_brand
+  const title = q.product_name || (q.product_brand
     ? `${q.product_brand} ${projectType} Solar Panel`
-    : `${projectType} Solar Panel`;
+    : `${projectType} Solar Panel`);
 
   // Disclaimer for the solar panel brand
   const brandNameRaw = q.product_brand || "Adani";
@@ -209,9 +209,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
         <td>${q.battery_brand ? 5 : 4}</td>
         <td style="text-align:left;">Wiring</td>
         <td>
-          ${q.wiring_size || "6"} Square MM
-          (${q.wiring_brand || "Havells/Polycap/KEI"})
-          (${q.wiring_material || "Copper"} - ${q.wiring_type || "Unarmoured"})
+          ${q.wiring || `6 Square MM<br/>(Havells/Polycap/KEI)<br/>(Copper - Unarmoured)`}
         </td>
         <td>--</td>
         <td>--</td>
