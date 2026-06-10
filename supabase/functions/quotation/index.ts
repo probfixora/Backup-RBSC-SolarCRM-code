@@ -209,7 +209,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
         <td>${q.battery_brand ? 5 : 4}</td>
         <td style="text-align:left;">Wiring</td>
         <td>
-          ${q.wiring || `6 Square MM<br/>(Havells/Polycap/KEI)<br/>(Copper - Unarmoured)`}
+          ${q.wiring || `6 Square MM<br/>(Havells/Polycab/KEI)<br/>(Copper - Unarmoured)`}
         </td>
         <td>--</td>
         <td>--</td>
