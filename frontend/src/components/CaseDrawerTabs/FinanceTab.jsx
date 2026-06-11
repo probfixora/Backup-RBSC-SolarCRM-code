@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useRef } from "react";
-import { X, ArrowRight, MessageSquare, AlertTriangle, CheckCircle2, User, Phone, MapPin, Zap, FileText, ClipboardList, UserCheck, History, Package, Plus, Trash2, IndianRupee, FileCheck, AlertOctagon, Printer, Star, Clock, Navigation, Download, Edit2, Lock, RefreshCw, Microscope, Calculator, Headphones, Link as LinkIcon, Send } from "lucide-react";
+import { X, ArrowRight, MessageSquare, AlertTriangle, CheckCircle2, User, Phone, MapPin, Zap, FileText, ClipboardList, UserCheck, History, Package, Plus, Trash2, IndianRupee, FileCheck, AlertOctagon, Printer, Star, Clock, Navigation, Download, Edit2, Lock, RefreshCw, Microscope, Calculator, Headphones, Link as LinkIcon, Send, UploadCloud } from "lucide-react";
 import CaseTimeline from "../CaseTimeline";
 import PaymentTracker from "../PaymentTracker";
 import { edgeFetch, EDGE, supabase } from "../../lib/supabaseClient";
@@ -145,6 +145,53 @@ const FinanceTab = ({ ctx }) => {
   } = ctx;
 
   const [quotationAmountEdit, setQuotationAmountEdit] = useState(false);
+  const [uploadingDoc, setUploadingDoc] = useState(null);
+
+  const handleFileUpload = async (e, docName) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingDoc(docName);
+    try {
+      const ext = file.name.split(".").pop();
+      const safeDocName = docName.replace(/[^a-zA-Z0-9]/g, "_");
+      const fileName = `${normalized.trackingId || Date.now()}_${safeDocName}_${Date.now()}.${ext}`;
+      const filePath = `${normalized.trackingId || "docs"}/${fileName}`;
+      const { error } = await supabase.storage.from("documents").upload(filePath, file);
+
+      if (error && error.message?.includes("Bucket not found")) {
+        const retry = await supabase.storage.from("Documents").upload(filePath, file);
+        if (retry.error) throw retry.error;
+      } else if (error) {
+        throw error;
+      }
+
+      let finalUrl = null;
+      const { data: publicData } = supabase.storage.from("documents").getPublicUrl(filePath);
+      if (publicData?.publicUrl) finalUrl = publicData.publicUrl;
+      else {
+        const retryUrl = supabase.storage.from("Documents").getPublicUrl(filePath);
+        if (retryUrl.data?.publicUrl) finalUrl = retryUrl.data.publicUrl;
+      }
+
+      if (!finalUrl) throw new Error("Could not get public URL");
+
+      const { error: dbError } = await supabase.from("customer_uploaded_docs").insert([
+        {
+          case_id: caseId,
+          doc_name: docName,
+          doc_url: finalUrl,
+        }
+      ]);
+      if (dbError) throw dbError;
+
+      toast.success(`${docName} uploaded successfully`);
+      if (ctx.onRefresh) ctx.onRefresh();
+    } catch (err) {
+      toast.error(`Error uploading ${docName}: ${err.message}`);
+    } finally {
+      setUploadingDoc(null);
+    }
+  };
 
   return (
     <div>
@@ -523,101 +570,141 @@ const FinanceTab = ({ ctx }) => {
                     )}
 
                     {fData.paymentType === "Loan" && (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "12px",
-                          padding: "14px",
-                          background: "#eff6ff",
-                          border: "1px solid #bfdbfe",
-                          borderRadius: "10px",
-                        }}
-                                   {role === "registration" ? (
-                          <div style={{ textAlign: "center", padding: "16px 8px" }}>
-                            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "48px", height: "48px", borderRadius: "50%", background: "#dbeafe", color: "#2563eb", marginBottom: "12px" }}>
-                              <FileText size={24} />
+                      <>
+                        {/* ── Registration Role: Info box + Document Upload only ── */}
+                        {role === "registration" ? (
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "12px",
+                            }}
+                          >
+                            {/* Info Banner */}
+                            <div
+                              style={{
+                                padding: "14px 16px",
+                                background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                                border: "1px solid #f59e0b",
+                                borderRadius: "10px",
+                                display: "flex",
+                                gap: "10px",
+                                alignItems: "flex-start",
+                              }}
+                            >
+                              <span style={{ fontSize: "20px", lineHeight: 1 }}>🏦</span>
+                              <div>
+                                <p style={{ fontSize: "13px", color: "#78350f", fontWeight: 700, margin: 0, marginBottom: "4px" }}>
+                                  Loan Selected — Documents Required
+                                </p>
+                                <p style={{ fontSize: "12px", color: "#92400e", margin: 0, lineHeight: 1.5 }}>
+                                  Please upload the required documents below. Once done, move the case to <strong>"Bank &amp; Finance"</strong> stage from the Update tab. These documents will be sent directly to the Banking Department.
+                                </p>
+                              </div>
                             </div>
-                            <h4 style={{ fontSize: "15px", fontWeight: 700, color: "#1e3a8a", margin: "0 0 8px 0" }}>Loan Process Initiated</h4>
-                            <p style={{ fontSize: "13px", color: "#3b82f6", margin: 0, lineHeight: "1.5", padding: "0 10px" }}>
-                              Please prepare and upload all required customer documents in the <strong>Documents Tab</strong>. Once ready, click "Save Financial Details" and update the case stage to <strong>"Bank & Finance"</strong> to send it to the Banking Department for approval.
-                            </p>
+
+                            {/* Document Upload List */}
+                            <div
+                              style={{
+                                background: "#eff6ff",
+                                border: "1px solid #bfdbfe",
+                                borderRadius: "10px",
+                                padding: "14px",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "8px",
+                              }}
+                            >
+                              <p style={{ fontSize: "11px", fontWeight: 700, color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.05em", margin: 0, marginBottom: "4px" }}>
+                                📎 Required Documents for Loan
+                              </p>
+                              {["Aadhar", "PAN", "6 Months Bank Statement", "Electricity Bill"].map((doc) => {
+                                const isUploaded = !!(normalized.documents?.[doc]) || ctx.customerDocs?.some((d) => d.doc_name === doc);
+                                const isUploading = uploadingDoc === doc;
+                                return (
+                                  <div
+                                    key={doc}
+                                    style={{
+                                      display: "flex",
+                                      justifyContent: "space-between",
+                                      alignItems: "center",
+                                      padding: "10px 14px",
+                                      background: isUploaded ? "#f0fdf4" : "#fff",
+                                      borderRadius: "8px",
+                                      border: `1px solid ${isUploaded ? "#a7f3d0" : "#e2e8f0"}`,
+                                      transition: "all 0.2s",
+                                    }}
+                                  >
+                                    <span style={{ fontSize: "13px", fontWeight: 600, color: isUploaded ? "#065f46" : "#374151", display: "flex", alignItems: "center", gap: "6px" }}>
+                                      {isUploaded ? "✅" : "📄"} {doc}
+                                    </span>
+                                    {isUploaded ? (
+                                      <span style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>Uploaded</span>
+                                    ) : (
+                                      <label
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "6px",
+                                          padding: "6px 12px",
+                                          background: isUploading ? "#d97706" : "#2563eb",
+                                          color: "#fff",
+                                          borderRadius: "6px",
+                                          fontSize: "12px",
+                                          fontWeight: 600,
+                                          cursor: isUploading ? "not-allowed" : "pointer",
+                                          opacity: isUploading ? 0.8 : 1,
+                                          transition: "all 0.2s",
+                                        }}
+                                      >
+                                        <UploadCloud size={13} />
+                                        {isUploading ? "Uploading..." : "Upload"}
+                                        <input
+                                          type="file"
+                                          accept="image/*,.pdf"
+                                          style={{ display: "none" }}
+                                          onChange={(e) => handleFileUpload(e, doc)}
+                                          disabled={isUploading}
+                                        />
+                                      </label>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
                         ) : (
-                          <>
+                          // ── Banking / Admin role: Show full Loan fields ──
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "12px",
+                              padding: "14px",
+                              background: "#eff6ff",
+                              border: "1px solid #bfdbfe",
+                              borderRadius: "10px",
+                            }}
+                          >
                             <div style={{ display: "flex", gap: "12px" }}>
                               <div style={{ flex: 1 }}>
-                                <label
-                                  style={{
-                                    display: "block",
-                                    fontSize: "12px",
-                                    fontWeight: 600,
-                                    color: "#1e3a8a",
-                                    marginBottom: "6px",
-                                  }}
-                                >
+                                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#1e3a8a", marginBottom: "6px" }}>
                                   Loan Amount (₹)
                                 </label>
-                                <input
-                                  type="number"
-                                  value={fData.loanAmount}
-                                  onChange={(e) =>
-                                    setFData({
-                                      ...fData,
-                                      loanAmount: e.target.value,
-                                    })
-                                  }
-                                  placeholder="Amount financed"
-                                  className="input"
-                                />
+                                <input type="number" value={fData.loanAmount} onChange={(e) => setFData({ ...fData, loanAmount: e.target.value })} placeholder="Amount financed" className="input" />
                               </div>
                               <div style={{ flex: 1 }}>
-                                <label
-                                  style={{
-                                    display: "block",
-                                    fontSize: "12px",
-                                    fontWeight: 600,
-                                    color: "#1e3a8a",
-                                    marginBottom: "6px",
-                                  }}
-                                >
+                                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#1e3a8a", marginBottom: "6px" }}>
                                   Loan Approved Amount (₹)
                                 </label>
-                                <input
-                                  type="number"
-                                  value={fData.loanApprovedAmount}
-                                  onChange={(e) =>
-                                    setFData({
-                                      ...fData,
-                                      loanApprovedAmount: e.target.value,
-                                    })
-                                  }
-                                  placeholder="Approved amount"
-                                  className="input"
-                                />
+                                <input type="number" value={fData.loanApprovedAmount} onChange={(e) => setFData({ ...fData, loanApprovedAmount: e.target.value })} placeholder="Approved amount" className="input" />
                               </div>
                             </div>
                             <div>
-                              <label
-                                style={{
-                                  display: "block",
-                                  fontSize: "12px",
-                                  fontWeight: 600,
-                                  color: "#1e3a8a",
-                                  marginBottom: "6px",
-                                }}
-                              >
+                              <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#1e3a8a", marginBottom: "6px" }}>
                                 Approved Bank Name
                               </label>
-                              <input
-                                type="text"
-                                value={fData.bankName}
-                                onChange={(e) =>
-                                  setFData({ ...fData, bankName: e.target.value })
-                                }
-                                placeholder="e.g. HDFC, SBI"
-                                className="input"
-                              />
+                              <input type="text" value={fData.bankName} onChange={(e) => setFData({ ...fData, bankName: e.target.value })} placeholder="e.g. HDFC, SBI" className="input" />
                             </div>
                             <div
                               style={{
@@ -629,33 +716,20 @@ const FinanceTab = ({ ctx }) => {
                                 justifyContent: "space-between",
                               }}
                             >
-                              <span
-                                style={{
-                                  fontSize: "12px",
-                                  fontWeight: 600,
-                                  color: "#1e3a8a",
-                                }}
-                              >
-                                Remaining Balance (After Down Payment & Loan):
+                              <span style={{ fontSize: "12px", fontWeight: 600, color: "#1e3a8a" }}>
+                                Remaining Balance (After Down Payment &amp; Loan):
                               </span>
-                              <span
-                                style={{
-                                  fontSize: "13px",
-                                  fontWeight: 700,
-                                  color: "#1e3a8a",
-                                }}
-                              >
-                                ₹
-                                {Number(
+                              <span style={{ fontSize: "13px", fontWeight: 700, color: "#1e3a8a" }}>
+                                ₹{Number(
                                   (normalized.totalAmount || 0) -
                                     (fData.downPayment || 0) -
                                     (fData.loanApprovedAmount || 0),
                                 ).toLocaleString()}
                               </span>
                             </div>
-                          </>
-                        )}              </div>
-                      </div>
+                          </div>
+                        )}
+                      </>
                     )}
 
                     <div

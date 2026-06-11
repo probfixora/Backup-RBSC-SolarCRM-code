@@ -144,16 +144,20 @@ const stageToDeptLabel = {
   admin: "Admin",
 };
 
-const getTabs = (role) => {
+const getTabs = (role, currentStage) => {
   const tabs = [
     { id: "update", icon: Zap, label: "Update" },
     { id: "docs", icon: FileText, label: "Documents" },
   ];
-  // History is ADMIN-ONLY — shows who changed what and when
   if (role === "admin") {
     tabs.push({ id: "history", icon: History, label: "History" });
   }
-  if (role === "banking" || role === "admin" || role === "registration") {
+  if (
+    role === "banking" ||
+    role === "admin" ||
+    role === "accounts" ||
+    (role === "registration" && currentStage === "Phone Verification Done")
+  ) {
     tabs.push({ id: "finance", icon: ClipboardList, label: "Finance" });
   }
   if (role === "inventory" || role === "admin") {
@@ -202,11 +206,11 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   const [docStatuses, setDocStatuses] = useState({});
   const [history, setHistory] = useState([]);
 
-  const role = localStorage.getItem("role");
-  const TABS = getTabs(role);
-
   // normalized must be declared FIRST — other derived values depend on it
   const normalized = normalizeCase(caseData || {});
+
+  const role = localStorage.getItem("role") || "";
+  const TABS = getTabs(role, normalized.currentStage);
 
   // Compute whether this user's role owns the current stage (write access)
   const ownerRole = stageToRole[normalized.currentStage] || "";
@@ -729,17 +733,32 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         }
       });
 
+      // Only mark finance as verified if the user is banking or accounts (not registration)
+      const shouldVerify = role === "banking" || role === "accounts";
+
       await edgeFetch(EDGE.workflow, {
         action: "update_finance",
         caseId,
         ...sanitized,
-        financeVerified: true,
+        financeVerified: shouldVerify,
       });
-      await edgeFetch(EDGE.workflow, {
+      
+      const detailsPayload = {
         action: "update_details",
         caseId,
-        financeVerified: true,
-      });
+        financeVerified: shouldVerify,
+      };
+
+      // If they changed the quotation amount, make sure we save it
+      if (sanitized.quotation_amount !== undefined && sanitized.quotation_amount !== null) {
+        detailsPayload.quotationAmount = sanitized.quotation_amount;
+      } else if (sanitized.quotationAmount !== undefined && sanitized.quotationAmount !== null) {
+        detailsPayload.quotationAmount = sanitized.quotationAmount;
+      } else if (sanitized.totalAmount !== undefined && sanitized.totalAmount !== null) {
+        detailsPayload.quotationAmount = sanitized.totalAmount;
+      }
+
+      await edgeFetch(EDGE.workflow, detailsPayload);
       toast.success("Finance details updated!");
       setFinanceEditMode(false);
       onClose();
@@ -1298,11 +1317,23 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
           
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <span style={{ color: "#38bdf8", fontWeight: 800, fontSize: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                {normalized.trackingId}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ color: "#38bdf8", fontWeight: 800, fontSize: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                  {normalized.trackingId}
+                </span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(normalized.trackingId);
+                    alert("Tracking ID copied!");
+                  }}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex", alignItems: "center", padding: "2px" }}
+                  title="Copy Tracking ID"
+                >
+                  <Copy size={14} />
+                </button>
+              </div>
               <span style={{ color: "#a855f7", fontWeight: 700, fontSize: "13px", letterSpacing: "0.02em" }}>
-                Customer ID: {normalized.customerId || "N/A"}
+                Customer ID: {normalized.customerId || "N/A"} {caseData?.sales_person || caseData?.salesPerson ? `(${caseData.sales_person || caseData.salesPerson})` : ""}
               </span>
             </div>
             
@@ -1322,8 +1353,8 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", color: "#94a3b8", fontSize: "14px", fontWeight: 500 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Phone size={16} style={{ color: "#64748b" }} /> {caseData.phone || "N/A"}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><MapPin size={16} style={{ color: "#64748b" }} /> {caseData.city || caseData.district || "N/A"}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Zap size={16} style={{ color: "#64748b" }} /> {caseData.plant_capacity || caseData.system_size_kw || "0"} kW - {normalized.paymentType || "N/A"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><MapPin size={16} style={{ color: "#64748b" }} /> {[caseData.city, caseData.district, caseData.state].filter(Boolean).join(", ") || "N/A"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Zap size={16} style={{ color: "#64748b" }} /> {caseData.plant_capacity || caseData.system_size_kw || caseData.kw_capacity || "0"} kW - {normalized.paymentType || "N/A"}</div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "8px" }}>

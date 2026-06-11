@@ -265,11 +265,7 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const pType = (formData.paymentType || "").toLowerCase();
-      let remarks = "Updated financial details.";
-      if (pType === "cash" && formData.paymentMode) {
-        remarks = `Cash payment confirmed via ${formData.paymentMode}`;
-      }
+      const remarks = "Updated loan details.";
       await edgeFetch(EDGE.workflow, {
         action: "update_finance",
         caseId: caseObj.id || caseObj.case_id,
@@ -366,13 +362,7 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
               </span>
             </div>
           </div>
-          {payType === "loan" ? (
-            <StatusPill status={formData.financeFormStatus || "Pending"} />
-          ) : payType === "cash" && formData.paymentMode ? (
-            <StatusPill status="Approved" />
-          ) : (
-            <span style={{ color: "var(--text-4)", fontSize: "12px" }}>—</span>
-          )}
+          <StatusPill status={formData.financeFormStatus || "Pending"} />
         </div>
 
         <div
@@ -394,86 +384,10 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
                 fontWeight: 600,
               }}
             >
-              Type
+              Loan Amount
             </div>
             <div style={{ marginTop: "4px" }}>
               {isEditing ? (
-                <select
-                  name="paymentType"
-                  value={formData.paymentType}
-                  onChange={handleChange}
-                  className="input"
-                  style={{ width: "100%", padding: "8px", fontSize: "13px" }}
-                >
-                  <option value="">Select…</option>
-                  <option value="cash">Cash</option>
-                  <option value="loan">Bank Loan</option>
-                </select>
-              ) : (
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "5px",
-                    padding: "4px 8px",
-                    borderRadius: "9999px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    background:
-                      payType === "cash"
-                        ? "#f0fdf4"
-                        : payType === "loan"
-                          ? "#eff6ff"
-                          : "#f8fafc",
-                    color:
-                      payType === "cash"
-                        ? "#16a34a"
-                        : payType === "loan"
-                          ? "#2563eb"
-                          : "#64748b",
-                    border: `1px solid ${payType === "cash" ? "#bbf7d0" : payType === "loan" ? "#bfdbfe" : "#e2e8f0"}`,
-                  }}
-                >
-                  {payType === "cash" ? (
-                    <Banknote size={11} />
-                  ) : payType === "loan" ? (
-                    <Building2 size={11} />
-                  ) : (
-                    <CreditCard size={11} />
-                  )}
-                  {payType ? payType.toUpperCase() : "PENDING"}
-                </span>
-              )}
-            </div>
-          </div>
-          <div>
-            <div
-              style={{
-                fontSize: "11px",
-                color: "var(--text-4)",
-                textTransform: "uppercase",
-                fontWeight: 600,
-              }}
-            >
-              Amount / Mode
-            </div>
-            <div style={{ marginTop: "4px" }}>
-              {isEditing && payType === "cash" ? (
-                <select
-                  name="paymentMode"
-                  value={formData.paymentMode}
-                  onChange={handleChange}
-                  className="input"
-                  style={{ width: "100%", padding: "8px", fontSize: "13px" }}
-                >
-                  <option value="">Select mode…</option>
-                  <option value="Debit Card">Debit Card</option>
-                  <option value="Credit Card">Credit Card</option>
-                  <option value="UPI">UPI</option>
-                  <option value="Physical Cash">Physical Cash</option>
-                  <option value="Cheque">Cheque</option>
-                </select>
-              ) : isEditing && payType === "loan" ? (
                 <input
                   type="number"
                   name="loanAmount"
@@ -483,23 +397,7 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
                   style={{ width: "100%", padding: "8px", fontSize: "13px" }}
                   placeholder="₹ Amount"
                 />
-              ) : payType === "cash" ? (
-                <span
-                  style={{
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    color: "var(--text-2)",
-                  }}
-                >
-                  {formData.paymentMode || (
-                    <span
-                      style={{ color: "var(--text-4)", fontStyle: "italic" }}
-                    >
-                      Mode not set
-                    </span>
-                  )}
-                </span>
-              ) : payType === "loan" ? (
+              ) : (
                 <div
                   style={{
                     fontSize: "14px",
@@ -509,9 +407,45 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
                 >
                   ₹{Number(formData.loanAmount || 0).toLocaleString("en-IN")}
                 </div>
+              )}
+            </div>
+          </div>
+            <div
+              style={{
+                fontSize: "11px",
+                color: "var(--text-4)",
+                textTransform: "uppercase",
+                fontWeight: 600,
+              }}
+            >
+              Bank Name
+            </div>
+            <div style={{ marginTop: "4px" }}>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="bankName"
+                  value={formData.bankName}
+                  onChange={handleChange}
+                  className="input"
+                  style={{ width: "100%", padding: "8px", fontSize: "13px" }}
+                  placeholder="Bank Name"
+                />
               ) : (
-                <span style={{ color: "var(--text-4)", fontSize: "12px" }}>
-                  —
+                <span
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    color: "var(--text-2)",
+                  }}
+                >
+                  {formData.bankName || (
+                    <span
+                      style={{ color: "var(--text-4)", fontStyle: "italic" }}
+                    >
+                      Not set
+                    </span>
+                  )}
                 </span>
               )}
             </div>
@@ -535,41 +469,6 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
               >
                 <Edit3 size={14} /> Edit
               </button>
-              {payType === "cash" && formData.paymentMode && (
-                <button
-                  onClick={async () => {
-                    setSaving(true);
-                    try {
-                      await edgeFetch(EDGE.workflow, {
-                        action: "update_stage",
-                        caseId: caseObj.id || caseObj.case_id,
-                        newStage: "Sent to Store",
-                        remarks:
-                          "Cash confirmed — moving to Inventory / Store stage",
-                      });
-                      toast.success(
-                        "🎉 Payment Approved! Case moved to Inventory.",
-                      );
-                      onSave();
-                    } catch {
-                      toast.error("Failed to move to Store");
-                    } finally {
-                      setSaving(false);
-                    }
-                  }}
-                  disabled={saving}
-                  className="btn btn-primary btn-sm"
-                  style={{
-                    flex: 1,
-                    padding: "8px",
-                    fontSize: "13px",
-                    background: "#059669",
-                    borderColor: "#059669",
-                  }}
-                >
-                  {saving ? "..." : <CheckCircle2 size={14} />} Approve
-                </button>
-              )}
             </>
           ) : (
             <div style={{ display: "flex", gap: "8px", flex: 1 }}>
@@ -602,12 +501,11 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
             }}
           >
             <Clock size={14} />{" "}
-            {showExpanded ? "Hide" : payType === "loan" ? "Stages" : "History"}
+            {showExpanded ? "Hide" : "Stages"}
           </button>
         </div>
 
-        {/* Expanded Sections for Mobile */}
-        {showExpanded && payType === "loan" && (
+        {showExpanded && (
           <div
             style={{
               background: "#f0f7ff",
@@ -625,88 +523,6 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
                 onSave();
               }}
             />
-          </div>
-        )}
-        {showExpanded && payType !== "loan" && (
-          <div
-            style={{
-              background: "#f8fafc",
-              padding: "16px",
-              borderRadius: "8px",
-              border: "1px solid var(--border)",
-              marginTop: "4px",
-            }}
-          >
-            <h4
-              style={{
-                fontSize: "13px",
-                fontWeight: 800,
-                color: "var(--text-1)",
-                marginBottom: "14px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <Clock size={15} /> Cash Payment History
-            </h4>
-            {loadingHistory ? (
-              <p style={{ fontSize: "13px", color: "var(--text-3)" }}>
-                Loading...
-              </p>
-            ) : historyData.filter((h) => h.action_type === "finance_update")
-                .length === 0 ? (
-              <p
-                style={{
-                  fontSize: "13px",
-                  color: "var(--text-4)",
-                  fontStyle: "italic",
-                }}
-              >
-                No payment history records found.
-              </p>
-            ) : (
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-              >
-                {[...historyData]
-                  .filter((h) => h.action_type === "finance_update")
-                  .reverse()
-                  .slice(0, 5)
-                  .map((h, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "4px",
-                        fontSize: "12px",
-                        color: "var(--text-2)",
-                        padding: "10px",
-                        background: "#fff",
-                        borderRadius: "8px",
-                        border: "1px solid var(--border)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <span style={{ fontWeight: 600 }}>{h.updated_by}</span>
-                        <span style={{ color: "var(--text-4)" }}>
-                          {new Date(h.timestamp).toLocaleString("en-IN", {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })}
-                        </span>
-                      </div>
-                      <span>{h.remarks}</span>
-                    </div>
-                  ))}
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -756,75 +572,9 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
           </div>
         </td>
 
-        {/* Payment Type */}
+        {/* Loan Details */}
         <td style={tdStyle}>
           {isEditing ? (
-            <select
-              name="paymentType"
-              value={formData.paymentType}
-              onChange={handleChange}
-              className="input"
-              style={{ width: "120px", padding: "8px", fontSize: "13px" }}
-            >
-              <option value="">Select…</option>
-              <option value="cash">Cash</option>
-              <option value="loan">Bank Loan</option>
-            </select>
-          ) : (
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "4px 12px",
-                borderRadius: "9999px",
-                fontSize: "12px",
-                fontWeight: 600,
-                background:
-                  payType === "cash"
-                    ? "#f0fdf4"
-                    : payType === "loan"
-                      ? "#eff6ff"
-                      : "#f8fafc",
-                color:
-                  payType === "cash"
-                    ? "#16a34a"
-                    : payType === "loan"
-                      ? "#2563eb"
-                      : "#64748b",
-                border: `1px solid ${payType === "cash" ? "#bbf7d0" : payType === "loan" ? "#bfdbfe" : "#e2e8f0"}`,
-              }}
-            >
-              {payType === "cash" ? (
-                <Banknote size={12} />
-              ) : payType === "loan" ? (
-                <Building2 size={12} />
-              ) : (
-                <CreditCard size={12} />
-              )}
-              {payType ? payType.toUpperCase() : "PENDING"}
-            </span>
-          )}
-        </td>
-
-        {/* Cash Mode / Loan Amount */}
-        <td style={tdStyle}>
-          {isEditing && payType === "cash" ? (
-            <select
-              name="paymentMode"
-              value={formData.paymentMode}
-              onChange={handleChange}
-              className="input"
-              style={{ width: "150px", padding: "8px", fontSize: "13px" }}
-            >
-              <option value="">Select mode…</option>
-              <option value="Debit Card">Debit Card</option>
-              <option value="Credit Card">Credit Card</option>
-              <option value="UPI">UPI</option>
-              <option value="Physical Cash">Physical Cash</option>
-              <option value="Cheque">Cheque</option>
-            </select>
-          ) : isEditing && payType === "loan" ? (
             <input
               type="number"
               name="loanAmount"
@@ -834,21 +584,7 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
               style={{ width: "130px", padding: "8px", fontSize: "13px" }}
               placeholder="₹ Amount"
             />
-          ) : payType === "cash" ? (
-            <span
-              style={{
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "var(--text-2)",
-              }}
-            >
-              {formData.paymentMode || (
-                <span style={{ color: "var(--text-4)", fontStyle: "italic" }}>
-                  Mode not set
-                </span>
-              )}
-            </span>
-          ) : payType === "loan" ? (
+          ) : (
             <div
               style={{
                 fontSize: "15px",
@@ -858,20 +594,12 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
             >
               ₹{Number(formData.loanAmount || 0).toLocaleString("en-IN")}
             </div>
-          ) : (
-            <span style={{ color: "var(--text-4)", fontSize: "12px" }}>—</span>
           )}
         </td>
 
         {/* Status */}
         <td style={{ ...tdStyle, maxWidth: "200px" }}>
-          {payType === "loan" ? (
-            <StatusPill status={formData.financeFormStatus || "Pending"} />
-          ) : payType === "cash" && formData.paymentMode ? (
-            <StatusPill status="Approved" />
-          ) : (
-            <span style={{ color: "var(--text-4)", fontSize: "12px" }}>—</span>
-          )}
+          <StatusPill status={formData.financeFormStatus || "Pending"} />
         </td>
 
         {/* Actions */}
@@ -886,40 +614,6 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
                 >
                   <Edit3 size={14} /> Edit
                 </button>
-                {payType === "cash" && formData.paymentMode && (
-                  <button
-                    onClick={async () => {
-                      setSaving(true);
-                      try {
-                        await edgeFetch(EDGE.workflow, {
-                          action: "update_stage",
-                          caseId: caseObj.id || caseObj.case_id,
-                          newStage: "Sent to Store",
-                          remarks:
-                            "Cash confirmed — moving to Inventory / Store stage",
-                        });
-                        toast.success(
-                          "🎉 Payment Approved! Case moved to Inventory.",
-                        );
-                        onSave();
-                      } catch {
-                        toast.error("Failed to move to Store");
-                      } finally {
-                        setSaving(false);
-                      }
-                    }}
-                    disabled={saving}
-                    className="btn btn-primary btn-sm"
-                    style={{
-                      padding: "6px 14px",
-                      fontSize: "12.5px",
-                      background: "#059669",
-                      borderColor: "#059669",
-                    }}
-                  >
-                    {saving ? "..." : <CheckCircle2 size={14} />} Approve
-                  </button>
-                )}
               </>
             ) : (
               <div style={{ display: "flex", gap: "6px" }}>
@@ -951,21 +645,17 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
               }}
             >
               <Clock size={14} />{" "}
-              {showExpanded
-                ? "Hide"
-                : payType === "loan"
-                  ? "Loan Stages"
-                  : "History"}
+              {showExpanded ? "Hide" : "Loan Stages"}
             </button>
           </div>
         </td>
       </tr>
 
-      {/* Loan Stage Tracker Row (expanded for loan cases) */}
-      {showExpanded && payType === "loan" && (
+      {/* Loan Stage Tracker Row */}
+      {showExpanded && (
         <tr style={{ background: "#f0f7ff" }}>
           <td
-            colSpan={5}
+            colSpan={4}
             style={{
               padding: "20px 24px",
               borderBottom: "1px solid var(--border)",
@@ -979,86 +669,6 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
                 onSave();
               }}
             />
-          </td>
-        </tr>
-      )}
-
-      {/* History Row (for cash cases) */}
-      {showExpanded && payType !== "loan" && (
-        <tr style={{ background: "#f8fafc" }}>
-          <td
-            colSpan={5}
-            style={{
-              padding: "20px 28px",
-              borderBottom: "1px solid var(--border)",
-            }}
-          >
-            <h4
-              style={{
-                fontSize: "13px",
-                fontWeight: 800,
-                color: "var(--text-1)",
-                marginBottom: "14px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <Clock size={15} /> Cash Payment History
-            </h4>
-            {loadingHistory ? (
-              <p style={{ fontSize: "13px", color: "var(--text-3)" }}>
-                Loading...
-              </p>
-            ) : historyData.filter((h) => h.action_type === "finance_update")
-                .length === 0 ? (
-              <p
-                style={{
-                  fontSize: "13px",
-                  color: "var(--text-4)",
-                  fontStyle: "italic",
-                }}
-              >
-                No payment history records found.
-              </p>
-            ) : (
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-              >
-                {[...historyData]
-                  .filter((h) => h.action_type === "finance_update")
-                  .reverse()
-                  .slice(0, 5)
-                  .map((h, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: "flex",
-                        gap: "12px",
-                        fontSize: "12px",
-                        color: "var(--text-2)",
-                        padding: "8px 12px",
-                        background: "#fff",
-                        borderRadius: "8px",
-                        border: "1px solid var(--border)",
-                      }}
-                    >
-                      <span
-                        style={{ color: "var(--text-4)", minWidth: "140px" }}
-                      >
-                        {new Date(h.timestamp).toLocaleString("en-IN", {
-                          dateStyle: "short",
-                          timeStyle: "short",
-                        })}
-                      </span>
-                      <span style={{ fontWeight: 600, minWidth: "100px" }}>
-                        {h.updated_by}
-                      </span>
-                      <span>{h.remarks}</span>
-                    </div>
-                  ))}
-              </div>
-            )}
           </td>
         </tr>
       )}
@@ -1081,11 +691,11 @@ const BankingDashboard = ({ onLogout }) => {
     try {
       const data = await edgeFetch(EDGE.workflow, { action: "get_all" });
       setAllCases(data);
-      // Show cases in Bank & Finance that are either unassigned OR cash (loans go to FinanceTracking)
+      // Show cases in Bank & Finance that are explicitly marked as Loan
       const triageCases = data.filter((c) => {
         const stage = c.current_stage || "";
         const pt = (c.payment_type || "").toLowerCase();
-        return stage === "Bank & Finance" && pt !== "loan";
+        return stage === "Bank & Finance" && pt === "loan";
       });
       setCases(triageCases);
     } catch {
@@ -1177,7 +787,7 @@ const BankingDashboard = ({ onLogout }) => {
               marginBottom: "8px",
             }}
           >
-            Payment Method Triage
+            Active Loan Cases
           </h2>
           <p
             style={{
@@ -1186,7 +796,7 @@ const BankingDashboard = ({ onLogout }) => {
               marginBottom: "20px",
             }}
           >
-            Assign payment methods to incoming cases.
+            Review, process and approve incoming loan applications from the Registration department.
           </p>
 
           {loading ? (
@@ -1213,10 +823,10 @@ const BankingDashboard = ({ onLogout }) => {
                   marginBottom: "6px",
                 }}
               >
-                No pending cases
+                No pending loan cases
               </h3>
               <p style={{ fontSize: "13px", color: "var(--color-text-muted)" }}>
-                All incoming cases have been assigned a payment method.
+                All loan cases have been processed.
               </p>
             </div>
           ) : (
@@ -1242,8 +852,7 @@ const BankingDashboard = ({ onLogout }) => {
                     >
                       {[
                         "Customer Info",
-                        "Payment Type",
-                        "Amount / Mode",
+                        "Loan Details",
                         "Status",
                         "Actions",
                       ].map((h) => (
