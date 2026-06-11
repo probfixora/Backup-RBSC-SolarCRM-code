@@ -5,7 +5,9 @@
 declare const Deno: any;
 declare const EdgeRuntime: any;
 
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logoBase64 } from "../quotation/logoBase64.ts";
 
