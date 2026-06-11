@@ -38,6 +38,7 @@ import {
   Headphones,
   Link as LinkIcon,
   Send,
+  Copy,
 } from "lucide-react";
 import CaseTimeline from "./CaseTimeline";
 import PaymentTracker from "./PaymentTracker";

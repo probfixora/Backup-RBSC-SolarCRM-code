@@ -307,7 +307,6 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
     borderBottom: "1px solid var(--border)",
     verticalAlign: "middle",
   };
-  const payType = (formData.paymentType || "").toLowerCase();
 
   if (mobileMode) {
     return (
