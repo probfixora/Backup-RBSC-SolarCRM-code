@@ -633,7 +633,7 @@ async function sendEmail(
 </html>`;
 
   const payload: any = {
-    sender: { name: companyName, email: gmailEmail },
+    sender: { name: companyName, email: 'sales@rbscsolar.in' },
     to: [{ email: q.customer_email as string }],
     subject: `Your Solar Quotation ${q.quotation_id} — ${companyName}`,
     htmlContent: html,

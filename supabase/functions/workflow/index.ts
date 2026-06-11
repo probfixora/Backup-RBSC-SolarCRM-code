@@ -650,7 +650,7 @@ serve(async (req: Request) => {
             Accept: "application/json",
           },
           body: JSON.stringify({
-            sender: { name: companyName, email: senderEmail },
+            sender: { name: companyName, email: 'updates@rbscsolar.in' },
             to: [{ email: caseObj.customer_email, name: customerName }],
             subject: `Your Tracking ID: ${trackingId} — ${companyName}`,
             htmlContent,
@@ -1050,7 +1050,7 @@ serve(async (req: Request) => {
                 Accept: "application/json",
               },
               body: JSON.stringify({
-                sender: { name: companyName, email: senderEmail },
+                sender: { name: companyName, email: 'updates@rbscsolar.in' },
                 to: [{ email: customerEmail, name: customerName }],
                 subject: `Your Tracking ID: ${trackingId} — ${companyName}`,
                 htmlContent,
@@ -1805,7 +1805,7 @@ serve(async (req: Request) => {
           Accept: "application/json",
         },
         body: JSON.stringify({
-          sender: { name: companyName, email: senderEmail },
+          sender: { name: companyName, email: 'updates@rbscsolar.in' },
           to: [{ email: customerEmail, name: customerName }],
           subject: `[Reminder] Your Tracking ID: ${trackingId} — ${companyName}`,
           htmlContent,

@@ -256,7 +256,7 @@ serve(async (req: Request) => {
           const payload = {
             sender: {
               name: `${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}`,
-              email: gmailEmail,
+              email: 'hr@rbscsolar.in',
             },
             to: [{ email: email.toLowerCase().trim() }],
             subject: `Welcome to ${Deno.env.get("COMPANY_NAME") || "RBSC Solar"} – Your Employee Account is Ready`,
