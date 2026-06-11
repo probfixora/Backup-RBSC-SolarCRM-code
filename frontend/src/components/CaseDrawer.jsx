@@ -1302,59 +1302,56 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         }
       `}} />
       <div
-        style={{ width: "100%", maxWidth: "1100px", maxHeight: "92vh", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
+        style={{ width: "100%", maxWidth: "800px", maxHeight: "95vh", backgroundColor: "#ffffff", borderRadius: "12px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
       >
-        <div style={{ backgroundColor: "#0f172a", padding: "16px 24px", color: "#ffffff", display: "flex", flexDirection: "column", gap: "12px", position: "relative", flexShrink: 0 }}>
+        <div style={{ backgroundColor: "#0f172a", padding: "12px 16px", color: "#ffffff", display: "flex", flexDirection: "column", gap: "8px", position: "relative", flexShrink: 0 }}>
           
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ color: "#38bdf8", fontWeight: 800, fontSize: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                  {normalized.trackingId}
-                </span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: 800, margin: "0", color: "#f8fafc" }}>
+                {normalized.customerName}
+              </h2>
+              <span style={{ color: "#38bdf8", fontWeight: 700, fontSize: "13px", letterSpacing: "0.02em" }}>
+                {normalized.trackingId}
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(normalized.trackingId);
                     alert("Tracking ID copied!");
                   }}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex", alignItems: "center", padding: "2px" }}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", padding: "0 4px", marginLeft: "4px" }}
                   title="Copy Tracking ID"
                 >
-                  <Copy size={14} />
+                  <Copy size={12} />
                 </button>
-              </div>
-              <span style={{ color: "#a855f7", fontWeight: 700, fontSize: "13px", letterSpacing: "0.02em" }}>
+              </span>
+              <span style={{ color: "#a855f7", fontWeight: 600, fontSize: "12px" }}>
                 Customer ID: {normalized.customerId || "N/A"} {caseData?.sales_person || caseData?.salesPerson ? `(${caseData.sales_person || caseData.salesPerson})` : ""}
               </span>
             </div>
             
-            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-              <button style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#ffffff", padding: "8px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)"} onMouseOut={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}>
-                <Download size={16} /> PDF
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <button style={{ display: "flex", alignItems: "center", gap: "4px", backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#ffffff", padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }} onClick={handleDownloadPDF}>
+                <Download size={14} /> PDF
               </button>
-              <button onClick={onClose} style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "none", color: "#ffffff", padding: "8px", borderRadius: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyItems: "center", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)"} onMouseOut={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}>
-                <X size={18} />
+              <button onClick={onClose} style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "none", color: "#ffffff", padding: "6px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", justifyItems: "center" }}>
+                <X size={16} />
               </button>
             </div>
           </div>
 
-          <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0", letterSpacing: "-0.02em", color: "#f8fafc" }}>
-            {normalized.customerName}
-          </h2>
-
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", color: "#94a3b8", fontSize: "14px", fontWeight: 500 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Phone size={16} style={{ color: "#64748b" }} /> {caseData.phone || "N/A"}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><MapPin size={16} style={{ color: "#64748b" }} /> {[caseData.city, caseData.district, caseData.state].filter(Boolean).join(", ") || caseData.address || caseData.pinCode || "N/A"}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Zap size={16} style={{ color: "#64748b" }} /> {caseData.plant_capacity || caseData.system_size_kw || caseData.kw_capacity || caseData.load_required || caseData.loadRequired || caseData.system_capacity || caseData.system_specs?.inverterKw || caseData.system_specs?.systemCapacity || "0"} kW</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", color: "#94a3b8", fontSize: "12px", fontWeight: 500 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}><Phone size={14} style={{ color: "#64748b" }} /> {caseData.phone || "N/A"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}><MapPin size={14} style={{ color: "#64748b" }} /> {[caseData.city, caseData.district, caseData.state].filter(Boolean).join(", ") || caseData.address || caseData.pinCode || "N/A"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}><Zap size={14} style={{ color: "#64748b" }} /> {caseData.plant_capacity || caseData.system_size_kw || caseData.kw_capacity || caseData.load_required || caseData.loadRequired || caseData.system_capacity || caseData.system_specs?.inverterKw || caseData.system_specs?.systemCapacity || "0"} kW</div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "8px" }}>
-            <span style={{ backgroundColor: "#064e3b", color: "#34d399", padding: "6px 16px", borderRadius: "9999px", fontSize: "13px", fontWeight: 700 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px" }}>
+            <span style={{ backgroundColor: "#064e3b", color: "#34d399", padding: "4px 12px", borderRadius: "9999px", fontSize: "12px", fontWeight: 700 }}>
               {normalized.status === "Completed" ? "Completed" : normalized.currentStage || "In Progress"}
             </span>
             {normalized.assignedTo && normalized.assignedTo === localStorage.getItem("name") && (
-              <span style={{ backgroundColor: "rgba(139, 92, 246, 0.15)", color: "#c084fc", border: "1px solid rgba(168, 85, 247, 0.3)", padding: "5px 14px", borderRadius: "9999px", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
-                <UserCheck size={14} /> Assigned to You
+              <span style={{ backgroundColor: "rgba(139, 92, 246, 0.15)", color: "#c084fc", border: "1px solid rgba(168, 85, 247, 0.3)", padding: "4px 10px", borderRadius: "9999px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                <UserCheck size={12} /> Assigned to You
               </span>
             )}
             <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
@@ -1378,9 +1375,9 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px",
-                  padding: "12px 16px",
-                  fontSize: "14px",
+                  gap: "6px",
+                  padding: "10px 14px",
+                  fontSize: "13px",
                   fontWeight: 600,
                   border: "none",
                   borderBottom: isActive ? "3px solid #f59e0b" : "3px solid transparent",
@@ -1393,7 +1390,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                 }}
               >
                 <tab.icon
-                  size={18}
+                  size={16}
                   style={{ color: isActive ? "#f59e0b" : "#cbd5e1" }}
                 />
                 {tab.label}
