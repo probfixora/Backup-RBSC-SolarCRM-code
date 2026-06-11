@@ -533,115 +533,128 @@ const FinanceTab = ({ ctx }) => {
                           border: "1px solid #bfdbfe",
                           borderRadius: "10px",
                         }}
-                      >
-                        <div style={{ display: "flex", gap: "12px" }}>
-                          <div style={{ flex: 1 }}>
-                            <label
+                                   {role === "registration" ? (
+                          <div style={{ textAlign: "center", padding: "16px 8px" }}>
+                            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "48px", height: "48px", borderRadius: "50%", background: "#dbeafe", color: "#2563eb", marginBottom: "12px" }}>
+                              <FileText size={24} />
+                            </div>
+                            <h4 style={{ fontSize: "15px", fontWeight: 700, color: "#1e3a8a", margin: "0 0 8px 0" }}>Loan Process Initiated</h4>
+                            <p style={{ fontSize: "13px", color: "#3b82f6", margin: 0, lineHeight: "1.5", padding: "0 10px" }}>
+                              Please prepare and upload all required customer documents in the <strong>Documents Tab</strong>. Once ready, click "Save Financial Details" and update the case stage to <strong>"Bank & Finance"</strong> to send it to the Banking Department for approval.
+                            </p>
+                          </div>
+                        ) : (
+                          <>
+                            <div style={{ display: "flex", gap: "12px" }}>
+                              <div style={{ flex: 1 }}>
+                                <label
+                                  style={{
+                                    display: "block",
+                                    fontSize: "12px",
+                                    fontWeight: 600,
+                                    color: "#1e3a8a",
+                                    marginBottom: "6px",
+                                  }}
+                                >
+                                  Loan Amount (₹)
+                                </label>
+                                <input
+                                  type="number"
+                                  value={fData.loanAmount}
+                                  onChange={(e) =>
+                                    setFData({
+                                      ...fData,
+                                      loanAmount: e.target.value,
+                                    })
+                                  }
+                                  placeholder="Amount financed"
+                                  className="input"
+                                />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <label
+                                  style={{
+                                    display: "block",
+                                    fontSize: "12px",
+                                    fontWeight: 600,
+                                    color: "#1e3a8a",
+                                    marginBottom: "6px",
+                                  }}
+                                >
+                                  Loan Approved Amount (₹)
+                                </label>
+                                <input
+                                  type="number"
+                                  value={fData.loanApprovedAmount}
+                                  onChange={(e) =>
+                                    setFData({
+                                      ...fData,
+                                      loanApprovedAmount: e.target.value,
+                                    })
+                                  }
+                                  placeholder="Approved amount"
+                                  className="input"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label
+                                style={{
+                                  display: "block",
+                                  fontSize: "12px",
+                                  fontWeight: 600,
+                                  color: "#1e3a8a",
+                                  marginBottom: "6px",
+                                }}
+                              >
+                                Approved Bank Name
+                              </label>
+                              <input
+                                type="text"
+                                value={fData.bankName}
+                                onChange={(e) =>
+                                  setFData({ ...fData, bankName: e.target.value })
+                                }
+                                placeholder="e.g. HDFC, SBI"
+                                className="input"
+                              />
+                            </div>
+                            <div
                               style={{
-                                display: "block",
-                                fontSize: "12px",
-                                fontWeight: 600,
-                                color: "#1e3a8a",
-                                marginBottom: "6px",
+                                padding: "10px",
+                                background: "#dbeafe",
+                                borderRadius: "6px",
+                                border: "1px solid #93c5fd",
+                                display: "flex",
+                                justifyContent: "space-between",
                               }}
                             >
-                              Loan Amount (₹)
-                            </label>
-                            <input
-                              type="number"
-                              value={fData.loanAmount}
-                              onChange={(e) =>
-                                setFData({
-                                  ...fData,
-                                  loanAmount: e.target.value,
-                                })
-                              }
-                              placeholder="Amount financed"
-                              className="input"
-                            />
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <label
-                              style={{
-                                display: "block",
-                                fontSize: "12px",
-                                fontWeight: 600,
-                                color: "#1e3a8a",
-                                marginBottom: "6px",
-                              }}
-                            >
-                              Loan Approved Amount (₹)
-                            </label>
-                            <input
-                              type="number"
-                              value={fData.loanApprovedAmount}
-                              onChange={(e) =>
-                                setFData({
-                                  ...fData,
-                                  loanApprovedAmount: e.target.value,
-                                })
-                              }
-                              placeholder="Approved amount"
-                              className="input"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label
-                            style={{
-                              display: "block",
-                              fontSize: "12px",
-                              fontWeight: 600,
-                              color: "#1e3a8a",
-                              marginBottom: "6px",
-                            }}
-                          >
-                            Approved Bank Name
-                          </label>
-                          <input
-                            type="text"
-                            value={fData.bankName}
-                            onChange={(e) =>
-                              setFData({ ...fData, bankName: e.target.value })
-                            }
-                            placeholder="e.g. HDFC, SBI"
-                            className="input"
-                          />
-                        </div>
-                        <div
-                          style={{
-                            padding: "10px",
-                            background: "#dbeafe",
-                            borderRadius: "6px",
-                            border: "1px solid #93c5fd",
-                            display: "flex",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: "12px",
-                              fontWeight: 600,
-                              color: "#1e3a8a",
-                            }}
-                          >
-                            Remaining Balance (After Down Payment & Loan):
-                          </span>
-                          <span
-                            style={{
-                              fontSize: "13px",
-                              fontWeight: 700,
-                              color: "#1e3a8a",
-                            }}
-                          >
-                            ₹
-                            {Number(
-                              (normalized.totalAmount || 0) -
-                                (fData.downPayment || 0) -
-                                (fData.loanApprovedAmount || 0),
-                            ).toLocaleString()}
-                          </span>
-                        </div>
+                              <span
+                                style={{
+                                  fontSize: "12px",
+                                  fontWeight: 600,
+                                  color: "#1e3a8a",
+                                }}
+                              >
+                                Remaining Balance (After Down Payment & Loan):
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "13px",
+                                  fontWeight: 700,
+                                  color: "#1e3a8a",
+                                }}
+                              >
+                                ₹
+                                {Number(
+                                  (normalized.totalAmount || 0) -
+                                    (fData.downPayment || 0) -
+                                    (fData.loanApprovedAmount || 0),
+                                ).toLocaleString()}
+                              </span>
+                            </div>
+                          </>
+                        )}              </div>
                       </div>
                     )}
 
