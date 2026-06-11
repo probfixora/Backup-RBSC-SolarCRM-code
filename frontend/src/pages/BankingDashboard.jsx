@@ -409,6 +409,7 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
               )}
             </div>
           </div>
+          <div>
             <div
               style={{
                 fontSize: "11px",
