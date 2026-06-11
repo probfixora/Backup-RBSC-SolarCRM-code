@@ -9,6 +9,44 @@ import {
 } from "lucide-react";
 import { APP_CONFIG } from "../config";
 
+// ── Solar Loan Document Rules ─────────────────────────────────────────────────
+const BASE_DOCS = [
+  "Electricity Bill (Last 2 Months)",
+  "Aadhar Card Copy (Electricity Bill Owner)",
+  "PAN Card (Electricity Bill Owner)",
+  "Bank Details (Cancelled Cheque / Account Number)",
+  "Property Proof (House Tax Receipt / Registry Copy)",
+  "Verification 4 Photo (Customer House GPS Pic)",
+];
+const PROFILE_JOB_DOCS = [
+  "3 Months Salary Slip",
+  "6 Months Bank Statement",
+  "Form 16 of Last 3 Years",
+  "Last 3 Year ITR",
+];
+const PROFILE_BIZ_DOCS = [
+  "Last 3 Year ITR",
+  "6 Months Bank Statement",
+  "GST Certificate",
+];
+
+const getKw = (q) => {
+  if (!q) return 0;
+  if (q.electrical_load)
+    return parseInt(String(q.electrical_load).replace(/kW$/i, ""), 10) || 0;
+  if (q.total_watt) return Math.round(q.total_watt / 1000);
+  return 0;
+};
+
+const getRequiredDocuments = (kw, profile) => {
+  if (kw <= 3) return BASE_DOCS;
+  return [
+    ...BASE_DOCS,
+    ...(profile === "Business" ? PROFILE_BIZ_DOCS : PROFILE_JOB_DOCS),
+  ];
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * CustomerPortal — Public page accessible via:
  *   /customer-portal?token=<secure-token>
@@ -26,15 +64,9 @@ export default function CustomerPortal() {
   const [docs, setDocs] = useState({});
   const [uploadDone, setUploadDone] = useState(false);
 
-  // Required documents — determined by quotation system size
-  const REQUIRED_DOCS = [
-    "Electricity Bill (Last 2 Months)",
-    "Aadhar Card (Electricity Bill Owner)",
-    "PAN Card",
-    "Bank Details (Cancelled Cheque)",
-    "Property Proof (House Tax / Registry)",
-    "Site Photos",
-  ];
+  const kw = caseData ? getKw(caseData) : 0;
+  const profile = caseData?.customer_occupation === "Business" ? "Business" : "Job/Service";
+  const REQUIRED_DOCS = caseData ? getRequiredDocuments(kw, profile) : BASE_DOCS;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

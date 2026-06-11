@@ -52,6 +52,7 @@ const ApprovedQuotations = ({ onLogout }) => {
   const [profile, setProfile] = useState("Job/Service");
   const [uploadingDoc, setUploadingDoc] = useState(null);
   const [sendingToReg, setSendingToReg] = useState(false);
+  const [verifiedDocs, setVerifiedDocs] = useState({});
 
   const fetchQuotations = async () => {
     try {
@@ -87,6 +88,7 @@ const ApprovedQuotations = ({ onLogout }) => {
     setProfile(
       q.customer_occupation === "Business" ? "Business" : "Job/Service",
     );
+    setVerifiedDocs({});
   };
 
   // Derived
@@ -96,7 +98,8 @@ const ApprovedQuotations = ({ onLogout }) => {
   const uploaded = reqDocs.filter(
     (d) => selectedQuotation?.documents?.[d],
   ).length;
-  const isComplete = reqDocs.length > 0 && uploaded === reqDocs.length;
+  const allUploaded = reqDocs.length > 0 && uploaded === reqDocs.length;
+  const isComplete = allUploaded && reqDocs.every((d) => verifiedDocs[d]);
 
   const handleProfileChange = async (p) => {
     setProfile(p);
@@ -795,6 +798,8 @@ const ApprovedQuotations = ({ onLogout }) => {
                     fileUrl={selectedQuotation.documents?.[doc]}
                     onUpload={handleFileUpload}
                     badge={null}
+                    isVerified={verifiedDocs[doc]}
+                    onVerify={() => setVerifiedDocs(prev => ({...prev, [doc]: true}))}
                   />
                 ))}
               </div>
@@ -838,6 +843,8 @@ const ApprovedQuotations = ({ onLogout }) => {
                         badge={
                           profile === "Business" ? "BUSINESS" : "JOB/SERVICE"
                         }
+                        isVerified={verifiedDocs[doc]}
+                        onVerify={() => setVerifiedDocs(prev => ({...prev, [doc]: true}))}
                       />
                     ))}
                   </div>
@@ -902,6 +909,8 @@ const DocRow = ({
   fileUrl,
   onUpload,
   badge,
+  isVerified,
+  onVerify,
 }) => (
   <div
     style={{
@@ -976,18 +985,34 @@ const DocRow = ({
           >
             View
           </a>
-          <label
-            className="btn btn-secondary btn-sm"
-            style={{ cursor: "pointer", fontSize: "12px" }}
-          >
-            Replace
-            <input
-              type="file"
-              style={{ display: "none" }}
-              onChange={(e) => onUpload(e, docName)}
-              accept=".pdf,image/*"
-            />
-          </label>
+          {!isVerified ? (
+            <>
+              <label
+                className="btn btn-secondary btn-sm"
+                style={{ cursor: "pointer", fontSize: "12px" }}
+              >
+                Replace
+                <input
+                  type="file"
+                  style={{ display: "none" }}
+                  onChange={(e) => onUpload(e, docName)}
+                  accept=".pdf,image/*"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={onVerify}
+                className="btn btn-primary btn-sm"
+                style={{ fontSize: "12px" }}
+              >
+                Verify
+              </button>
+            </>
+          ) : (
+            <span style={{ fontSize: "12px", color: "#16a34a", fontWeight: 700, padding: "5px 10px" }}>
+              Verified ✅
+            </span>
+          )}
         </div>
       ) : (
         <label
