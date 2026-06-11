@@ -151,7 +151,7 @@ serve(async (req: Request) => {
           });
           const portalUrl =
             Deno.env.get("FRONTEND_URL") ||
-            "https://rbscsolarcrm.probfixora.co.in";
+            "https://rbscsolar.in";
           const html = `<!DOCTYPE html>
 <html lang="en">
 <head>

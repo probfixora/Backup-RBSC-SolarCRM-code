@@ -613,7 +613,7 @@ serve(async (req: Request) => {
 
       const trackingId = caseObj.tracking_id || caseObj.id;
       const customerName = caseObj.customer_name || "Customer";
-      const trackingUrl = `https://rbscsolarcrm.probfixora.co.in/track?id=${encodeURIComponent(trackingId)}`;
+      const trackingUrl = `https://rbscsolar.in/track?id=${encodeURIComponent(trackingId)}`;
 
       const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Associates";
       const companyEmail =
@@ -1007,7 +1007,7 @@ serve(async (req: Request) => {
               Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com";
 
             const customerName = caseObj.customer_name || "Customer";
-            const trackingUrl = `https://rbscsolarcrm.probfixora.co.in/track?id=${encodeURIComponent(trackingId)}`;
+            const trackingUrl = `https://rbscsolar.in/track?id=${encodeURIComponent(trackingId)}`;
 
             // Log the trigger to case_history FIRST (so duplicate guard works even if email fails)
             await supabase.from("case_history").insert({
@@ -1760,7 +1760,7 @@ serve(async (req: Request) => {
 
       const trackingId = caseObj.tracking_id || caseObj.id;
       const customerName = caseObj.customer_name || "Customer";
-      const trackingUrl = `https://rbscsolarcrm.probfixora.co.in/track?id=${encodeURIComponent(trackingId)}`;
+      const trackingUrl = `https://rbscsolar.in/track?id=${encodeURIComponent(trackingId)}`;
 
       if (!brevoApiKey || !senderEmail || !customerEmail) {
         // Log the resend attempt even if email can't be sent
