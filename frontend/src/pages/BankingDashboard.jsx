@@ -651,6 +651,10 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
               <Clock size={14} />{" "}
               {showExpanded ? "Hide" : "Loan Stages"}
             </button>
+          </div>
+        </td>
+      </tr>
+
       {/* Loan Stage Tracker Row */}
       {showExpanded && (
         <tr style={{ background: "#f0f7ff" }}>
