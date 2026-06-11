@@ -291,7 +291,7 @@ const CopyButton = ({ text }) => {
   );
 };
 
-const CaseTable = ({ cases, onUpdateClick, onRefresh }) => {
+const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotationId }) => {
   if (cases.length === 0) {
     return (
       <div className="table-wrap">
@@ -355,11 +355,12 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh }) => {
                 {[
                   "Tracking ID",
                   "Customer",
-                  "Customer ID",
+                  !hideCustomerId ? "Customer ID" : null,
+                  showQuotationId ? "Quotation ID" : null,
                   "Status",
                   "Time in Stage",
                   "Action",
-                ].map((h) => (
+                ].filter(Boolean).map((h) => (
                   <th
                     key={h}
                     style={{
@@ -483,18 +484,36 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh }) => {
                     </td>
 
                     {/* Customer ID */}
-                    <td style={{ padding: "14px 20px", whiteSpace: "nowrap" }}>
-                      <span
-                        style={{
-                          fontFamily: "monospace",
-                          fontSize: "11.5px",
-                          color: "var(--text-3)",
-                          letterSpacing: "0.01em",
-                        }}
-                      >
-                        {customerId}
-                      </span>
-                    </td>
+                    {!hideCustomerId && (
+                      <td style={{ padding: "14px 20px", whiteSpace: "nowrap" }}>
+                        <span
+                          style={{
+                            fontFamily: "monospace",
+                            fontSize: "11.5px",
+                            color: "var(--text-3)",
+                            letterSpacing: "0.01em",
+                          }}
+                        >
+                          {customerId}
+                        </span>
+                      </td>
+                    )}
+
+                    {/* Quotation ID */}
+                    {showQuotationId && (
+                      <td style={{ padding: "14px 20px", whiteSpace: "nowrap" }}>
+                        <span
+                          style={{
+                            fontFamily: "monospace",
+                            fontSize: "11.5px",
+                            color: "var(--text-3)",
+                            letterSpacing: "0.01em",
+                          }}
+                        >
+                          {c.quotation_id_ref || c.quotationIdRef || "—"}
+                        </span>
+                      </td>
+                    )}
 
                     {/* Status */}
                     <td style={{ padding: "14px 20px" }}>
@@ -785,33 +804,64 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh }) => {
                     </span>
                     {trackingId !== "—" && <CopyButton text={trackingId} />}
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    <span
+                  {!hideCustomerId && (
+                    <div
                       style={{
-                        fontSize: "10px",
-                        color: "var(--text-4)",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
                       }}
                     >
-                      Customer ID:
-                    </span>
-                    <span
+                      <span
+                        style={{
+                          fontSize: "10px",
+                          color: "var(--text-4)",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Customer ID:
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "monospace",
+                          fontSize: "10.5px",
+                          color: "var(--text-3)",
+                        }}
+                      >
+                        {customerId}
+                      </span>
+                    </div>
+                  )}
+                  {showQuotationId && (
+                    <div
                       style={{
-                        fontFamily: "monospace",
-                        fontSize: "10.5px",
-                        color: "var(--text-3)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
                       }}
                     >
-                      {customerId}
-                    </span>
-                  </div>
+                      <span
+                        style={{
+                          fontSize: "10px",
+                          color: "var(--text-4)",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Quotation ID:
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "monospace",
+                          fontSize: "10.5px",
+                          color: "var(--text-3)",
+                        }}
+                      >
+                        {c.quotation_id_ref || c.quotationIdRef || "—"}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 {/* Status badge - mobile */}
                 {(() => {

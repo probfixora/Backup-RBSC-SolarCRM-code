@@ -151,7 +151,7 @@ const FinalLeads = ({ onLogout }) => {
             </div>
           </div>
         ) : (
-          <CaseTable cases={searched} onUpdateClick={setSelectedCase} />
+          <CaseTable cases={searched} onUpdateClick={setSelectedCase} hideCustomerId={true} showQuotationId={true} />
         )}
 
         {searched.length === 0 && !loading && (

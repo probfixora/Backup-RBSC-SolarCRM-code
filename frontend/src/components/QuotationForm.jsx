@@ -40,15 +40,15 @@ const PRODUCT_CATEGORIES = ["Topcon", "Bifacial"];
 const SUB_CATEGORIES = ["Off Grid", "On Grid", "Hybrid", "On Grid Commercial"];
 
 const WIRE_MAKES = ["Polycab", "Havells", "KEI", "Finolex"];
-const WIRE_SIZES = ["2 Sq mm", "3 Sq mm", "4 Sq mm", "6 Sq mm"];
+const WIRE_SIZES = ["2.5 Sq mm", "4 Sq mm", "6 Sq mm", "10 Sq mm", "16 Sq mm"];
 const STRUCTURE_BRANDS = ["Jindal", "Apollo"];
 const STRUCTURE_SIZES = ["80mm"];
 const BATTERY_BRANDS = ["Luminous", "Exide", "Sarotech"];
 const BATTERY_CAPACITIES = ["150Ah", "200Ah"];
 
 const getProductName = (brand, prodCat, subCat) => {
-  if (!brand || !prodCat || !subCat || BLANK_BRANDS.includes(brand)) return "";
-  const short = brand.replace(" Solar Panel", "");
+  if (!brand || !prodCat || !subCat) return "";
+  const short = brand.replace(/ Solar Panel/gi, "").trim();
   return `${short} ${prodCat} ${subCat} Solar Panel`;
 };
 
@@ -629,7 +629,7 @@ export default function QuotationForm() {
           electricalLoad: f.electricalLoad,
           productCategory: f.subCategory, // mapped for backward compatibility
           productBrand: f.panelBrand,
-          productName: f.productName || f.panelBrand,
+          productName: getProductName(f.panelBrand, f.productCategory, f.subCategory) || f.panelBrand,
           panelUnit: f.panelUnit,
           panelCount: f.panelCount,
           totalWatt: f.totalWatt,

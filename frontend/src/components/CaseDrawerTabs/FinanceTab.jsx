@@ -83,7 +83,6 @@ const FinanceTab = ({ ctx }) => {
     portalLink,
     printLoading,
     printRef,
-    quotationAmountEdit,
     quotationEditMode,
     quotationVerifyLoading,
     remarks,
@@ -123,7 +122,6 @@ const FinanceTab = ({ ctx }) => {
     setPortalGenerating,
     setPortalLink,
     setPrintLoading,
-    setQuotationAmountEdit,
     setQuotationEditMode,
     setQuotationVerifyLoading,
     setRemarks,
@@ -145,6 +143,8 @@ const FinanceTab = ({ ctx }) => {
     unverifiedDocs,
     updateLoading
   } = ctx;
+
+  const [quotationAmountEdit, setQuotationAmountEdit] = useState(false);
 
   return (
     <div>

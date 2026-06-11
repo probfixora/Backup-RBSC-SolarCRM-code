@@ -50,9 +50,16 @@ function generateProposalHTML(q: any, logoBase64: string): string {
   });
   const totalWatt = q.total_watt || 0;
   const projectType = q.product_category || "On Grid";
-  const title = q.product_name || (q.product_brand
-    ? `${q.product_brand} ${projectType} Solar Panel`
-    : `${projectType} Solar Panel`);
+  let title = q.product_name;
+
+  if (!title || (q.product_brand && title.toLowerCase() === q.product_brand.toLowerCase())) {
+    const cleanBrand = (q.product_brand || "").replace(/ Solar Panel/gi, "").trim();
+    if (cleanBrand) {
+      title = `${cleanBrand} ${projectType} Solar Panel`;
+    } else {
+      title = `${projectType} Solar Panel`;
+    }
+  }
 
   // Disclaimer for the solar panel brand
   const brandNameRaw = q.product_brand || "Adani";
