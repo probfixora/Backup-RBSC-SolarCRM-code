@@ -606,12 +606,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   const isBankingStage = normalized.currentStage === "Bank & Finance";
   const pType = (normalized.paymentType || "").toLowerCase();
   
-  const hasRegFinanceError =
-    isRegStage &&
-    (!pType ||
-      normalized.downPayment === undefined ||
-      normalized.downPayment === null ||
-      normalized.downPayment === "");
+  const hasRegFinanceError = false; // Removed per user request
 
   const isFinanceApproved =
     pType === "loan"
@@ -1354,8 +1349,8 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", color: "#94a3b8", fontSize: "14px", fontWeight: 500 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Phone size={16} style={{ color: "#64748b" }} /> {caseData.phone || "N/A"}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><MapPin size={16} style={{ color: "#64748b" }} /> {[caseData.city, caseData.district, caseData.state].filter(Boolean).join(", ") || "N/A"}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Zap size={16} style={{ color: "#64748b" }} /> {caseData.plant_capacity || caseData.system_size_kw || caseData.kw_capacity || "0"} kW - {normalized.paymentType || "N/A"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><MapPin size={16} style={{ color: "#64748b" }} /> {[caseData.city, caseData.district, caseData.state].filter(Boolean).join(", ") || caseData.address || caseData.pinCode || "N/A"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Zap size={16} style={{ color: "#64748b" }} /> {caseData.plant_capacity || caseData.system_size_kw || caseData.kw_capacity || caseData.load_required || caseData.loadRequired || caseData.system_capacity || caseData.system_specs?.inverterKw || caseData.system_specs?.systemCapacity || "0"} kW</div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "8px" }}>

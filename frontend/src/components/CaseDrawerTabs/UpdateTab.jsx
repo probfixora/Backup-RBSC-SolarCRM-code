@@ -62,7 +62,6 @@ const UpdateTab = ({ ctx }) => {
     handleUpdateSubmit,
     hasDocError,
     hasFinanceError,
-    hasRegFinanceError,
     hasQuotationError,
     history,
     inventoryList,
@@ -977,7 +976,7 @@ const UpdateTab = ({ ctx }) => {
                         Cash details to proceed.
                       </div>
                     )}
-                    {hasRegFinanceError && (
+                    {hasDocError && (
                       <div
                         style={{
                           marginTop: "14px",
@@ -1000,7 +999,7 @@ const UpdateTab = ({ ctx }) => {
                             flexShrink: 0,
                           }}
                         />
-                        Please fill Payment Type and Down Payment in the Finance tab before proceeding.
+                        Please verify all documents, then you can proceed.
                       </div>
                     )}
 
@@ -1148,16 +1147,16 @@ const UpdateTab = ({ ctx }) => {
                       <button
                         type="submit"
                         disabled={
-                          updateLoading || hasDocError || hasFinanceError || hasRegFinanceError
+                          updateLoading || hasDocError || hasFinanceError
                         }
                         className="btn btn-primary"
                         style={{
                           width: "100%",
                           display: "flex",
                           justifyContent: "center",
-                          opacity: hasDocError || hasFinanceError || hasRegFinanceError ? 0.6 : 1,
+                          opacity: hasDocError || hasFinanceError ? 0.6 : 1,
                           cursor:
-                            hasDocError || hasFinanceError || hasRegFinanceError
+                            hasDocError || hasFinanceError
                               ? "not-allowed"
                               : "pointer",
                         }}
