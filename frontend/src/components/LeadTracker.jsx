@@ -123,10 +123,11 @@ const PipelineBar = ({ pipeline, compact = false }) => {
         const isReached = stage.reached;
         const isFinal = stage.key === "Completed" && stage.reached;
 
+        const stageColor = PIPELINE_STAGES.find(s => s.key === stage.key)?.color || "#6366f1";
         const bgColor = isFinal
           ? "#16a34a"
           : isCurrent || isCompleted
-            ? stage.color
+            ? stageColor
             : "#f1f5f9";
         const textColor =
           isCurrent || isCompleted || isFinal ? "#fff" : "#cbd5e1";
@@ -151,9 +152,9 @@ const PipelineBar = ({ pipeline, compact = false }) => {
                 textOverflow: "ellipsis",
                 transition: "all 0.2s ease",
                 border: isCurrent
-                  ? `1.5px solid ${stage.color}`
+                  ? `1.5px solid ${stageColor}`
                   : "1.5px solid transparent",
-                boxShadow: isCurrent ? `0 0 0 2px ${stage.color}22` : "none",
+                boxShadow: isCurrent ? `0 0 0 2px ${stageColor}22` : "none",
               }}
             >
               {compact ? stage.label.slice(0, 4) : stage.label}
@@ -413,10 +414,25 @@ const LeadTracker = ({ userId, userName, userRole }) => {
         if (userRole) body.userRole = userRole;
         const data = await edgeFetch(EDGE.analytics, body);
         const mappedData = (data || []).map((l) => {
-          if (l.trackingId && l.caseStatus === "In Progress") {
-            return { ...l, caseStatus: "Sent to Registration" };
+          let updatedLead = { ...l };
+          if (updatedLead.trackingId && updatedLead.caseStatus === "In Progress") {
+            updatedLead.caseStatus = "Sent to Registration";
           }
-          return l;
+          
+          // Compute stage index based on currentStage and PIPELINE_STAGES
+          const stageIndex = PIPELINE_STAGES.findIndex(
+            (s) => s.key === updatedLead.currentStage
+          );
+          
+          // Overwrite the pipeline with the frontend PIPELINE_STAGES to ensure consistency and correct coloring
+          updatedLead.pipeline = PIPELINE_STAGES.map((s, i) => ({
+            ...s,
+            reached: i <= stageIndex,
+            current: s.key === updatedLead.currentStage,
+            completed: updatedLead.caseStatus === "Completed" || i < Math.max(0, stageIndex)
+          }));
+          
+          return updatedLead;
         });
         setLeads(mappedData);
       } catch (err) {
