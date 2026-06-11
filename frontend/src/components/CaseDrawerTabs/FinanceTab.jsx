@@ -512,6 +512,8 @@ const FinanceTab = ({ ctx }) => {
                             setFData({ ...fData, paymentType: e.target.value })
                           }
                           className="input"
+                          disabled={role === "banking" && (caseData?.payment_type || "").toLowerCase() === "loan"}
+                          title={role === "banking" && (caseData?.payment_type || "").toLowerCase() === "loan" ? "Banking department cannot change loan cases to cash." : ""}
                         >
                           <option value="" disabled>
                             Select

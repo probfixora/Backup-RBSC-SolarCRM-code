@@ -119,7 +119,15 @@ export default function FinanceTableRow({ caseObj, onSave, mobileMode }) {
             <div style={{ fontSize: "11px", color: "var(--text-4)", textTransform: "uppercase", fontWeight: 600 }}>Type</div>
             <div style={{ marginTop: "4px" }}>
               {isEditing ? (
-                <select name="paymentType" value={formData.paymentType} onChange={handleChange} className="input" style={{ width: "100%", padding: "8px", fontSize: "13px" }}>
+                <select 
+                  name="paymentType" 
+                  value={formData.paymentType} 
+                  onChange={handleChange} 
+                  className="input" 
+                  style={{ width: "100%", padding: "8px", fontSize: "13px" }}
+                  disabled={localStorage.getItem("role") === "banking" && (caseObj.payment_type || "").toLowerCase() === "loan"}
+                  title={localStorage.getItem("role") === "banking" && (caseObj.payment_type || "").toLowerCase() === "loan" ? "Banking department cannot change loan cases to cash." : ""}
+                >
                   <option value="">Select…</option>
                   <option value="cash">Cash</option>
                   <option value="loan">Bank Loan</option>
@@ -214,7 +222,15 @@ export default function FinanceTableRow({ caseObj, onSave, mobileMode }) {
         </td>
         <td style={tdStyle}>
           {isEditing ? (
-            <select name="paymentType" value={formData.paymentType} onChange={handleChange} className="input" style={{ width: "120px", padding: "8px", fontSize: "13px" }}>
+            <select 
+              name="paymentType" 
+              value={formData.paymentType} 
+              onChange={handleChange} 
+              className="input" 
+              style={{ width: "120px", padding: "8px", fontSize: "13px" }}
+              disabled={localStorage.getItem("role") === "banking" && (caseObj.payment_type || "").toLowerCase() === "loan"}
+              title={localStorage.getItem("role") === "banking" && (caseObj.payment_type || "").toLowerCase() === "loan" ? "Banking department cannot change loan cases to cash." : ""}
+            >
               <option value="">Select…</option>
               <option value="cash">Cash</option>
               <option value="loan">Bank Loan</option>
