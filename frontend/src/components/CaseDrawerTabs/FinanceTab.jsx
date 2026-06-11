@@ -456,62 +456,35 @@ const FinanceTab = ({ ctx }) => {
                           borderRadius: "10px",
                         }}
                       >
-                        <div style={{ display: "flex", gap: "12px" }}>
-                          <div style={{ flex: 1 }}>
-                            <label
-                              style={{
-                                display: "block",
-                                fontSize: "12px",
-                                fontWeight: 600,
-                                color: "#166534",
-                                marginBottom: "6px",
-                              }}
-                            >
-                              Cash Amount (₹)
-                            </label>
-                            <input
-                              type="number"
-                              value={fData.cashAmount}
-                              onChange={(e) =>
-                                setFData({
-                                  ...fData,
-                                  cashAmount: e.target.value,
-                                })
-                              }
-                              placeholder="Total cash to pay"
-                              className="input"
-                            />
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <label
-                              style={{
-                                display: "block",
-                                fontSize: "12px",
-                                fontWeight: 600,
-                                color: "#166534",
-                                marginBottom: "6px",
-                              }}
-                            >
-                              Payment Mode
-                            </label>
-                            <select
-                              value={fData.paymentMode}
-                              onChange={(e) =>
-                                setFData({
-                                  ...fData,
-                                  paymentMode: e.target.value,
-                                })
-                              }
-                              className="input"
-                            >
-                              <option value="">Select mode...</option>
-                              <option value="Cash">Cash (Physical)</option>
-                              <option value="Cheque">Cheque</option>
-                              <option value="Debit Card">Debit Card</option>
-                              <option value="Credit Card">Credit Card</option>
-                              <option value="UPI">UPI</option>
-                            </select>
-                          </div>
+                        <div>
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: "12px",
+                              fontWeight: 600,
+                              color: "#166534",
+                              marginBottom: "6px",
+                            }}
+                          >
+                            Payment Mode
+                          </label>
+                          <select
+                            value={fData.paymentMode}
+                            onChange={(e) =>
+                              setFData({
+                                ...fData,
+                                paymentMode: e.target.value,
+                              })
+                            }
+                            className="input"
+                          >
+                            <option value="">Select mode...</option>
+                            <option value="Cash">Cash (Physical)</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Debit Card">Debit Card</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="UPI">UPI</option>
+                          </select>
                         </div>
                         <div
                           style={{

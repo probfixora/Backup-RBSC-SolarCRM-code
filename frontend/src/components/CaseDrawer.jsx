@@ -700,10 +700,24 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     e.preventDefault();
     setFinanceLoading(true);
     try {
+      // Sanitize: convert empty strings to null for numeric DB columns
+      const numericFields = [
+        "downPayment", "loanAmount", "loanApprovedAmount",
+        "cashAmount", "quotation_amount", "quotationAmount", "totalAmount"
+      ];
+      const sanitized = { ...fData };
+      numericFields.forEach((key) => {
+        if (sanitized[key] === "" || sanitized[key] === undefined) {
+          sanitized[key] = null;
+        } else if (sanitized[key] !== null) {
+          sanitized[key] = Number(sanitized[key]);
+        }
+      });
+
       await edgeFetch(EDGE.workflow, {
         action: "update_finance",
         caseId,
-        ...fData,
+        ...sanitized,
         financeVerified: true,
       });
       await edgeFetch(EDGE.workflow, {
@@ -721,6 +735,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       setFinanceLoading(false);
     }
   };
+
 
   const handleQuotationVerify = async (editedAmount) => {
     setQuotationVerifyLoading(true);
