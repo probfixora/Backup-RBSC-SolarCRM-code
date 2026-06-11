@@ -176,17 +176,20 @@ const FinanceTab = ({ ctx }) => {
 
       if (!finalUrl) throw new Error("Could not get public URL");
 
-      const { error: dbError } = await supabase.from("customer_uploaded_docs").insert([
-        {
-          case_id: caseId,
-          doc_name: docName,
-          doc_url: finalUrl,
-        }
-      ]);
+      const newDoc = {
+        case_id: caseId,
+        doc_name: docName,
+        doc_url: finalUrl,
+      };
+      const { error: dbError } = await supabase.from("customer_uploaded_docs").insert([newDoc]);
       if (dbError) throw dbError;
 
       toast.success(`${docName} uploaded successfully`);
-      if (ctx.onRefresh) ctx.onRefresh();
+      
+      // Update local state without triggering a full case refresh so the user doesn't lose their unsaved form state
+      if (ctx.setCustomerDocs) {
+        ctx.setCustomerDocs((prev) => [...(prev || []), newDoc]);
+      }
     } catch (err) {
       toast.error(`Error uploading ${docName}: ${err.message}`);
     } finally {
@@ -778,7 +781,9 @@ const FinanceTab = ({ ctx }) => {
                   </form>
 
                   {/* Payment History Tracker (B.10) */}
-                  <PaymentTracker caseId={normalized.caseId} userRole={role} />
+                  {role !== "registration" && (
+                    <PaymentTracker caseId={normalized.caseId} userRole={role} />
+                  )}
                 </>
               )}
             </div>
