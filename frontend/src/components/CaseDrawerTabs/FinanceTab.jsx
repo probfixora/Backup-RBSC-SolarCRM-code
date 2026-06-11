@@ -317,15 +317,73 @@ const FinanceTab = ({ ctx }) => {
                     >
                       Quotation Total Price:
                     </span>
-                    <span
-                      style={{
-                        fontSize: "15px",
-                        fontWeight: 800,
-                        color: "#312e81",
-                      }}
-                    >
-                      ₹{Number(normalized.totalAmount).toLocaleString()}
-                    </span>
+
+                    {quotationAmountEdit ? (
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                        <input
+                          type="number"
+                          value={fData.quotation_amount || fData.quotationAmount || fData.totalAmount || normalized.totalAmount || ""}
+                          onChange={(e) =>
+                            setFData({
+                              ...fData,
+                              quotation_amount: e.target.value,
+                              quotationAmount: e.target.value,
+                              totalAmount: e.target.value,
+                            })
+                          }
+                          style={{
+                            padding: "4px 8px",
+                            borderRadius: "6px",
+                            border: "1px solid #818cf8",
+                            width: "120px",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            color: "#312e81"
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setQuotationAmountEdit(false)}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            color: "#16a34a",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <CheckCircle2 size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                        <span
+                          style={{
+                            fontSize: "15px",
+                            fontWeight: 800,
+                            color: "#312e81",
+                          }}
+                        >
+                          ₹{Number(fData.quotation_amount || fData.quotationAmount || fData.totalAmount || normalized.totalAmount || 0).toLocaleString()}
+                        </span>
+                        {!normalized.financeVerified && (
+                          <button
+                            type="button"
+                            onClick={() => setQuotationAmountEdit(true)}
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              color: "#6366f1",
+                              cursor: "pointer",
+                              padding: "2px",
+                              display: "flex",
+                              alignItems: "center"
+                            }}
+                          >
+                            <Edit2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <form
                     onSubmit={handleFinanceUpdate}
