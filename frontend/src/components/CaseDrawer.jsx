@@ -153,7 +153,7 @@ const getTabs = (role) => {
   if (role === "admin") {
     tabs.push({ id: "history", icon: History, label: "History" });
   }
-  if (role === "banking" || role === "admin") {
+  if (role === "banking" || role === "admin" || role === "registration") {
     tabs.push({ id: "finance", icon: ClipboardList, label: "Finance" });
   }
   if (role === "inventory" || role === "admin") {
@@ -318,7 +318,13 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     const idx = STAGES.findIndex(
       (s) => s.toLowerCase() === normalized.currentStage?.toLowerCase(),
     );
-    if (idx >= 0 && idx < STAGES.length - 1) setNewStage(STAGES[idx + 1]);
+    if (idx >= 0 && idx < STAGES.length - 1) {
+      let nStage = STAGES[idx + 1];
+      if (nStage === "Bank & Finance" && (normalized.paymentType || "").toLowerCase() === "cash") {
+        nStage = "Sent to Store";
+      }
+      setNewStage(nStage);
+    }
 
     setDocStatuses(normalized.documentStatuses || {});
     setFData({
@@ -594,6 +600,14 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
   const isBankingStage = normalized.currentStage === "Bank & Finance";
   const pType = (normalized.paymentType || "").toLowerCase();
+  
+  const hasRegFinanceError =
+    isRegStage &&
+    (!pType ||
+      normalized.downPayment === undefined ||
+      normalized.downPayment === null ||
+      normalized.downPayment === "");
+
   const isFinanceApproved =
     pType === "loan"
       ? normalized.finance_form_status === "Loan Approved" ||
@@ -602,6 +616,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       : pType === "cash" &&
         normalized.paymentMode &&
         normalized.paymentMode.trim() !== "";
+        
   const hasFinanceError = isBankingStage && !isFinanceApproved;
 
   /* ── Handlers ── */
@@ -618,7 +633,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       toast.error("Please verify the quotation amount before proceeding.");
       return;
     }
-    if (hasFinanceError) return;
+    if (hasFinanceError || hasRegFinanceError) return;
     // ─────────────────────────────────────────────────────────────────────
 
     setUpdateLoading(true);
@@ -1183,6 +1198,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     handleUpdateSubmit,
     hasDocError,
     hasFinanceError,
+    hasRegFinanceError,
     hasQuotationError,
     history,
     inventoryList,

@@ -117,14 +117,31 @@ function maskDocumentsForRole(role: string, docsObj: any) {
   ];
   const maskedDocs: any = {};
 
-  for (const [key, value] of Object.entries(docsObj)) {
-    const keyLower = key.toLowerCase();
-    const isSensitive = sensitiveKeywords.some((kw) => keyLower.includes(kw));
-    if (!isSensitive) {
-      maskedDocs[key] = value;
+  if (restrictedRoles.includes(role)) {
+    for (const [key, value] of Object.entries(docsObj)) {
+      const keyLower = key.toLowerCase();
+      const isSensitive = sensitiveKeywords.some((kw) => keyLower.includes(kw));
+      if (!isSensitive) {
+        maskedDocs[key] = value;
+      }
     }
+    return maskedDocs;
   }
-  return maskedDocs;
+
+  // Banking sees ONLY financial and identity proofs
+  if (role === "banking") {
+    for (const [key, value] of Object.entries(docsObj)) {
+      const keyLower = key.toLowerCase();
+      const isAllowedForBank = sensitiveKeywords.some((kw) => keyLower.includes(kw));
+      if (isAllowedForBank) {
+        maskedDocs[key] = value;
+      }
+    }
+    return maskedDocs;
+  }
+
+  // Admin, Registration, etc. see everything
+  return docsObj;
 }
 
 // ─── Case-Level Data Masking ─────────────────────────────────────────────────
@@ -747,7 +764,16 @@ serve(async (req: Request) => {
         return jsonResponse({ message: "Case is already at final stage" }, 400);
       }
 
-      const expectedNextStage = workflowStages[currentIndex + 1];
+      let expectedNextStage = workflowStages[currentIndex + 1];
+
+      // SMART ROUTING: Skip Banking if Payment Type is Cash
+      if (
+        expectedNextStage === "Bank & Finance" &&
+        (caseObj.payment_type || "").toLowerCase() === "cash"
+      ) {
+        expectedNextStage = "Sent to Store";
+      }
+
       if (
         expectedNextStage.toLowerCase() !== body.newStage?.trim().toLowerCase()
       ) {
@@ -1266,11 +1292,15 @@ serve(async (req: Request) => {
 
     // ── UPDATE FINANCE ─────────────────────────────────────────────────────
     if (action === "update_finance") {
-      if (user.role !== "admin" && user.role !== "banking") {
+      // Allow registration to also enter down payment / choose payment type
+      if (
+        user.role !== "admin" &&
+        user.role !== "banking" &&
+        user.role !== "registration"
+      ) {
         return jsonResponse(
           {
-            message:
-              "Unauthorized: Only Banking & Finance or Admin can update finance details.",
+            message: `Unauthorized: Your role (${user.role}) cannot update finance details`,
           },
           403,
         );

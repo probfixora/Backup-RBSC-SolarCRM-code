@@ -62,6 +62,7 @@ const UpdateTab = ({ ctx }) => {
     handleUpdateSubmit,
     hasDocError,
     hasFinanceError,
+    hasRegFinanceError,
     hasQuotationError,
     history,
     inventoryList,
@@ -976,6 +977,32 @@ const UpdateTab = ({ ctx }) => {
                         Cash details to proceed.
                       </div>
                     )}
+                    {hasRegFinanceError && (
+                      <div
+                        style={{
+                          marginTop: "14px",
+                          padding: "12px 16px",
+                          background: "#fef2f2",
+                          border: "1px solid #fecaca",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          color: "#b91c1c",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                        }}
+                      >
+                        <AlertOctagon
+                          style={{
+                            width: "16px",
+                            height: "16px",
+                            flexShrink: 0,
+                          }}
+                        />
+                        Please fill Payment Type and Down Payment in the Finance tab before proceeding.
+                      </div>
+                    )}
 
                     {/* ── Geo-location capture (field_installation only) ──────────────────────── */}
                     {role === "field_installation" && (
@@ -1121,16 +1148,16 @@ const UpdateTab = ({ ctx }) => {
                       <button
                         type="submit"
                         disabled={
-                          updateLoading || hasDocError || hasFinanceError
+                          updateLoading || hasDocError || hasFinanceError || hasRegFinanceError
                         }
                         className="btn btn-primary"
                         style={{
                           width: "100%",
                           display: "flex",
                           justifyContent: "center",
-                          opacity: hasDocError || hasFinanceError ? 0.6 : 1,
+                          opacity: hasDocError || hasFinanceError || hasRegFinanceError ? 0.6 : 1,
                           cursor:
-                            hasDocError || hasFinanceError
+                            hasDocError || hasFinanceError || hasRegFinanceError
                               ? "not-allowed"
                               : "pointer",
                         }}
