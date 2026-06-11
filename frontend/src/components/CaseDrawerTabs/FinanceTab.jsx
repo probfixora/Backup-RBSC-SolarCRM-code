@@ -612,7 +612,6 @@ const FinanceTab = ({ ctx }) => {
                               className="input"
                             />
                           </div>
-                          </div>
                         </div>
                         <div>
                           <label
