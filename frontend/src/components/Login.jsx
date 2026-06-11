@@ -9,6 +9,8 @@ import {
   Users,
   Zap,
   ShieldCheck,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { APP_CONFIG } from "../config";
 import { supabase } from "../lib/supabaseClient";
@@ -28,6 +30,7 @@ const features = [
 const Login = ({ setToken }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -463,10 +466,10 @@ const Login = ({ setToken }) => {
               >
                 Secure Password
               </label>
-              <div className="input-group">
+              <div className="input-group" style={{ position: "relative" }}>
                 <Lock className="icon" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -474,10 +477,31 @@ const Login = ({ setToken }) => {
                   placeholder="••••••••••••"
                   style={{
                     borderRadius: "var(--radius-md)",
-                    padding: "13px 16px 13px 40px",
-                    letterSpacing: "0.1em",
+                    padding: "13px 40px 13px 40px",
+                    letterSpacing: showPassword ? "normal" : "0.1em",
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    color: "var(--text-4)",
+                    cursor: "pointer",
+                    padding: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
