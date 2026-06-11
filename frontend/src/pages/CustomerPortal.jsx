@@ -256,8 +256,8 @@ export default function CustomerPortal() {
         const quotationId = caseData.quotation_pk;
         const newCaseDocs = {};
 
-        for (const [docName, file] of Object.entries(docs)) {
-          if (!file) continue;
+        const uploadPromises = Object.entries(docs).map(async ([docName, file]) => {
+          if (!file) return null;
           const sanitized = docName.replace(/[^a-zA-Z0-9]/g, "_");
           const fileName = `quotation-docs/${quotationId}/${Date.now()}_${sanitized}_${file.name}`;
           const { error: uploadError } = await supabase.storage
@@ -268,8 +268,13 @@ export default function CustomerPortal() {
             .from("customer-docs")
             .getPublicUrl(fileName);
 
-          newCaseDocs[docName] = urlData.publicUrl;
-        }
+          return { docName, url: urlData.publicUrl };
+        });
+
+        const results = await Promise.all(uploadPromises);
+        results.forEach((res) => {
+          if (res) newCaseDocs[res.docName] = res.url;
+        });
 
         const res = await supabase.functions.invoke("quotation", {
           body: {
@@ -301,8 +306,8 @@ export default function CustomerPortal() {
       const insertRows = [];
       const newCaseDocs = {};
 
-      for (const [docName, file] of Object.entries(docs)) {
-        if (!file) continue;
+      const uploadPromises = Object.entries(docs).map(async ([docName, file]) => {
+        if (!file) return null;
         const sanitized = docName.replace(/[^a-zA-Z0-9]/g, "_");
         const fileName = `customer-docs/${currentCaseId}/${Date.now()}_${sanitized}_${file.name}`;
         const { error: uploadError } = await supabase.storage
@@ -313,15 +318,25 @@ export default function CustomerPortal() {
           .from("customer-docs")
           .getPublicUrl(fileName);
 
-        insertRows.push({
-          case_id: currentCaseId,
-          portal_token: token,
-          doc_name: docName,
-          doc_url: urlData.publicUrl,
-        });
+        return {
+          docName,
+          url: urlData.publicUrl,
+          insertRow: {
+            case_id: currentCaseId,
+            portal_token: token,
+            doc_name: docName,
+            doc_url: urlData.publicUrl,
+          }
+        };
+      });
 
-        newCaseDocs[docName] = urlData.publicUrl;
-      }
+      const results = await Promise.all(uploadPromises);
+      results.forEach((res) => {
+        if (res) {
+          insertRows.push(res.insertRow);
+          newCaseDocs[res.docName] = res.url;
+        }
+      });
 
       await supabase.from("customer_uploaded_docs").insert(insertRows);
 

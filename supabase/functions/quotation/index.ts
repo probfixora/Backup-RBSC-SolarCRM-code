@@ -714,7 +714,13 @@ serve(async (req: any) => {
 
     // ── CREATE QUOTATION ───────────────────────────────────────────────────
     if (action === "create") {
-      if (!user || (user.role !== "sales" && user.role !== "admin")) {
+      if (!user) {
+        return jsonResponse(
+          { message: "Session expired or invalid. Please log in again." },
+          401,
+        );
+      }
+      if (user.role !== "sales" && user.role !== "admin") {
         return jsonResponse(
           { message: "Only sales team can create quotations" },
           403,
