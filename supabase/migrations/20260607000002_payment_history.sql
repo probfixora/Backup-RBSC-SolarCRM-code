@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS payment_history (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  case_id       TEXT NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
+  case_id       UUID NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
   payment_date  DATE NOT NULL,
   amount        NUMERIC NOT NULL DEFAULT 0,
   payment_type  TEXT NOT NULL DEFAULT 'installment',

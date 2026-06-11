@@ -85,6 +85,8 @@ const normalizeCase = (c) => ({
   subsidyPhase2Amount: c.subsidy_phase2_amount ?? c.subsidyPhase2Amount,
   subsidyNote: c.subsidy_note ?? c.subsidyNote,
   totalAmount:
+    c.quotation_amount ??
+    c.quotationAmount ??
     c.total_amount ??
     c.totalAmount ??
     c.product_price ??

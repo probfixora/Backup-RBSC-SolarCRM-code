@@ -288,7 +288,7 @@ const FinanceTab = ({ ctx }) => {
                           (normalized.totalAmount || 0) -
                             (fData.downPayment || 0) -
                             (fData.paymentType === "Loan"
-                              ? fData.loanAmount || 0
+                              ? fData.loanApprovedAmount || 0
                               : 0),
                         ).toLocaleString()}
                       </p>
@@ -315,7 +315,7 @@ const FinanceTab = ({ ctx }) => {
                         color: "#3730a3",
                       }}
                     >
-                      Quotation Total:
+                      Quotation Total Price:
                     </span>
                     <span
                       style={{
@@ -554,30 +554,6 @@ const FinanceTab = ({ ctx }) => {
                               className="input"
                             />
                           </div>
-                          <div style={{ flex: 1 }}>
-                            <label
-                              style={{
-                                display: "block",
-                                fontSize: "12px",
-                                fontWeight: 600,
-                                color: "#1e3a8a",
-                                marginBottom: "6px",
-                              }}
-                            >
-                              Monthly EMI (₹)
-                            </label>
-                            <input
-                              type="number"
-                              value={fData.emiAmount}
-                              onChange={(e) =>
-                                setFData({
-                                  ...fData,
-                                  emiAmount: e.target.value,
-                                })
-                              }
-                              placeholder="Monthly payment"
-                              className="input"
-                            />
                           </div>
                         </div>
                         <div>
@@ -632,7 +608,7 @@ const FinanceTab = ({ ctx }) => {
                             {Number(
                               (normalized.totalAmount || 0) -
                                 (fData.downPayment || 0) -
-                                (fData.loanAmount || 0),
+                                (fData.loanApprovedAmount || 0),
                             ).toLocaleString()}
                           </span>
                         </div>
