@@ -58,6 +58,17 @@ const CustomerSection = ({ ctx }) => {
             required
           />
         </F>
+        <F label="Sales Person Name">
+          <input
+            style={S.inp}
+            type="text"
+            value={f.salesPerson || ""}
+            onChange={(e) => set("salesPerson", e.target.value)}
+            placeholder="Who closed this lead?"
+          />
+        </F>
+      </div>
+      <div style={{ ...S.g2, marginBottom: 14 }}>
         <F label="Reference" req>
           <input
             style={S.inp}

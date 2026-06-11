@@ -268,6 +268,7 @@ export default function CreateCase({ onLogout }) {
       const payload = {
         action: "create_case",
         reference: f.reference,
+        salesPerson: f.salesPerson || "",
         pinCode: f.pinCode,
         customerName: f.customerName,
         email: f.email,

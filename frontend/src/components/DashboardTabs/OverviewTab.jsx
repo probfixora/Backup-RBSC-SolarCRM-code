@@ -127,7 +127,8 @@ const OverviewTab = ({ ctx }) => {
               </div>
             )}
 
-            {/* ── Special Cases section (non-admin: cases assigned to this user) ── */}
+            {/* ── Special Cases section (Disabled for now as per user request) ── */}
+            {/* 
             {!isAdmin &&
               (() => {
                 const specialCases = cases.filter(
@@ -136,149 +137,11 @@ const OverviewTab = ({ ctx }) => {
                 if (specialCases.length === 0) return null;
                 return (
                   <div style={{ marginBottom: "20px" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        marginBottom: "12px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "8px",
-                          height: "8px",
-                          borderRadius: "50%",
-                          background: "#6366f1",
-                          animation: "pulse 2s infinite",
-                        }}
-                      />
-                      <h3
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: 700,
-                          color: "var(--text-1)",
-                        }}
-                      >
-                        Special Cases — Assigned to You
-                      </h3>
-                      <span
-                        style={{
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          background: "#eef2ff",
-                          color: "#4338ca",
-                          padding: "2px 8px",
-                          borderRadius: "20px",
-                          border: "1px solid #c7d2fe",
-                        }}
-                      >
-                        {specialCases.length}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "8px",
-                      }}
-                    >
-                      {specialCases.map((c) => {
-                        const daysAt = c.stage_start_time
-                          ? Math.floor(
-                              (Date.now() - new Date(c.stage_start_time)) /
-                                86400000,
-                            )
-                          : null;
-                        return (
-                          <div
-                            key={c.caseId}
-                            onClick={() => navigate("/cases")}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              padding: "12px 16px",
-                              borderRadius: "10px",
-                              cursor: "pointer",
-                              transition: "all 0.15s",
-                              background: "var(--surface)",
-                              border: "1px solid #c7d2fe",
-                              boxShadow: "0 1px 4px rgba(99,102,241,0.08)",
-                            }}
-                            onMouseEnter={(e) =>
-                              (e.currentTarget.style.borderColor = "#6366f1")
-                            }
-                            onMouseLeave={(e) =>
-                              (e.currentTarget.style.borderColor = "#c7d2fe")
-                            }
-                          >
-                            <div>
-                              <p
-                                style={{
-                                  fontSize: "13px",
-                                  fontWeight: 700,
-                                  color: "var(--text-1)",
-                                }}
-                              >
-                                {c.customerName}
-                              </p>
-                              <p
-                                style={{
-                                  fontSize: "11.5px",
-                                  color: "var(--text-4)",
-                                  marginTop: "2px",
-                                }}
-                              >
-                                {c.currentStage}
-                              </p>
-                            </div>
-                            <div style={{ textAlign: "right" }}>
-                              <span
-                                style={{
-                                  display: "inline-block",
-                                  fontSize: "11px",
-                                  fontWeight: 600,
-                                  padding: "2px 8px",
-                                  borderRadius: "20px",
-                                  background:
-                                    c.status === "Delayed"
-                                      ? "#fff1f2"
-                                      : c.status === "Completed"
-                                        ? "#ecfdf5"
-                                        : "#f0fdf4",
-                                  color:
-                                    c.status === "Delayed"
-                                      ? "#be123c"
-                                      : c.status === "Completed"
-                                        ? "#15803d"
-                                        : "#166534",
-                                  border: `1px solid ${c.status === "Delayed" ? "#fecdd3" : "#bbf7d0"}`,
-                                }}
-                              >
-                                {c.status}
-                              </span>
-                              {daysAt !== null && (
-                                <p
-                                  style={{
-                                    fontSize: "10.5px",
-                                    color: "var(--text-4)",
-                                    marginTop: "3px",
-                                  }}
-                                >
-                                  {daysAt === 0
-                                    ? "Today"
-                                    : `${daysAt}d at stage`}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    // ... section content
                   </div>
                 );
               })()}
+            */}
 
             {/* ── Main 2-column layout ── */}
             {/* LEFT: Hero card + Pipeline Funnel  |  RIGHT: Activity + Workflow status */}

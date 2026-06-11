@@ -117,7 +117,7 @@ export const INIT = {
   totalBatCapacity: 0, totalBatPrice: 0, structureBrand: "", structureSize: "",
   bos: "Complete Set", wire_core_material: "", wire_armouring: "", wireMake: "",
   wireSize: "", earthing: "", installation: "Added", productPrice: "",
-  recheckPrice: "", employeeId: "", employeeName: "", employeeEmail: "",
+  recheckPrice: "", employeeId: "", employeeName: "", employeeEmail: "", salesPerson: "",
 };
 
 // ── Auto-derive product name ──────────────────────────────────────────────────

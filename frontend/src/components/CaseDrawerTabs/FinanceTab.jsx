@@ -146,6 +146,7 @@ const FinanceTab = ({ ctx }) => {
 
   const [quotationAmountEdit, setQuotationAmountEdit] = useState(false);
   const [uploadingDoc, setUploadingDoc] = useState(null);
+  const [newDocName, setNewDocName] = useState("");
 
   const handleFileUpload = async (e, docName) => {
     const file = e.target.files[0];
@@ -618,59 +619,84 @@ const FinanceTab = ({ ctx }) => {
                               <p style={{ fontSize: "11px", fontWeight: 700, color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.05em", margin: 0, marginBottom: "4px" }}>
                                 📎 Required Documents for Loan
                               </p>
-                              {["Aadhar", "PAN", "6 Months Bank Statement", "Electricity Bill"].map((doc) => {
-                                const isUploaded = !!(normalized.documents?.[doc]) || ctx.customerDocs?.some((d) => d.doc_name === doc);
-                                const isUploading = uploadingDoc === doc;
-                                return (
+                              {ctx.customerDocs?.length > 0 ? (
+                                ctx.customerDocs.map((d, idx) => (
                                   <div
-                                    key={doc}
+                                    key={idx}
                                     style={{
                                       display: "flex",
                                       justifyContent: "space-between",
                                       alignItems: "center",
                                       padding: "10px 14px",
-                                      background: isUploaded ? "#f0fdf4" : "#fff",
+                                      background: "#f0fdf4",
                                       borderRadius: "8px",
-                                      border: `1px solid ${isUploaded ? "#a7f3d0" : "#e2e8f0"}`,
-                                      transition: "all 0.2s",
+                                      border: "1px solid #a7f3d0",
                                     }}
                                   >
-                                    <span style={{ fontSize: "13px", fontWeight: 600, color: isUploaded ? "#065f46" : "#374151", display: "flex", alignItems: "center", gap: "6px" }}>
-                                      {isUploaded ? "✅" : "📄"} {doc}
+                                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#065f46", display: "flex", alignItems: "center", gap: "6px" }}>
+                                      ✅ {d.doc_name}
                                     </span>
-                                    {isUploaded ? (
-                                      <span style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>Uploaded</span>
-                                    ) : (
-                                      <label
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "6px",
-                                          padding: "6px 12px",
-                                          background: isUploading ? "#d97706" : "#2563eb",
-                                          color: "#fff",
-                                          borderRadius: "6px",
-                                          fontSize: "12px",
-                                          fontWeight: 600,
-                                          cursor: isUploading ? "not-allowed" : "pointer",
-                                          opacity: isUploading ? 0.8 : 1,
-                                          transition: "all 0.2s",
-                                        }}
-                                      >
-                                        <UploadCloud size={13} />
-                                        {isUploading ? "Uploading..." : "Upload"}
-                                        <input
-                                          type="file"
-                                          accept="image/*,.pdf"
-                                          style={{ display: "none" }}
-                                          onChange={(e) => handleFileUpload(e, doc)}
-                                          disabled={isUploading}
-                                        />
-                                      </label>
-                                    )}
+                                    <span style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>Uploaded</span>
                                   </div>
-                                );
-                              })}
+                                ))
+                              ) : (
+                                <p style={{ fontSize: "12px", color: "var(--text-4)", fontStyle: "italic", margin: 0, padding: "4px 0" }}>No loan documents uploaded yet.</p>
+                              )}
+
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "8px",
+                                  marginTop: "8px",
+                                  alignItems: "center"
+                                }}
+                              >
+                                <input
+                                  type="text"
+                                  placeholder="Enter document name (e.g. Aadhar)"
+                                  value={newDocName}
+                                  onChange={(e) => setNewDocName(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "8px 12px",
+                                    border: "1px solid #bfdbfe",
+                                    borderRadius: "8px",
+                                    fontSize: "13px",
+                                    outline: "none"
+                                  }}
+                                />
+                                <label
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "8px 14px",
+                                    background: uploadingDoc === newDocName ? "#d97706" : (!newDocName ? "#9ca3af" : "#2563eb"),
+                                    color: "#fff",
+                                    borderRadius: "8px",
+                                    fontSize: "13px",
+                                    fontWeight: 600,
+                                    cursor: (!newDocName || uploadingDoc === newDocName) ? "not-allowed" : "pointer",
+                                    opacity: (!newDocName || uploadingDoc === newDocName) ? 0.8 : 1,
+                                    transition: "all 0.2s",
+                                  }}
+                                >
+                                  <UploadCloud size={14} />
+                                  {uploadingDoc === newDocName ? "Uploading..." : "Upload"}
+                                  <input
+                                    type="file"
+                                    accept="image/*,.pdf"
+                                    style={{ display: "none" }}
+                                    onChange={(e) => {
+                                      if (newDocName) {
+                                        handleFileUpload(e, newDocName);
+                                        setNewDocName("");
+                                      }
+                                    }}
+                                    disabled={!newDocName || uploadingDoc === newDocName}
+                                  />
+                                </label>
+                              </div>
                             </div>
                           </div>
                         ) : (
