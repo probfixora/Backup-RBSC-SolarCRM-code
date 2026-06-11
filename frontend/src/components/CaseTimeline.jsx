@@ -187,15 +187,13 @@ const CaseTimeline = ({ history = [], currentStage }) => {
                   height: "30px",
                   borderRadius: "50%",
                   flexShrink: 0,
-                  background: isLast
-                    ? `linear-gradient(135deg, ${cfg.dot}, ${cfg.dot}cc)`
-                    : "#e2e8f0",
+                  background: `linear-gradient(135deg, ${cfg.dot}, ${cfg.dot}cc)`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: "12px",
                   fontWeight: 700,
-                  color: isLast ? "#fff" : "#94a3b8",
+                  color: "#fff",
                   boxShadow: isLast ? `0 0 0 4px ${cfg.border}` : "none",
                   zIndex: 1,
                 }}
@@ -207,11 +205,12 @@ const CaseTimeline = ({ history = [], currentStage }) => {
               <div
                 style={{
                   flex: 1,
-                  background: isLast ? cfg.bg : "#f8fafc",
-                  border: `1px solid ${isLast ? cfg.border : "#e2e8f0"}`,
+                  background: cfg.bg,
+                  border: `1px solid ${cfg.border}`,
                   borderRadius: "10px",
                   padding: "10px 14px",
                   marginTop: "2px",
+                  opacity: isLast ? 1 : 0.85,
                 }}
               >
                 {/* Stage label + action type badge */}
@@ -228,7 +227,7 @@ const CaseTimeline = ({ history = [], currentStage }) => {
                     style={{
                       fontSize: "12.5px",
                       fontWeight: 700,
-                      color: isLast ? cfg.text : "#475569",
+                      color: cfg.text,
                       margin: 0,
                     }}
                   >

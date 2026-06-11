@@ -736,142 +736,57 @@ const FinanceTab = ({ ctx }) => {
                     </div>
                   </form>
 
-                  {/* ── Finance Documents Upload Section ── */}
-                  <div
-                    style={{
-                      marginTop: "24px",
-                      padding: "16px",
-                      background: "#f8fafc",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "12px",
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                      <p style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
-                        Finance Documents
-                      </p>
-                      <label
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          padding: "6px 12px",
-                          background: "#fff",
-                          border: "1px solid #cbd5e1",
-                          borderRadius: "6px",
-                          fontSize: "13px",
-                          fontWeight: 600,
-                          color: "#334155",
-                          cursor: "pointer",
-                          transition: "all 0.2s",
-                        }}
-                        onMouseOver={(e) => (e.currentTarget.style.background = "#f1f5f9")}
-                        onMouseOut={(e) => (e.currentTarget.style.background = "#fff")}
-                      >
-                        <Plus size={14} />
-                        Choose Files
-                        <input
-                          type="file"
-                          multiple
-                          onChange={handleStagedFileSelect}
-                          style={{ display: "none" }}
-                        />
-                      </label>
-                    </div>
-
-                    {/* Staged Files List */}
-                    {stagedFiles.length > 0 && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-                        <p style={{ fontSize: "12px", fontWeight: 600, color: "#64748b", margin: 0 }}>Ready to upload:</p>
-                        {stagedFiles.map((staged) => (
-                          <div
-                            key={staged.id}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              padding: "10px 12px",
-                              background: "#fff",
-                              border: "1px solid #e2e8f0",
-                              borderRadius: "8px",
-                            }}
-                          >
-                            <span style={{ fontSize: "13px", fontWeight: 500, color: "#334155" }}>
-                              {staged.docName}
-                            </span>
-                            <div style={{ display: "flex", gap: "8px" }}>
-                              <label
-                                style={{
-                                  background: "transparent",
-                                  border: "1px solid #e2e8f0",
-                                  padding: "4px 8px",
-                                  borderRadius: "4px",
-                                  fontSize: "12px",
-                                  color: "#3b82f6",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Replace
-                                <input
-                                  type="file"
-                                  onChange={(e) => replaceStagedFile(staged.id, e)}
-                                  style={{ display: "none" }}
-                                />
-                              </label>
-                              <button
-                                type="button"
-                                onClick={() => removeStagedFile(staged.id)}
-                                style={{
-                                  background: "transparent",
-                                  border: "1px solid #e2e8f0",
-                                  padding: "4px 8px",
-                                  borderRadius: "4px",
-                                  fontSize: "12px",
-                                  color: "#ef4444",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={uploadStagedFiles}
-                          disabled={financeDocsUploading}
+                  {/* ── Loan Documents Upload Section ── */}
+                  {fData.paymentType === "Loan" && (
+                    <div
+                      style={{
+                        marginTop: "24px",
+                        padding: "16px",
+                        background: "#f8fafc",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                        <p style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
+                          Loan Required Documents
+                        </p>
+                        <label
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "center",
-                            gap: "8px",
-                            padding: "10px",
-                            background: "#2563eb",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: "8px",
+                            gap: "6px",
+                            padding: "6px 12px",
+                            background: "#fff",
+                            border: "1px solid #cbd5e1",
+                            borderRadius: "6px",
                             fontSize: "13px",
                             fontWeight: 600,
-                            cursor: financeDocsUploading ? "not-allowed" : "pointer",
-                            opacity: financeDocsUploading ? 0.7 : 1,
-                            marginTop: "8px",
+                            color: "#334155",
+                            cursor: "pointer",
+                            transition: "all 0.2s",
                           }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = "#f1f5f9")}
+                          onMouseOut={(e) => (e.currentTarget.style.background = "#fff")}
                         >
-                          <UploadCloud size={16} />
-                          {financeDocsUploading ? "Uploading..." : "Upload Finance Documents"}
-                        </button>
+                          <Plus size={14} />
+                          Choose Files
+                          <input
+                            type="file"
+                            multiple
+                            onChange={handleStagedFileSelect}
+                            style={{ display: "none" }}
+                          />
+                        </label>
                       </div>
-                    )}
 
-                    {/* Already Uploaded Files */}
-                    {financeUploadedDocs.length > 0 ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <p style={{ fontSize: "12px", fontWeight: 600, color: "#64748b", margin: 0, marginTop: stagedFiles.length > 0 ? "8px" : "0" }}>Uploaded Documents:</p>
-                        {financeUploadedDocs.map((doc) => {
-                          const cleanName = doc.doc_name.replace("FINANCE_DOC::", "");
-                          return (
+                      {/* Staged Files List */}
+                      {stagedFiles.length > 0 && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+                          <p style={{ fontSize: "12px", fontWeight: 600, color: "#64748b", margin: 0 }}>Ready to upload:</p>
+                          {stagedFiles.map((staged) => (
                             <div
-                              key={doc.id}
+                              key={staged.id}
                               style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -882,43 +797,130 @@ const FinanceTab = ({ ctx }) => {
                                 borderRadius: "8px",
                               }}
                             >
-                              <a
-                                href={doc.doc_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ fontSize: "13px", fontWeight: 500, color: "#0f172a", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px" }}
-                              >
-                                <FileText size={14} color="#64748b" />
-                                {cleanName}
-                              </a>
-                              <button
-                                type="button"
-                                onClick={() => deleteUploadedFinanceDoc(doc)}
-                                style={{
-                                  background: "transparent",
-                                  border: "none",
-                                  padding: "4px",
-                                  color: "#ef4444",
-                                  cursor: "pointer",
-                                  display: "flex",
-                                  alignItems: "center"
-                                }}
-                                title="Delete Document"
-                              >
-                                <Trash2 size={14} />
-                              </button>
+                              <span style={{ fontSize: "13px", fontWeight: 500, color: "#334155" }}>
+                                {staged.docName}
+                              </span>
+                              <div style={{ display: "flex", gap: "8px" }}>
+                                <label
+                                  style={{
+                                    background: "transparent",
+                                    border: "1px solid #e2e8f0",
+                                    padding: "4px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "12px",
+                                    color: "#3b82f6",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Replace
+                                  <input
+                                    type="file"
+                                    onChange={(e) => replaceStagedFile(staged.id, e)}
+                                    style={{ display: "none" }}
+                                  />
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => removeStagedFile(staged.id)}
+                                  style={{
+                                    background: "transparent",
+                                    border: "1px solid #e2e8f0",
+                                    padding: "4px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "12px",
+                                    color: "#ef4444",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      stagedFiles.length === 0 && (
-                        <p style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic", margin: 0 }}>
-                          No finance documents uploaded yet.
-                        </p>
-                      )
-                    )}
-                  </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={uploadStagedFiles}
+                            disabled={financeDocsUploading}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "8px",
+                              padding: "10px",
+                              background: "#2563eb",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "8px",
+                              fontSize: "13px",
+                              fontWeight: 600,
+                              cursor: financeDocsUploading ? "not-allowed" : "pointer",
+                              opacity: financeDocsUploading ? 0.7 : 1,
+                              marginTop: "8px",
+                            }}
+                          >
+                            <UploadCloud size={16} />
+                            {financeDocsUploading ? "Uploading..." : "Upload Loan Documents"}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Already Uploaded Files */}
+                      {financeUploadedDocs.length > 0 ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          <p style={{ fontSize: "12px", fontWeight: 600, color: "#64748b", margin: 0, marginTop: stagedFiles.length > 0 ? "8px" : "0" }}>Uploaded Documents:</p>
+                          {financeUploadedDocs.map((doc) => {
+                            const cleanName = doc.doc_name.replace("FINANCE_DOC::", "");
+                            return (
+                              <div
+                                key={doc.id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  padding: "10px 12px",
+                                  background: "#fff",
+                                  border: "1px solid #e2e8f0",
+                                  borderRadius: "8px",
+                                }}
+                              >
+                                <a
+                                  href={doc.doc_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ fontSize: "13px", fontWeight: 500, color: "#0f172a", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px" }}
+                                >
+                                  <FileText size={14} color="#64748b" />
+                                  {cleanName}
+                                </a>
+                                <button
+                                  type="button"
+                                  onClick={() => deleteUploadedFinanceDoc(doc)}
+                                  style={{
+                                    background: "transparent",
+                                    border: "none",
+                                    padding: "4px",
+                                    color: "#ef4444",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center"
+                                  }}
+                                  title="Delete Document"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        stagedFiles.length === 0 && (
+                          <p style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic", margin: 0 }}>
+                            No loan documents uploaded yet.
+                          </p>
+                        )
+                      )}
+                    </div>
+                  )}
 
 
                   {/* Payment History Tracker (B.10) */}

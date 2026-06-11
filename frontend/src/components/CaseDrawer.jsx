@@ -668,7 +668,6 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         unmark,
       });
       toast.success(unmark ? "Delay removed." : "Case marked delayed.");
-      onClose();
       onRefresh();
     } catch (err) {
       toast.error(err.message || "Failed.");
@@ -702,7 +701,6 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         ...subsidyData,
       });
       toast.success("Subsidy details updated!");
-      onClose();
       onRefresh();
     } catch (err) {
       toast.error(err.message || "Update failed.");
@@ -757,7 +755,6 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       await edgeFetch(EDGE.workflow, detailsPayload);
       toast.success("Finance details updated!");
       setFinanceEditMode(false);
-      onClose();
       onRefresh();
     } catch (err) {
       toast.error(err.message || "Update failed.");
@@ -894,7 +891,6 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       });
       toast.success("Payment received and verified!");
       setAccountsEditMode(false);
-      onClose();
       onRefresh();
     } catch (err) {
       toast.error(err.message || "Update failed.");
@@ -955,7 +951,6 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         });
       }
 
-      onClose();
       onRefresh();
     } catch (err) {
       toast.error(err.message || "Dispatch failed.");
@@ -1307,7 +1302,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         }
       `}} />
       <div
-        style={{ width: "100%", maxWidth: "800px", maxHeight: "92vh", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
+        style={{ width: "100%", maxWidth: "1100px", maxHeight: "92vh", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
       >
         <div style={{ backgroundColor: "#0f172a", padding: "16px 24px", color: "#ffffff", display: "flex", flexDirection: "column", gap: "12px", position: "relative", flexShrink: 0 }}>
           
