@@ -2,6 +2,9 @@
 // Handles ALL case operations — replaces Express caseController.js + caseRoutes.js
 // Deploy: supabase functions deploy workflow
 
+declare const Deno: any;
+declare const EdgeRuntime: any;
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logoBase64 } from "../quotation/logoBase64.ts";
@@ -244,7 +247,7 @@ function maskCaseDataForRole(role: string, caseRow: any): any {
 }
 
 // ─── Main server ──────────────────────────────────────────────────────────────
-serve(async (req) => {
+serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -860,7 +863,7 @@ serve(async (req) => {
               // 1. Panels
               if (specs.panelCount) {
                 const panel = invItems.find(
-                  (i) => i.category?.toLowerCase() === "solar panel",
+                  (i: any) => i.category?.toLowerCase() === "solar panel",
                 );
                 if (panel)
                   itemsToDeduct.push({
@@ -872,13 +875,13 @@ serve(async (req) => {
               if (specs.inverterBrand) {
                 const inv =
                   invItems.find(
-                    (i) =>
+                    (i: any) =>
                       i.category?.toLowerCase() === "inverter" &&
                       i.brand?.toLowerCase() ===
                         specs.inverterBrand?.toLowerCase(),
                   ) ||
                   invItems.find(
-                    (i) => i.category?.toLowerCase() === "inverter",
+                    (i: any) => i.category?.toLowerCase() === "inverter",
                   );
                 if (inv) itemsToDeduct.push({ item: inv, qty: 1 }); // usually 1 inverter
               }
@@ -886,12 +889,12 @@ serve(async (req) => {
               if (specs.batteryBrand && specs.batteryCount) {
                 const bat =
                   invItems.find(
-                    (i) =>
+                    (i: any) =>
                       i.category?.toLowerCase() === "battery" &&
                       i.brand?.toLowerCase() ===
                         specs.batteryBrand?.toLowerCase(),
                   ) ||
-                  invItems.find((i) => i.category?.toLowerCase() === "battery");
+                  invItems.find((i: any) => i.category?.toLowerCase() === "battery");
                 if (bat)
                   itemsToDeduct.push({
                     item: bat,
@@ -948,6 +951,9 @@ serve(async (req) => {
       // ── PHONE VERIFICATION DONE: Send Tracking ID email (with duplicate guard) ──
       if (finalStage === "Phone Verification Done") {
         const sendTrackingIdEmail = async (): Promise<void> => {
+          const customerEmail = caseObj.email || "";
+          const trackingId = caseObj.tracking_id || caseObj.id;
+          
           try {
             // Duplicate prevention: check if tracking_id_sent was already fired
             const { data: existingTrigger } = await supabase
@@ -966,14 +972,12 @@ serve(async (req) => {
 
             const brevoApiKey = Deno.env.get("BREVO_API_KEY");
             const senderEmail = Deno.env.get("GMAIL_EMAIL");
-            const customerEmail = caseObj.email || "";
             const companyName = Deno.env.get("COMPANY_NAME") || "RBSC Solar";
             const companyEmail =
               Deno.env.get("COMPANY_EMAIL") || "info@rbscsolar.com";
             const companyWebsite =
               Deno.env.get("COMPANY_WEBSITE") || "www.rbscsolar.com";
 
-            const trackingId = caseObj.tracking_id || caseObj.id;
             const customerName = caseObj.customer_name || "Customer";
             const trackingUrl = `https://rbscsolarcrm.probfixora.co.in/track?id=${encodeURIComponent(trackingId)}`;
 
