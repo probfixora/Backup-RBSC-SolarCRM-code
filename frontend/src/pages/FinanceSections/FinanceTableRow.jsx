@@ -14,7 +14,7 @@ export default function FinanceTableRow({ caseObj, onSave, mobileMode }) {
     paymentMode: caseObj.payment_mode || "",
     loanAmount: caseObj.loan_amount || "",
     bankName: caseObj.bank_name || "",
-    financeFormStatus: caseObj.finance_form_status || "Form Submitted to Bank",
+    financeFormStatus: caseObj.finance_form_status || (caseObj.loan_amount && Number(caseObj.loan_amount) > 0 ? "Form Submitted to Bank" : "Pending"),
     financeFinalStatus: caseObj.finance_final_status || "Pending",
     financeNotes: caseObj.finance_notes || "",
   });
@@ -174,7 +174,7 @@ export default function FinanceTableRow({ caseObj, onSave, mobileMode }) {
 
         {showExpanded && payType === "loan" && (
           <div style={{ background: "#f0f7ff", padding: "16px", borderRadius: "8px", border: "1px solid #bfdbfe", marginTop: "4px" }}>
-            <LoanStageTracker currentStatus={formData.financeFormStatus} caseId={caseObj.id || caseObj.case_id} onSave={() => { setShowExpanded(false); onSave(); }} />
+            <LoanStageTracker currentStatus={formData.financeFormStatus} caseId={caseObj.id || caseObj.case_id} loanAmount={formData.loanAmount} onSave={() => { setShowExpanded(false); onSave(); }} />
           </div>
         )}
         {showExpanded && payType !== "loan" && (
@@ -276,7 +276,7 @@ export default function FinanceTableRow({ caseObj, onSave, mobileMode }) {
       {showExpanded && payType === "loan" && (
         <tr style={{ background: "#f0f7ff" }}>
           <td colSpan={5} style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)" }}>
-            <LoanStageTracker currentStatus={formData.financeFormStatus} caseId={caseObj.id || caseObj.case_id} onSave={() => { setShowExpanded(false); onSave(); }} />
+            <LoanStageTracker currentStatus={formData.financeFormStatus} caseId={caseObj.id || caseObj.case_id} loanAmount={formData.loanAmount} onSave={() => { setShowExpanded(false); onSave(); }} />
           </td>
         </tr>
       )}

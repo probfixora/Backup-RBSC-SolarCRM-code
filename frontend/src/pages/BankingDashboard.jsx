@@ -70,11 +70,15 @@ const LOAN_STAGES = [
   "Loan Approved",
 ];
 
-const LoanStageTracker = ({ currentStatus, caseId, onSave }) => {
+const LoanStageTracker = ({ currentStatus, caseId, onSave, loanAmount }) => {
   const [saving, setSaving] = useState(false);
   const currentIdx = LOAN_STAGES.indexOf(currentStatus);
 
   const handleAdvance = async (stage) => {
+    if (stage === "Loan Approved" && (!loanAmount || Number(loanAmount) <= 0)) {
+      toast.error("Please enter and save the Loan Amount before approving.");
+      return;
+    }
     setSaving(true);
     try {
       await edgeFetch(EDGE.workflow, {
@@ -251,7 +255,7 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
     paymentMode: caseObj.payment_mode || "",
     loanAmount: caseObj.loan_amount || "",
     bankName: caseObj.bank_name || "",
-    financeFormStatus: caseObj.finance_form_status || "Form Submitted to Bank",
+    financeFormStatus: caseObj.finance_form_status || (caseObj.loan_amount && Number(caseObj.loan_amount) > 0 ? "Form Submitted to Bank" : "Pending"),
     financeFinalStatus: caseObj.finance_final_status || "Pending",
     financeNotes: caseObj.finance_notes || "",
   });
@@ -647,10 +651,6 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
               <Clock size={14} />{" "}
               {showExpanded ? "Hide" : "Loan Stages"}
             </button>
-          </div>
-        </td>
-      </tr>
-
       {/* Loan Stage Tracker Row */}
       {showExpanded && (
         <tr style={{ background: "#f0f7ff" }}>
@@ -664,6 +664,7 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
             <LoanStageTracker
               currentStatus={formData.financeFormStatus}
               caseId={caseObj.id || caseObj.case_id}
+              loanAmount={formData.loanAmount}
               onSave={() => {
                 setShowExpanded(false);
                 onSave();

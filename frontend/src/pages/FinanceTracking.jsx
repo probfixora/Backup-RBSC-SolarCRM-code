@@ -87,7 +87,7 @@ const FinanceTracking = ({ onLogout }) => {
         />
 
         {/* ── Type Switcher (Loan vs Cash) ── */}
-        <div style={{ display: "flex", gap: "10px", marginTop: "10px", marginBottom: "20px" }}>
+        <div style={{ display: "flex", gap: "10px", marginTop: "10px", marginBottom: "20px", display: "none" }}>
           <button
             onClick={() => setActiveFinanceType("loan")}
             style={{
@@ -102,21 +102,6 @@ const FinanceTracking = ({ onLogout }) => {
             }}
           >
             <Building2 size={16} style={{ display: "inline", verticalAlign: "text-bottom", marginRight: "6px" }} /> Loan Cases
-          </button>
-          <button
-            onClick={() => setActiveFinanceType("cash")}
-            style={{
-              padding: "8px 24px",
-              borderRadius: "8px",
-              background: activeFinanceType === "cash" ? "#16a34a" : "#fff",
-              color: activeFinanceType === "cash" ? "#fff" : "#475569",
-              border: "1px solid #bbf7d0",
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "all 0.15s",
-            }}
-          >
-            <Banknote size={16} style={{ display: "inline", verticalAlign: "text-bottom", marginRight: "6px" }} /> Cash Cases
           </button>
         </div>
 

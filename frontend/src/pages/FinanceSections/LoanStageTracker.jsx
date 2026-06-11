@@ -4,11 +4,15 @@ import { ChevronRight, CheckCircle2 } from "lucide-react";
 import { edgeFetch, EDGE } from "../../lib/supabaseClient";
 import { LOAN_STAGES } from "./financeConstants";
 
-export default function LoanStageTracker({ currentStatus, caseId, onSave }) {
+export default function LoanStageTracker({ currentStatus, caseId, onSave, loanAmount }) {
   const [saving, setSaving] = useState(false);
   const currentIdx = LOAN_STAGES.indexOf(currentStatus);
 
   const handleAdvance = async (stage) => {
+    if (stage === "Loan Approved" && (!loanAmount || Number(loanAmount) <= 0)) {
+      toast.error("Please enter and save the Loan Amount before approving.");
+      return;
+    }
     setSaving(true);
     try {
       await edgeFetch(EDGE.workflow, {
