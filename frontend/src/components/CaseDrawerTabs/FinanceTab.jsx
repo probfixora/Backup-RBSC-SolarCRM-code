@@ -145,57 +145,106 @@ const FinanceTab = ({ ctx }) => {
   } = ctx;
 
   const [quotationAmountEdit, setQuotationAmountEdit] = useState(false);
-  const [uploadingDoc, setUploadingDoc] = useState(null);
-  const [newDocName, setNewDocName] = useState("");
+  const [stagedFiles, setStagedFiles] = useState([]);
+  const [financeDocsUploading, setFinanceDocsUploading] = useState(false);
 
-  const handleFileUpload = async (e, docName) => {
+  const handleStagedFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    
+    const newStaged = files.map(file => ({
+      id: Date.now() + Math.random(),
+      file,
+      docName: file.name
+    }));
+    
+    setStagedFiles(prev => [...prev, ...newStaged]);
+    e.target.value = null;
+  };
+
+  const removeStagedFile = (id) => {
+    setStagedFiles(prev => prev.filter(f => f.id !== id));
+  };
+
+  const replaceStagedFile = (id, e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setUploadingDoc(docName);
-    try {
-      const ext = file.name.split(".").pop();
-      const safeDocName = docName.replace(/[^a-zA-Z0-9]/g, "_");
-      const fileName = `${normalized.trackingId || Date.now()}_${safeDocName}_${Date.now()}.${ext}`;
-      const filePath = `${normalized.trackingId || "docs"}/${fileName}`;
-      const { error } = await supabase.storage.from("documents").upload(filePath, file);
+    setStagedFiles(prev => prev.map(f => f.id === id ? { ...f, file, docName: file.name } : f));
+    e.target.value = null;
+  };
 
-      if (error && error.message?.includes("Bucket not found")) {
-        const retry = await supabase.storage.from("Documents").upload(filePath, file);
-        if (retry.error) throw retry.error;
-      } else if (error) {
-        throw error;
+  const uploadStagedFiles = async () => {
+    if (stagedFiles.length === 0) return;
+    setFinanceDocsUploading(true);
+    let successCount = 0;
+    
+    for (const staged of stagedFiles) {
+      try {
+        const file = staged.file;
+        const ext = file.name.split(".").pop();
+        const safeDocName = staged.docName.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+        const fileName = `${normalized.trackingId || Date.now()}_FINANCE_${safeDocName}_${Date.now()}.${ext}`;
+        const filePath = `${normalized.trackingId || "docs"}/${fileName}`;
+        
+        const { error } = await supabase.storage.from("documents").upload(filePath, file);
+        if (error && error.message?.includes("Bucket not found")) {
+          const retry = await supabase.storage.from("Documents").upload(filePath, file);
+          if (retry.error) throw retry.error;
+        } else if (error) {
+          throw error;
+        }
+
+        let finalUrl = null;
+        const { data: publicData } = supabase.storage.from("documents").getPublicUrl(filePath);
+        if (publicData?.publicUrl) finalUrl = publicData.publicUrl;
+        else {
+          const retryUrl = supabase.storage.from("Documents").getPublicUrl(filePath);
+          if (retryUrl.data?.publicUrl) finalUrl = retryUrl.data.publicUrl;
+        }
+
+        if (!finalUrl) throw new Error("Could not get public URL");
+
+        // Prefix with FINANCE_DOC:: to logically isolate it
+        const newDoc = {
+          case_id: caseId,
+          doc_name: `FINANCE_DOC::${staged.docName}`,
+          doc_url: finalUrl,
+        };
+        const { data: inserted, error: dbError } = await supabase.from("customer_uploaded_docs").insert([newDoc]).select();
+        if (dbError) throw dbError;
+
+        if (ctx.setCustomerDocs && inserted && inserted.length > 0) {
+          ctx.setCustomerDocs((prev) => [...(prev || []), inserted[0]]);
+        }
+        successCount++;
+      } catch (err) {
+        toast.error(`Error uploading ${staged.docName}: ${err.message}`);
       }
-
-      let finalUrl = null;
-      const { data: publicData } = supabase.storage.from("documents").getPublicUrl(filePath);
-      if (publicData?.publicUrl) finalUrl = publicData.publicUrl;
-      else {
-        const retryUrl = supabase.storage.from("Documents").getPublicUrl(filePath);
-        if (retryUrl.data?.publicUrl) finalUrl = retryUrl.data.publicUrl;
-      }
-
-      if (!finalUrl) throw new Error("Could not get public URL");
-
-      const newDoc = {
-        case_id: caseId,
-        doc_name: docName,
-        doc_url: finalUrl,
-      };
-      const { error: dbError } = await supabase.from("customer_uploaded_docs").insert([newDoc]);
-      if (dbError) throw dbError;
-
-      toast.success(`${docName} uploaded successfully`);
-      
-      // Update local state without triggering a full case refresh so the user doesn't lose their unsaved form state
-      if (ctx.setCustomerDocs) {
-        ctx.setCustomerDocs((prev) => [...(prev || []), newDoc]);
-      }
-    } catch (err) {
-      toast.error(`Error uploading ${docName}: ${err.message}`);
-    } finally {
-      setUploadingDoc(null);
+    }
+    
+    setFinanceDocsUploading(false);
+    if (successCount > 0) {
+      toast.success(`${successCount} finance document(s) uploaded successfully`);
+      setStagedFiles([]);
     }
   };
+
+  const deleteUploadedFinanceDoc = async (doc) => {
+    const cleanName = doc.doc_name.replace("FINANCE_DOC::", "");
+    if (!window.confirm(`Are you sure you want to delete ${cleanName}?`)) return;
+    try {
+      const { error } = await supabase.from("customer_uploaded_docs").delete().eq("id", doc.id);
+      if (error) throw error;
+      toast.success("Document deleted");
+      if (ctx.setCustomerDocs) {
+        ctx.setCustomerDocs(prev => prev.filter(d => d.id !== doc.id));
+      }
+    } catch (err) {
+      toast.error(`Failed to delete document: ${err.message}`);
+    }
+  };
+  
+  const financeUploadedDocs = (ctx.customerDocs || []).filter(d => d.doc_name?.startsWith("FINANCE_DOC::"));
 
   return (
     <div>
@@ -599,106 +648,11 @@ const FinanceTab = ({ ctx }) => {
                               <span style={{ fontSize: "20px", lineHeight: 1 }}>🏦</span>
                               <div>
                                 <p style={{ fontSize: "13px", color: "#78350f", fontWeight: 700, margin: 0, marginBottom: "4px" }}>
-                                  Loan Selected — Documents Required
+                                  Loan Selected
                                 </p>
                                 <p style={{ fontSize: "12px", color: "#92400e", margin: 0, lineHeight: 1.5 }}>
-                                  Please upload the required documents below. Once done, move the case to <strong>"Bank &amp; Finance"</strong> stage from the Update tab. These documents will be sent directly to the Banking Department.
+                                  Please upload the required finance documents in the section below. Once done, move the case to <strong>"Bank &amp; Finance"</strong> stage from the Update tab.
                                 </p>
-                              </div>
-                            </div>
-
-                            {/* Document Upload List */}
-                            <div
-                              style={{
-                                background: "#eff6ff",
-                                border: "1px solid #bfdbfe",
-                                borderRadius: "10px",
-                                padding: "14px",
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "8px",
-                              }}
-                            >
-                              <p style={{ fontSize: "11px", fontWeight: 700, color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.05em", margin: 0, marginBottom: "4px" }}>
-                                📎 Required Documents for Loan
-                              </p>
-                              {ctx.customerDocs?.length > 0 ? (
-                                ctx.customerDocs.map((d, idx) => (
-                                  <div
-                                    key={idx}
-                                    style={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                      alignItems: "center",
-                                      padding: "10px 14px",
-                                      background: "#f0fdf4",
-                                      borderRadius: "8px",
-                                      border: "1px solid #a7f3d0",
-                                    }}
-                                  >
-                                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#065f46", display: "flex", alignItems: "center", gap: "6px" }}>
-                                      ✅ {d.doc_name}
-                                    </span>
-                                    <span style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>Uploaded</span>
-                                  </div>
-                                ))
-                              ) : (
-                                <p style={{ fontSize: "12px", color: "var(--text-4)", fontStyle: "italic", margin: 0, padding: "4px 0" }}>No loan documents uploaded yet.</p>
-                              )}
-
-                              <div
-                                style={{
-                                  display: "flex",
-                                  gap: "8px",
-                                  marginTop: "8px",
-                                  alignItems: "center"
-                                }}
-                              >
-                                <input
-                                  type="text"
-                                  placeholder="Enter document name (e.g. Aadhar)"
-                                  value={newDocName}
-                                  onChange={(e) => setNewDocName(e.target.value)}
-                                  style={{
-                                    flex: 1,
-                                    padding: "8px 12px",
-                                    border: "1px solid #bfdbfe",
-                                    borderRadius: "8px",
-                                    fontSize: "13px",
-                                    outline: "none"
-                                  }}
-                                />
-                                <label
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    padding: "8px 14px",
-                                    background: uploadingDoc === newDocName ? "#d97706" : (!newDocName ? "#9ca3af" : "#2563eb"),
-                                    color: "#fff",
-                                    borderRadius: "8px",
-                                    fontSize: "13px",
-                                    fontWeight: 600,
-                                    cursor: (!newDocName || uploadingDoc === newDocName) ? "not-allowed" : "pointer",
-                                    opacity: (!newDocName || uploadingDoc === newDocName) ? 0.8 : 1,
-                                    transition: "all 0.2s",
-                                  }}
-                                >
-                                  <UploadCloud size={14} />
-                                  {uploadingDoc === newDocName ? "Uploading..." : "Upload"}
-                                  <input
-                                    type="file"
-                                    accept="image/*,.pdf"
-                                    style={{ display: "none" }}
-                                    onChange={(e) => {
-                                      if (newDocName) {
-                                        handleFileUpload(e, newDocName);
-                                        setNewDocName("");
-                                      }
-                                    }}
-                                    disabled={!newDocName || uploadingDoc === newDocName}
-                                  />
-                                </label>
                               </div>
                             </div>
                           </div>
@@ -779,6 +733,191 @@ const FinanceTab = ({ ctx }) => {
                       </button>
                     </div>
                   </form>
+
+                  {/* ── Finance Documents Upload Section ── */}
+                  <div
+                    style={{
+                      marginTop: "24px",
+                      padding: "16px",
+                      background: "#f8fafc",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                      <p style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
+                        Finance Documents
+                      </p>
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "6px 12px",
+                          background: "#fff",
+                          border: "1px solid #cbd5e1",
+                          borderRadius: "6px",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          color: "#334155",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                        }}
+                        onMouseOver={(e) => (e.currentTarget.style.background = "#f1f5f9")}
+                        onMouseOut={(e) => (e.currentTarget.style.background = "#fff")}
+                      >
+                        <Plus size={14} />
+                        Choose Files
+                        <input
+                          type="file"
+                          multiple
+                          onChange={handleStagedFileSelect}
+                          style={{ display: "none" }}
+                        />
+                      </label>
+                    </div>
+
+                    {/* Staged Files List */}
+                    {stagedFiles.length > 0 && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+                        <p style={{ fontSize: "12px", fontWeight: 600, color: "#64748b", margin: 0 }}>Ready to upload:</p>
+                        {stagedFiles.map((staged) => (
+                          <div
+                            key={staged.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              padding: "10px 12px",
+                              background: "#fff",
+                              border: "1px solid #e2e8f0",
+                              borderRadius: "8px",
+                            }}
+                          >
+                            <span style={{ fontSize: "13px", fontWeight: 500, color: "#334155" }}>
+                              {staged.docName}
+                            </span>
+                            <div style={{ display: "flex", gap: "8px" }}>
+                              <label
+                                style={{
+                                  background: "transparent",
+                                  border: "1px solid #e2e8f0",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  fontSize: "12px",
+                                  color: "#3b82f6",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Replace
+                                <input
+                                  type="file"
+                                  onChange={(e) => replaceStagedFile(staged.id, e)}
+                                  style={{ display: "none" }}
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => removeStagedFile(staged.id)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px solid #e2e8f0",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  fontSize: "12px",
+                                  color: "#ef4444",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={uploadStagedFiles}
+                          disabled={financeDocsUploading}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "8px",
+                            padding: "10px",
+                            background: "#2563eb",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "8px",
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            cursor: financeDocsUploading ? "not-allowed" : "pointer",
+                            opacity: financeDocsUploading ? 0.7 : 1,
+                            marginTop: "8px",
+                          }}
+                        >
+                          <UploadCloud size={16} />
+                          {financeDocsUploading ? "Uploading..." : "Upload Finance Documents"}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Already Uploaded Files */}
+                    {financeUploadedDocs.length > 0 ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <p style={{ fontSize: "12px", fontWeight: 600, color: "#64748b", margin: 0, marginTop: stagedFiles.length > 0 ? "8px" : "0" }}>Uploaded Documents:</p>
+                        {financeUploadedDocs.map((doc) => {
+                          const cleanName = doc.doc_name.replace("FINANCE_DOC::", "");
+                          return (
+                            <div
+                              key={doc.id}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                padding: "10px 12px",
+                                background: "#fff",
+                                border: "1px solid #e2e8f0",
+                                borderRadius: "8px",
+                              }}
+                            >
+                              <a
+                                href={doc.doc_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ fontSize: "13px", fontWeight: 500, color: "#0f172a", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px" }}
+                              >
+                                <FileText size={14} color="#64748b" />
+                                {cleanName}
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => deleteUploadedFinanceDoc(doc)}
+                                style={{
+                                  background: "transparent",
+                                  border: "none",
+                                  padding: "4px",
+                                  color: "#ef4444",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center"
+                                }}
+                                title="Delete Document"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      stagedFiles.length === 0 && (
+                        <p style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic", margin: 0 }}>
+                          No finance documents uploaded yet.
+                        </p>
+                      )
+                    )}
+                  </div>
+
 
                   {/* Payment History Tracker (B.10) */}
                   {role !== "registration" && (

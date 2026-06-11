@@ -177,6 +177,7 @@ const DocsTab = ({ ctx }) => {
                 });
                 const docs = Object.entries(allDocsObj);
                 const visibleDocs = docs.filter(([docName]) => {
+                  if (docName.startsWith("FINANCE_DOC::")) return false;
                   if (role === "admin" || role === "registration") return true;
                   const name = docName.toLowerCase();
                   if (role === "banking")
