@@ -369,7 +369,8 @@ const WorkOrderTab = ({ ctx }) => {
                     >
                       Installation Details
                     </p>
-                    {role === "installation" && !editDetailsMode && (
+                    {/* Add an edit button if user is installation dept or admin */}
+                    {(role === "field_installation" || role === "admin") && !editDetailsMode && (
                       <button className="no-print" onClick={() => setEditDetailsMode(true)} style={{ background: "none", border: "none", color: "#16a34a", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 600 }}>
                         <Edit2 size={12} /> Edit Details
                       </button>
