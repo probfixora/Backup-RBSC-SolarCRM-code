@@ -599,21 +599,22 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     stageIdx >= 0 ? Math.round(((stageIdx + 1) / STAGES.length) * 100) : 0;
   const caseId = caseData?.id || caseData?.case_id || caseData?.caseId;
 
-  const isRegStage =
-    normalized.currentStage === "Registration Done" ||
-    normalized.currentStage === "Phone Verification Done";
+  const isRegStage = normalized.currentStage === "Registration Done";
+  const isPhoneVerificationStage = normalized.currentStage === "Phone Verification Done";
+
   const docs = normalized.documents || {};
   const unverifiedDocs = Object.keys(docs).filter(
     (d) => (docStatuses[d] || "Yellow") !== "Green",
   );
   const hasDocError = isRegStage && unverifiedDocs.length > 0;
+  
   // Quotation must be verified before proceeding from registration stages
-  const hasQuotationError = isRegStage && !normalized.quotationVerified;
+  const hasQuotationError = (isRegStage || isPhoneVerificationStage) && !normalized.quotationVerified;
 
   const isBankingStage = normalized.currentStage === "Bank & Finance";
   const pType = (normalized.paymentType || "").toLowerCase();
   
-  const hasRegFinanceError = false; // Removed per user request
+  const hasPaymentModeError = isPhoneVerificationStage && (!normalized.paymentType || !normalized.paymentMode || normalized.paymentMode.trim() === "");
 
   const isFinanceApproved =
     pType === "loan"
@@ -635,12 +636,22 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     }
 
     // ── Client-side Gates ────────────────────────────────────────────────
-    if (hasDocError) return;
+    if (hasDocError) {
+      toast.error("Please ensure all documents are verified before proceeding.");
+      return;
+    }
     if (hasQuotationError) {
       toast.error("Please verify the quotation amount before proceeding.");
       return;
     }
-    if (hasFinanceError || hasRegFinanceError) return;
+    if (hasPaymentModeError) {
+      toast.error("Please select both Payment Type (Cash/Loan) and Payment Mode before proceeding.");
+      return;
+    }
+    if (hasFinanceError) {
+      toast.error("Please ensure loan is approved or payment details are complete before proceeding.");
+      return;
+    }
     // ─────────────────────────────────────────────────────────────────────
 
     setUpdateLoading(true);

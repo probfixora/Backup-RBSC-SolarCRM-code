@@ -102,9 +102,9 @@ const MyTasks = ({ onLogout }) => {
       // Registration: backend already filtered by created_by — show all returned
       // Others: filter to only their active stage cases
       const myCases =
-        userRole === "registration" || userRole === "admin"
+        userRole === "admin"
           ? allMapped
-          : allMapped.filter((c) => myStages.includes(c.currentStage));
+          : allMapped.filter((c) => myStages.includes(c.currentStage) && (c.assignedTo === userName || c.assigned_to === userName));
 
       setCases(
         myCases.sort(
