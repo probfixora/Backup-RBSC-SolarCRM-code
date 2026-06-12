@@ -135,6 +135,7 @@ const INIT = {
   wireMake: "",
   wireSize: "",
   earthing: "",
+  earthCable: "",
   installation: "Added",
   productPrice: "",
   recheckPrice: "",
@@ -655,6 +656,7 @@ export default function QuotationForm() {
           wireCoreM: `${f.wireMake || ""} ${f.wire_core_material || ""} ${f.wireSize || ""}`.trim(),
           wireArmouring: f.wire_armouring,
           earthing: f.earthing ? String(f.earthing) : "",
+          earthCable: f.earthCable ? String(f.earthCable) : "",
         installation: f.installation,
         employeeId: f.employeeId,
         employeeName: f.employeeName,
@@ -1167,6 +1169,16 @@ export default function QuotationForm() {
                 value={f.earthing}
                 onChange={(e) => set("earthing", Number(e.target.value))}
                 placeholder="e.g. 2"
+              />
+            </F>
+            <F label="Earth Cable (sq mm)">
+              <ManualTypeDropdown
+                options={WIRE_SIZES}
+                value={f.earthCable}
+                onChange={(v) => set("earthCable", v)}
+                placeholder="Select Size"
+                customLabel="Custom Size"
+                style={S.sel}
               />
             </F>
             <F label="Installation & Net Metering">

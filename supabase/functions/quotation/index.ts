@@ -232,6 +232,14 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       </tr>
       <tr>
         <td>${q.battery_brand ? 7 : 6}</td>
+        <td style="text-align:left;">Earth Cable</td>
+        <td>${q.earth_cable ? q.earth_cable + ' sq mm' : "--"}</td>
+        <td>--</td>
+        <td>--</td>
+        <td>Included</td>
+      </tr>
+      <tr>
+        <td>${q.battery_brand ? 8 : 7}</td>
         <td style="text-align:left;">Installation and Net Metering</td>
         <td>${q.installation && q.installation !== "Included" ? q.installation : "--"}</td>
         <td>--</td>
@@ -239,7 +247,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
         <td>Included</td>
       </tr>
       <tr>
-        <td>${q.battery_brand ? 8 : 7}</td>
+        <td>${q.battery_brand ? 9 : 8}</td>
         <td style="text-align:left;">BOS (Balance of System)</td>
         <td>${q.bos || "Complete Set"}</td>
         <td>Set 1</td>
@@ -780,6 +788,7 @@ serve(async (req: any) => {
             ...quotation,
             wiring: body.wiring,
             earthing: body.earthing,
+            earth_cable: body.earthCable,
             installation: body.installation,
             bos: body.bos,
           };
