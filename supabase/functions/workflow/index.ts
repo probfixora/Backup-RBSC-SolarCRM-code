@@ -1424,6 +1424,27 @@ serve(async (req: Request) => {
       return jsonResponse(updated);
     }
 
+    // ── DELETE FINANCE DOC ──────────────────────────────────────────────────
+    if (action === "delete_finance_doc") {
+      if (!body.docUrl) return jsonResponse({ message: "Missing docUrl" }, 400);
+      
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from("customer_uploaded_docs")
+        .delete()
+        .eq("doc_url", body.docUrl);
+      if (dbError) throw dbError;
+
+      // Delete from storage
+      const urlParts = body.docUrl.split("/documents/");
+      if (urlParts.length > 1) {
+        const filePath = urlParts[1];
+        await supabase.storage.from("documents").remove([filePath]);
+      }
+
+      return jsonResponse({ ok: true });
+    }
+
     // ── ADD PAYMENT ENTRY ──────────────────────────────────────────────────────
     if (action === "add_payment") {
       if (!["admin", "accounts", "banking"].includes(user.role)) {
