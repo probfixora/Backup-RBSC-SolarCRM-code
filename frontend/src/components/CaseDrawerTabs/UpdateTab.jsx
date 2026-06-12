@@ -1151,6 +1151,7 @@ const UpdateTab = ({ ctx }) => {
                             </button>
                           </div>
                         ) : (
+                          <>
                             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                               <button
                                 type="button"
