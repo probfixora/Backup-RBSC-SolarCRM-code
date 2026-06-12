@@ -187,7 +187,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       <tr>
         <td>2</td>
         <td style="text-align:left;">GTI Inverter: ${q.inverter_brand}</td>
-        <td>${String(q.inverter_kw || "").replace(/kw/gi, "").trim()} kW</td>
+        <td>${String(q.inverter_kw || "").replace(/kw/gi, "").trim()}kW</td>
         <td>1</td>
         <td>${q.inverter_warranty || "8 Years"}</td>
         <td>Included</td>
@@ -233,7 +233,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       <tr>
         <td>${q.battery_brand ? 7 : 6}</td>
         <td style="text-align:left;">Earth Cable</td>
-        <td>${q.earth_cable ? q.earth_cable + ' sq mm' : "--"}</td>
+        <td>${q.earth_cable ? String(q.earth_cable).replace(/sq\s*mm/gi, "").trim() + ' sq mm' : "--"}</td>
         <td>--</td>
         <td>--</td>
         <td>Included</td>
@@ -293,9 +293,9 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     </div>
   </div>
 
-  <div style="margin-top: 8px; font-size: 10px; font-weight: bold; color: #dc2626; text-align: justify; line-height: 1.4; padding: 6px; border: 1.5px solid #dc2626; border-radius: 4px; background-color: #fef2f2;">
-    <p style="margin: 0 0 4px 0;">DISCLAIMER: If the solar panel structure is installed at a height exceeding 7 feet, the company's warranty will be considered void. Any subsequent damage, structural failure, or operational issues will be the sole responsibility of the buyer/customer, and the company shall not be held liable.</p>
-    <p style="margin: 0;">डिस्क्लेमर: यदि सोलर पैनल स्ट्रक्चर 7 फीट से अधिक ऊँचाई पर लगाया जाता है, तो कंपनी की वारंटी समाप्त मानी जाएगी। भविष्य में होने वाले किसी भी नुकसान, स्ट्रक्चरल टूट-फूट या अन्य किसी समस्या की पूरी ज़िम्मेदारी सिर्फ क्रेता/उपभोक्ता की होगी, और कंपनी इसके लिए उत्तरदायी नहीं होगी।</p>
+  <div style="margin-top: 18px; font-size: 13px; font-weight: bold; color: #dc2626; text-align: justify; line-height: 1.6; padding: 12px; border: 2px solid #dc2626; border-radius: 6px; background-color: #fef2f2;">
+    <p style="margin: 0;">DISCLAIMER: If the solar panel structure is installed at a height exceeding 7 feet, the company's warranty will be considered void. Any subsequent damage, structural failure, or operational issues will be the sole responsibility of the buyer/customer, and the company shall not be held liable.</p>
+    <p style="margin: 0 0 8px 0;"> यदि सोलर पैनल स्ट्रक्चर 7 फीट से अधिक ऊँचाई पर लगाया जाता है, तो कंपनी की वारंटी समाप्त मानी जाएगी। भविष्य में होने वाले किसी भी नुकसान, स्ट्रक्चरल टूट-फूट या अन्य किसी समस्या की पूरी ज़िम्मेदारी सिर्फ क्रेता/उपभोक्ता की होगी, और कंपनी इसके लिए उत्तरदायी नहीं होगी।</p>
   </div>
 
 
