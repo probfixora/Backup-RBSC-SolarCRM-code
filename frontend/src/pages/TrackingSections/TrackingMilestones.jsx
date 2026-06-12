@@ -25,7 +25,7 @@ export default function TrackingMilestones({ currentIdx, isDelayed, pct, complet
             gap: 8,
           }}
         >
-          <span className="mat" style={{ color: "#1a1a5e", fontSize: 20 }}>
+          <span className="mat" style={{ color: "#2463eb", fontSize: 20 }}>
             route
           </span>
           Project Milestones
@@ -47,7 +47,7 @@ export default function TrackingMilestones({ currentIdx, isDelayed, pct, complet
               width: `${pct}%`,
               background: isDelayed
                 ? "linear-gradient(90deg,#dc2626,#ef4444)"
-                : "linear-gradient(90deg,#1a1a5e,#16a34a)",
+                : "linear-gradient(90deg,#2463eb,#16a34a)",
               borderRadius: 99,
               animation: "barIn .9s ease both",
             }}
@@ -66,7 +66,7 @@ export default function TrackingMilestones({ currentIdx, isDelayed, pct, complet
                 : current && isDelayed
                   ? "#dc2626"
                   : current
-                    ? "#1a1a5e"
+                    ? "#2463eb"
                     : "#e8eaf0";
 
               return (
@@ -114,7 +114,7 @@ export default function TrackingMilestones({ currentIdx, isDelayed, pct, complet
                       flexShrink: 0,
                       border: future ? "2px solid #e8eaf0" : "none",
                       boxShadow: current
-                        ? `0 0 0 4px ${isDelayed ? "rgba(220,38,38,.15)" : "rgba(26,26,94,.12)"}`
+                        ? `0 0 0 4px ${isDelayed ? "rgba(220,38,38,.15)" : "rgba(36,99,235,.12)"}`
                         : "none",
                     }}
                   >
@@ -136,7 +136,7 @@ export default function TrackingMilestones({ currentIdx, isDelayed, pct, complet
                         ? "#94a3b8"
                         : done
                           ? "#16a34a"
-                          : "#1a1a5e",
+                          : "#2463eb",
                     }}
                   >
                     {s.label}
@@ -146,7 +146,7 @@ export default function TrackingMilestones({ currentIdx, isDelayed, pct, complet
                       className="timeline-badge"
                       style={{
                         marginTop: 3,
-                        background: isDelayed ? "#dc2626" : "#1a1a5e",
+                        background: isDelayed ? "#dc2626" : "#2463eb",
                         color: "#fff",
                         fontSize: 8,
                         fontWeight: 700,
@@ -194,7 +194,7 @@ export default function TrackingMilestones({ currentIdx, isDelayed, pct, complet
               gap: 8,
             }}
           >
-            <span className="mat" style={{ color: "#1a1a5e", fontSize: 20 }}>
+            <span className="mat" style={{ color: "#2463eb", fontSize: 20 }}>
               history
             </span>
             Stage Activity
@@ -249,11 +249,11 @@ export default function TrackingMilestones({ currentIdx, isDelayed, pct, complet
                     height: 38,
                     borderRadius: "50%",
                     flexShrink: 0,
-                    background: i === 0 ? "#1a1a5e" : "#f1f5f9",
+                    background: i === 0 ? "#2463eb" : "#f1f5f9",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: `2px solid ${i === 0 ? "#1a1a5e" : "#e8eaf0"}`,
+                    border: `2px solid ${i === 0 ? "#2463eb" : "#e8eaf0"}`,
                   }}
                 >
                   <span

@@ -10,7 +10,7 @@ export default function TrackingLanding({ inputId, setInputId, setError, handleT
         <div
           className="hero-left"
           style={{
-            background: "linear-gradient(145deg, #0f0f2d 0%, #1a1a5e 100%)",
+            background: "linear-gradient(145deg, #0f0f2d 0%, #2463eb 100%)",
             padding: "clamp(40px,6vw,80px) clamp(24px,5vw,64px)",
             display: "flex",
             flexDirection: "column",
@@ -128,15 +128,16 @@ export default function TrackingLanding({ inputId, setInputId, setError, handleT
               Tracking ID
             </label>
             <div
+              className="tp-wrapper"
               style={{
                 display: "flex",
                 alignItems: "center",
                 background: "#fff",
                 border: "1.5px solid #e2e8f0",
                 borderRadius: 10,
-                overflow: "hidden",
                 boxShadow: "0 2px 12px rgba(0,0,0,.06)",
                 marginBottom: 12,
+                transition: "all 0.2s",
               }}
             >
               <span className="mat" style={{ paddingLeft: 14, color: "#94a3b8", fontSize: 20 }}>
@@ -174,7 +175,7 @@ export default function TrackingLanding({ inputId, setInputId, setError, handleT
               style={{
                 width: "100%",
                 padding: "14px",
-                background: "#1a1a5e",
+                background: "#2463eb",
                 color: "#fff",
                 border: "none",
                 borderRadius: 10,
@@ -186,7 +187,7 @@ export default function TrackingLanding({ inputId, setInputId, setError, handleT
                 justifyContent: "center",
                 gap: 8,
                 opacity: loading ? 0.75 : 1,
-                boxShadow: "0 4px 16px rgba(26,26,94,.25)",
+                boxShadow: "0 4px 16px rgba(36,99,235,.25)",
               }}
             >
               {loading ? (
@@ -216,7 +217,7 @@ export default function TrackingLanding({ inputId, setInputId, setError, handleT
 
             <p style={{ fontSize: 12, color: "#94a3b8", textAlign: "center", marginTop: 20, lineHeight: 1.7 }}>
               Your Tracking ID was sent to your registered email.<br />
-              Format: <strong style={{ fontFamily: "monospace", color: "#1a1a5e" }}>{APP_CONFIG.trackingPrefix}NAME-00000</strong>
+              Format: <strong style={{ fontFamily: "monospace", color: "#2463eb" }}>{APP_CONFIG.trackingPrefix}NAME-00000</strong>
             </p>
           </div>
         </div>
@@ -247,7 +248,7 @@ export default function TrackingLanding({ inputId, setInputId, setError, handleT
                   alignItems: "center",
                   justifyContent: "center",
                   marginBottom: 16,
-                  color: "#1a1a5e",
+                  color: "#2463eb",
                 }}
               >
                 <span className="mat" style={{ fontSize: 22 }}>

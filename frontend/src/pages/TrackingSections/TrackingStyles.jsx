@@ -21,10 +21,11 @@ export default function TrackingStyles() {
         @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
         .tp-btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
         .tp-btn { transition: all .15s; }
-        .tp-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(26,26,94,.12); border-color: #1a1a5e; }
-        .chip:hover { background: #e8eaf6; border-color: #1a1a5e; cursor: pointer; }
+        .tp-input:focus { outline: none; }
+        .tp-wrapper:focus-within { outline: none; box-shadow: 0 0 0 3px rgba(36,99,235,.20) !important; border-color: #2463eb !important; }
+        .chip:hover { background: #e8eaf6; border-color: #2463eb; cursor: pointer; }
         .chip { transition: all .15s; }
-        .feat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(26,26,94,.10); }
+        .feat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(36,99,235,.10); }
         .feat-card { transition: all .2s; }
         
         /* Mobile Responsive Classes */
@@ -41,10 +42,10 @@ export default function TrackingStyles() {
         .footer-heading { font-size: 12px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
         .footer-text { font-size: 13px; color: #64748b; line-height: 1.7; }
         .footer-link { display: flex; align-items: center; gap: 12px; color: #64748b; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
-        .footer-link:hover { color: #1a1a5e; }
+        .footer-link:hover { color: #2463eb; }
         .footer-link .mat { color: #94a3b8; font-size: 18px; font-variation-settings: 'FILL' 0; }
         .footer-bottom { border-top: 1px solid #f1f5f9; padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 13px; font-weight: 500; }
-        .header-title { font-weight: 800; font-size: 16px; color: #1a1a5e; letter-spacing: -.3px; }
+        .header-title { font-weight: 800; font-size: 16px; color: #2463eb; letter-spacing: -.3px; }
         .track-btn-icon { display: none; }
         
         @media (max-width: 768px) {

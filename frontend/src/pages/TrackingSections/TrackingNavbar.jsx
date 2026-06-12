@@ -33,7 +33,7 @@ export default function TrackingNavbar({ result, onReset }) {
             style={{
               background: "none",
               border: "none",
-              color: "#1a1a5e",
+              color: "#2463eb",
               fontSize: 13,
               fontWeight: 600,
               cursor: "pointer",
@@ -51,7 +51,7 @@ export default function TrackingNavbar({ result, onReset }) {
         )}
         <div
           style={{
-            background: "#1a1a5e",
+            background: "#2463eb",
             color: "#fff",
             borderRadius: 8,
             padding: "7px 16px",

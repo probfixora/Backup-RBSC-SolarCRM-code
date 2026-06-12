@@ -7,7 +7,7 @@ export default function TrackingSidebar({ result, inputId, setInputId, handleTra
       {/* Need Help card */}
       <div
         style={{
-          background: "#1a1a5e",
+          background: "#2463eb",
           borderRadius: 14,
           padding: "22px 18px",
           color: "#fff",
@@ -34,7 +34,7 @@ export default function TrackingSidebar({ result, inputId, setInputId, handleTra
             justifyContent: "center",
             gap: 6,
             background: "#fff",
-            color: "#1a1a5e",
+            color: "#2463eb",
             borderRadius: 8,
             padding: "10px 14px",
             fontWeight: 700,
@@ -42,7 +42,7 @@ export default function TrackingSidebar({ result, inputId, setInputId, handleTra
             textDecoration: "none",
           }}
         >
-          <span className="mat" style={{ fontSize: 18, color: "#1a1a5e" }}>
+          <span className="mat" style={{ fontSize: 18, color: "#2463eb" }}>
             mail
           </span>
           Email Support
@@ -150,7 +150,7 @@ export default function TrackingSidebar({ result, inputId, setInputId, handleTra
             className="tp-btn"
             onClick={() => handleTrack()}
             style={{
-              background: "#1a1a5e",
+              background: "#2463eb",
               color: "#fff",
               border: "none",
               borderRadius: 7,

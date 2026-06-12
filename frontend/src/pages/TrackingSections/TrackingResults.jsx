@@ -48,7 +48,7 @@ export default function TrackingResults({
                   ? "#15803d"
                   : isDelayed
                     ? "#dc2626"
-                    : "#1a1a5e",
+                    : "#2463eb",
                 border: `1px solid ${isCompleted ? "#86efac" : isDelayed ? "#fca5a5" : "#c7d2fe"}`,
                 borderRadius: 20,
                 padding: "3px 12px",
@@ -99,7 +99,7 @@ export default function TrackingResults({
           </h2>
           <p style={{ color: "#64748b", fontSize: 14 }}>
             Current Stage:{" "}
-            <strong style={{ color: "#1a1a5e" }}>
+            <strong style={{ color: "#2463eb" }}>
               {result.current_stage}
             </strong>
           </p>
@@ -126,7 +126,7 @@ export default function TrackingResults({
               marginBottom: 6,
             }}
           >
-            <span className="mat" style={{ fontSize: 18, color: "#1a1a5e" }}>
+            <span className="mat" style={{ fontSize: 18, color: "#2463eb" }}>
               calendar_month
             </span>
             <span
@@ -141,7 +141,7 @@ export default function TrackingResults({
               Progress
             </span>
           </div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: "#1a1a5e" }}>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#2463eb" }}>
             {pct}%
           </div>
           <div style={{ fontSize: 12, color: "#64748b" }}>Overall Complete</div>

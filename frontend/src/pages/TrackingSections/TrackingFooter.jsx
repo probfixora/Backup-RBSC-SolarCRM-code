@@ -53,7 +53,7 @@ export default function TrackingFooter() {
               location_on
             </span>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <strong style={{ color: "#1a1a5e", fontSize: 14, fontWeight: 700 }}>
+              <strong style={{ color: "#2463eb", fontSize: 14, fontWeight: 700 }}>
                 Lucknow Headquarters
               </strong>
               <span className="footer-text">
