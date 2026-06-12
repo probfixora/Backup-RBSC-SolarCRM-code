@@ -695,12 +695,13 @@ const BankingDashboard = ({ onLogout }) => {
     setLoading(true);
     try {
       const data = await edgeFetch(EDGE.workflow, { action: "get_all" });
-      setAllCases(data);
-      // Show cases in Bank & Finance that are explicitly marked as Loan
-      const triageCases = data.filter((c) => {
+      // Only consider Loan cases for the Banking Dashboard
+      const loanCases = data.filter((c) => (c.payment_type || "").toLowerCase() === "loan");
+      setAllCases(loanCases);
+      // Show active cases currently in Bank & Finance stage
+      const triageCases = loanCases.filter((c) => {
         const stage = c.current_stage || "";
-        const pt = (c.payment_type || "").toLowerCase();
-        return stage === "Bank & Finance" && pt === "loan";
+        return stage === "Bank & Finance";
       });
       setCases(triageCases);
     } catch {
