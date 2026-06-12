@@ -627,16 +627,16 @@ serve(async (req: Request) => {
 
       const htmlContent = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
 <title>Your Tracking ID — ${companyName}</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}.wrapper{max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}.header{background:linear-gradient(135deg,#1a1a5e 0%,#16a34a 100%);padding:28px 40px;text-align:center}.header h1{color:#fff;font-size:20px;font-weight:700}.body{padding:32px 40px}.tracking-card{background:linear-gradient(135deg,#eef2ff,#ecfdf5);border:1.5px solid #c7d2fe;border-radius:10px;padding:20px 24px;margin:20px 0;text-align:center}.tracking-label{font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.tracking-id{font-size:28px;font-weight:700;color:#1a1a5e;letter-spacing:2px;font-family:monospace}.cta-wrap{text-align:center;margin:20px 0}.cta-btn{display:inline-block;background:linear-gradient(135deg,#1a1a5e,#16a34a);color:#fff!important;font-size:14px;font-weight:700;text-decoration:none;padding:12px 32px;border-radius:8px}.footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}.wrapper{max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}.header{background:linear-gradient(135deg,#2463eb 0%,#2463eb 100%);padding:28px 40px;text-align:center}.header h1{color:#fff;font-size:20px;font-weight:700}.body{padding:32px 40px}.tracking-card{background:linear-gradient(135deg,#eef2ff,#ecfdf5);border:1.5px solid #c7d2fe;border-radius:10px;padding:20px 24px;margin:20px 0;text-align:center}.tracking-label{font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.tracking-id{font-size:28px;font-weight:700;color:#2463eb;letter-spacing:2px;font-family:monospace}.cta-wrap{text-align:center;margin:20px 0}.cta-btn{display:inline-block;background:linear-gradient(135deg,#2463eb,#2463eb);color:#fff!important;font-size:14px;font-weight:700;text-decoration:none;padding:12px 32px;border-radius:8px}.footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style>
 </head><body><div class="wrapper">
 <div class="header"><h1>📋 Your Tracking ID</h1></div>
 <div class="body">
-<p style="font-size:16px;font-weight:700;color:#1a1a5e;margin-bottom:10px">Hello ${customerName},</p>
+<p style="font-size:16px;font-weight:700;color:#2463eb;margin-bottom:10px">Hello ${customerName},</p>
 <p style="font-size:14px;color:#4a5568;line-height:1.7;margin-bottom:16px">As requested, here is your Tracking ID to monitor your solar installation status.</p>
 <div class="tracking-card"><div class="tracking-label">Your Tracking ID</div><div class="tracking-id">${trackingId}</div><p style="font-size:12px;color:#64748b;margin-top:6px">Keep this safe for future reference</p></div>
 <div class="cta-wrap"><a href="${trackingUrl}" class="cta-btn">Track Installation Live</a></div>
 <p style="font-size:13px;color:#4a5568;line-height:1.7">If you have questions, contact us at <strong>${companyEmail}</strong> and quote your Tracking ID.</p>
-<p style="font-size:13px;color:#4a5568;margin-top:12px">Warm regards,<br/><strong style="color:#1a1a5e">${companyName} Team</strong></p>
+<p style="font-size:13px;color:#4a5568;margin-top:12px">Warm regards,<br/><strong style="color:#2463eb">${companyName} Team</strong></p>
 </div>
 <div class="footer">© ${new Date().getFullYear()} ${companyName}. This is an automated message.</div>
 </div></body></html>`;
@@ -1028,16 +1028,16 @@ serve(async (req: Request) => {
 
             const htmlContent = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
 <title>Your Tracking ID — ${companyName}</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}.wrapper{max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}.header{background:linear-gradient(135deg,#1a1a5e 0%,#16a34a 100%);padding:28px 40px;text-align:center}.header h1{color:#fff;font-size:20px;font-weight:700}.body{padding:32px 40px}.tracking-card{background:linear-gradient(135deg,#eef2ff,#ecfdf5);border:1.5px solid #c7d2fe;border-radius:10px;padding:20px 24px;margin:20px 0;text-align:center}.tracking-label{font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.tracking-id{font-size:28px;font-weight:700;color:#1a1a5e;letter-spacing:2px;font-family:monospace}.cta-wrap{text-align:center;margin:20px 0}.cta-btn{display:inline-block;background:linear-gradient(135deg,#1a1a5e,#16a34a);color:#fff!important;font-size:14px;font-weight:700;text-decoration:none;padding:12px 32px;border-radius:8px}.footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}.wrapper{max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}.header{background:linear-gradient(135deg,#2463eb 0%,#2463eb 100%);padding:28px 40px;text-align:center}.header h1{color:#fff;font-size:20px;font-weight:700}.body{padding:32px 40px}.tracking-card{background:linear-gradient(135deg,#eef2ff,#ecfdf5);border:1.5px solid #c7d2fe;border-radius:10px;padding:20px 24px;margin:20px 0;text-align:center}.tracking-label{font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.tracking-id{font-size:28px;font-weight:700;color:#2463eb;letter-spacing:2px;font-family:monospace}.cta-wrap{text-align:center;margin:20px 0}.cta-btn{display:inline-block;background:linear-gradient(135deg,#2463eb,#2463eb);color:#fff!important;font-size:14px;font-weight:700;text-decoration:none;padding:12px 32px;border-radius:8px}.footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style>
 </head><body><div class="wrapper">
 <div class="header"><h1>📋 Your Tracking ID is Ready!</h1></div>
 <div class="body">
-<p style="font-size:16px;font-weight:700;color:#1a1a5e;margin-bottom:10px">Hello ${customerName},</p>
+<p style="font-size:16px;font-weight:700;color:#2463eb;margin-bottom:10px">Hello ${customerName},</p>
 <p style="font-size:14px;color:#4a5568;line-height:1.7;margin-bottom:16px">Your registration has been verified and your case is now progressing. Use the Tracking ID below to monitor your solar installation status.</p>
 <div class="tracking-card"><div class="tracking-label">Your Tracking ID</div><div class="tracking-id">${trackingId}</div><p style="font-size:12px;color:#64748b;margin-top:6px">Keep this safe for future reference</p></div>
 <div class="cta-wrap"><a href="${trackingUrl}" class="cta-btn">Track Installation Live</a></div>
 <p style="font-size:13px;color:#4a5568;line-height:1.7">If you have questions, contact us at <strong>${companyEmail}</strong> and quote your Tracking ID.</p>
-<p style="font-size:13px;color:#4a5568;margin-top:12px">Warm regards,<br/><strong style="color:#1a1a5e">${companyName} Team</strong></p>
+<p style="font-size:13px;color:#4a5568;margin-top:12px">Warm regards,<br/><strong style="color:#2463eb">${companyName} Team</strong></p>
 </div>
 <div class="footer">© ${new Date().getFullYear()} ${companyName}. This is an automated message.</div>
 </div></body></html>`;
@@ -1783,16 +1783,16 @@ serve(async (req: Request) => {
 
       const htmlContent = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
 <title>Your Tracking ID — ${companyName}</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}.wrapper{max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}.header{background:linear-gradient(135deg,#1a1a5e 0%,#16a34a 100%);padding:28px 40px;text-align:center}.header h1{color:#fff;font-size:20px;font-weight:700}.body{padding:32px 40px}.tracking-card{background:linear-gradient(135deg,#eef2ff,#ecfdf5);border:1.5px solid #c7d2fe;border-radius:10px;padding:20px 24px;margin:20px 0;text-align:center}.tracking-label{font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.tracking-id{font-size:28px;font-weight:700;color:#1a1a5e;letter-spacing:2px;font-family:monospace}.cta-wrap{text-align:center;margin:20px 0}.cta-btn{display:inline-block;background:linear-gradient(135deg,#1a1a5e,#16a34a);color:#fff!important;font-size:14px;font-weight:700;text-decoration:none;padding:12px 32px;border-radius:8px}.footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}.wrapper{max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}.header{background:linear-gradient(135deg,#2463eb 0%,#2463eb 100%);padding:28px 40px;text-align:center}.header h1{color:#fff;font-size:20px;font-weight:700}.body{padding:32px 40px}.tracking-card{background:linear-gradient(135deg,#eef2ff,#ecfdf5);border:1.5px solid #c7d2fe;border-radius:10px;padding:20px 24px;margin:20px 0;text-align:center}.tracking-label{font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.tracking-id{font-size:28px;font-weight:700;color:#2463eb;letter-spacing:2px;font-family:monospace}.cta-wrap{text-align:center;margin:20px 0}.cta-btn{display:inline-block;background:linear-gradient(135deg,#2463eb,#2463eb);color:#fff!important;font-size:14px;font-weight:700;text-decoration:none;padding:12px 32px;border-radius:8px}.footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style>
 </head><body><div class="wrapper">
 <div class="header"><h1>📋 Tracking ID Reminder</h1></div>
 <div class="body">
-<p style="font-size:16px;font-weight:700;color:#1a1a5e;margin-bottom:10px">Hello ${customerName},</p>
+<p style="font-size:16px;font-weight:700;color:#2463eb;margin-bottom:10px">Hello ${customerName},</p>
 <p style="font-size:14px;color:#4a5568;line-height:1.7;margin-bottom:16px">This is a reminder of your solar installation Tracking ID. Use it to monitor your case progress at any time.</p>
 <div class="tracking-card"><div class="tracking-label">Your Tracking ID</div><div class="tracking-id">${trackingId}</div><p style="font-size:12px;color:#64748b;margin-top:6px">Keep this safe for future reference</p></div>
 <div class="cta-wrap"><a href="${trackingUrl}" class="cta-btn">Track Installation Live</a></div>
 <p style="font-size:13px;color:#4a5568">Questions? Contact <strong>${companyEmail}</strong></p>
-<p style="font-size:13px;color:#4a5568;margin-top:12px">Warm regards,<br/><strong style="color:#1a1a5e">${companyName} Team</strong></p>
+<p style="font-size:13px;color:#4a5568;margin-top:12px">Warm regards,<br/><strong style="color:#2463eb">${companyName} Team</strong></p>
 </div>
 <div class="footer">© ${new Date().getFullYear()} ${companyName}. Sent by ${user.name}.</div>
 </div></body></html>`;

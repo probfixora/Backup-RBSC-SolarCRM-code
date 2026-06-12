@@ -541,25 +541,25 @@ async function sendEmail(
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}
     .wrapper{max-width:620px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}
-    .header{background:linear-gradient(135deg,#1a1a5e 0%,#16a34a 100%);padding:28px 40px 24px;text-align:center}
+    .header{background:linear-gradient(135deg,#2463eb 0%,#2463eb 100%);padding:28px 40px 24px;text-align:center}
     .header-logo{display:block;margin:0 auto 12px;max-height:60px;width:auto}
     .header h1{color:#fff;font-size:20px;font-weight:700;margin:0;letter-spacing:0.3px}
     .header p{color:rgba(255,255,255,0.80);font-size:13px;margin-top:4px}
-    .divider-bar{height:4px;background:linear-gradient(90deg,#1a1a5e,#16a34a)}
+    .divider-bar{height:4px;background:linear-gradient(90deg,#2463eb,#2463eb)}
     .body{padding:36px 40px}
-    .greeting{font-size:18px;font-weight:700;color:#1a1a5e;margin-bottom:10px}
+    .greeting{font-size:18px;font-weight:700;color:#2463eb;margin-bottom:10px}
     .intro{font-size:14px;color:#4a5568;line-height:1.7;margin-bottom:24px}
-    .summary-title{background:#1a1a5e;color:#fff;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 20px}
+    .summary-title{background:#2463eb;color:#fff;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 20px}
     .summary-wrap{border:1.5px solid #c7d2fe;border-radius:10px;overflow:hidden;margin-bottom:24px}
     table{width:100%;border-collapse:collapse;font-size:13px}
     td{padding:12px 20px;border-bottom:1px solid #e2e8f0;color:#374151}
     tr:last-child td{border-bottom:none}
-    td:first-child{font-weight:600;color:#1a1a5e;width:42%;background:#f8faff}
-    .total-row td{background:#eef2ff;font-weight:700;font-size:14px;color:#1a1a5e}
+    td:first-child{font-weight:600;color:#2463eb;width:42%;background:#f8faff}
+    .total-row td{background:#eef2ff;font-weight:700;font-size:14px;color:#2463eb}
     .sign{font-size:13px;color:#4a5568;line-height:1.7;margin-top:8px}
     .footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0}
-    .footer-logo{font-size:15px;font-weight:700;color:#1a1a5e;margin-bottom:4px}
-    .footer-logo span{color:#16a34a}
+    .footer-logo{font-size:15px;font-weight:700;color:#2463eb;margin-bottom:4px}
+    .footer-logo span{color:#2463eb}
     .footer p{font-size:11px;color:#94a3b8;line-height:1.6;margin-top:4px}
     .footer a{color:#4f46e5;text-decoration:none}
   </style>
@@ -567,7 +567,7 @@ async function sendEmail(
 <body>
 <div class="wrapper">
   <div class="header">
-    ${logoBase64 ? `<img src="data:image/png;base64,${logoBase64}" alt="${companyName}" class="header-logo"/>` : ""}
+    <img src="https://rbscsolar.in/logo.png" alt="${companyName}" class="header-logo"/>
     <h1>Solar Quotation</h1>
     <p>${companyName} — ${companyAddress.split(",")[0]}</p>
   </div>
@@ -593,11 +593,11 @@ async function sendEmail(
     ${approvalToken
       ? `
     <div style="margin: 32px 0; text-align: center; background: #f8fafc; padding: 24px; border-radius: 12px; border: 1.5px dashed #cbd5e1;">
-      <h3 style="margin-top: 0; color: #1a1a5e; font-size: 16px; margin-bottom: 12px;">Approve Your Quotation</h3>
+      <h3 style="margin-top: 0; color: #2463eb; font-size: 16px; margin-bottom: 12px;">Approve Your Quotation</h3>
       <p style="font-size: 13px; color: #475569; margin-bottom: 20px; line-height: 1.6;">
         Click below to review your quotation and proceed with the installation process. You will be able to approve or decline the quotation directly through our secure portal.
       </p>
-      <a href="https://rbscsolar.in/customer-portal?token=${approvalToken}" style="display: inline-block; background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);">
+      <a href="https://rbscsolar.in/customer-portal?token=${approvalToken}" style="display: inline-block; background: linear-gradient(135deg, #2463eb, #2463eb); color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(36, 99, 235, 0.3);">
         Review &amp; Approve Quotation
       </a>
     </div>
@@ -609,7 +609,7 @@ async function sendEmail(
     
     <p class="sign">
       Warm regards,<br/>
-      <strong style="color:#1a1a5e">${companyName} Team</strong><br/>
+      <strong style="color:#2463eb">${companyName} Team</strong><br/>
       <span style="font-size:12px;color:#94a3b8">${companyAddress}</span>
     </p>
   </div>

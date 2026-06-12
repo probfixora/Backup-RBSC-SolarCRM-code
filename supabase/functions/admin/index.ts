@@ -162,26 +162,26 @@ serve(async (req: Request) => {
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,Helvetica,sans-serif;background:#f0f4f8;color:#1a202c}
     .wrapper{max-width:620px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)}
-    .header{background:linear-gradient(135deg,#1a1a5e 0%,#2563eb 100%);padding:28px 40px 24px;text-align:center}
+    .header{background:linear-gradient(135deg,#2463eb 0%,#2563eb 100%);padding:28px 40px 24px;text-align:center}
     .header-logo{display:block;margin:0 auto 12px;max-height:60px;width:auto}
     .header h1{color:#fff;font-size:20px;font-weight:700;margin:0;letter-spacing:0.3px}
     .header p{color:rgba(255,255,255,0.80);font-size:13px;margin-top:4px}
-    .divider-bar{height:4px;background:linear-gradient(90deg,#1a1a5e,#2563eb)}
+    .divider-bar{height:4px;background:linear-gradient(90deg,#2463eb,#2563eb)}
     .body{padding:36px 40px}
-    .greeting{font-size:18px;font-weight:700;color:#1a1a5e;margin-bottom:10px}
+    .greeting{font-size:18px;font-weight:700;color:#2463eb;margin-bottom:10px}
     .intro{font-size:14px;color:#4a5568;line-height:1.7;margin-bottom:24px}
     .credentials{background:#f8faff;border:1.5px solid #c7d2fe;border-radius:10px;padding:0;margin-bottom:24px;overflow:hidden}
-    .credentials-title{background:#1a1a5e;color:#fff;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 20px}
+    .credentials-title{background:#2463eb;color:#fff;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 20px}
     .credentials table{width:100%;border-collapse:collapse;font-size:13px}
     .credentials td{padding:12px 20px;border-bottom:1px solid #e2e8f0;color:#374151}
     .credentials tr:last-child td{border-bottom:none}
-    .credentials td:first-child{font-weight:600;color:#1a1a5e;width:40%;background:#f1f5fb}
+    .credentials td:first-child{font-weight:600;color:#2463eb;width:40%;background:#f1f5fb}
     .password-note{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;font-size:13px;color:#78350f;margin-bottom:24px;line-height:1.6}
     .cta-wrap{text-align:center;margin-bottom:28px}
     .cta-btn{display:inline-block;background:#2563eb;color:#ffffff !important;font-size:14px;font-weight:700;text-decoration:none;padding:13px 32px;border-radius:8px;letter-spacing:0.3px}
     .sign{font-size:13px;color:#4a5568;line-height:1.7}
     .footer{background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0}
-    .footer-logo{font-size:15px;font-weight:700;color:#1a1a5e;margin-bottom:4px}
+    .footer-logo{font-size:15px;font-weight:700;color:#2463eb;margin-bottom:4px}
     .footer-logo span{color:#2563eb}
     @media (prefers-color-scheme: dark) {
       body { background: #121212 !important; color: #f1f5f9 !important; }
@@ -222,7 +222,7 @@ serve(async (req: Request) => {
       <table>
         <tr><td>Employee ID</td><td>${employeeId}</td></tr>
         <tr><td>Email Address</td><td>${email.toLowerCase().trim()}</td></tr>
-        <tr><td>Temporary Password</td><td style="font-family:monospace;font-weight:700;color:#1a1a5e">${password}</td></tr>
+        <tr><td>Temporary Password</td><td style="font-family:monospace;font-weight:700;color:#2463eb">${password}</td></tr>
         <tr><td>Assigned Role</td><td>${role.charAt(0).toUpperCase() + role.slice(1)}</td></tr>
         <tr><td>Joined On</td><td>${joinedDate}</td></tr>
       </table>
@@ -236,7 +236,7 @@ serve(async (req: Request) => {
     </div>
     <p class="sign">
       Warm regards,<br/>
-      <strong style="color:#1a1a5e">${Deno.env.get("COMPANY_NAME") || "RBSC Solar"} — Admin Team</strong><br/>
+      <strong style="color:#2463eb">${Deno.env.get("COMPANY_NAME") || "RBSC Solar"} — Admin Team</strong><br/>
       <span style="font-size:12px;color:#94a3b8">Lucknow, Uttar Pradesh, India</span>
     </p>
   </div>
