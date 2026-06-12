@@ -24,7 +24,6 @@ export default function TrackingNavbar({ result, onReset }) {
           alt={APP_CONFIG.companyName}
           style={{ height: 32, width: "auto" }}
         />
-        <span className="header-title">{APP_CONFIG.companyName}</span>
       </div>
 
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
