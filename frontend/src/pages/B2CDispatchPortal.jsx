@@ -17,26 +17,31 @@ export default function B2CDispatchPortal({ onLogout }) {
   const fetchDispatchCases = useCallback(async () => {
     setLoading(true);
     try {
-      // Pending Dispatches
-      const { data: pendingData, error: pendingError } = await supabase
+      const { data, error } = await supabase
         .from("cases")
         .select("*")
-        .eq("current_stage", "Sent to Store")
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false });
 
-      if (pendingError) throw pendingError;
+      if (error) throw error;
+
+      // Pending Dispatches: stage is "Sent to Store"
+      const pendingData = data.filter(c => c.current_stage === "Sent to Store");
       
-      // Dispatched History
-      const { data: dispatchedData, error: dispatchedError } = await supabase
-        .from("cases")
-        .select("*")
-        .not("dispatched_items", "is", null)
-        .order("dispatch_date", { ascending: false, nullsFirst: false });
+      // Dispatched History: dispatched_items is an array with items
+      const dispatchedData = data.filter(c => {
+        if (!c.dispatched_items) return false;
+        if (Array.isArray(c.dispatched_items) && c.dispatched_items.length > 0) return true;
+        // In case it's a string
+        if (typeof c.dispatched_items === "string" && c.dispatched_items.length > 5) return true;
+        return false;
+      }).sort((a, b) => {
+        const dateA = a.dispatch_date ? new Date(a.dispatch_date).getTime() : 0;
+        const dateB = b.dispatch_date ? new Date(b.dispatch_date).getTime() : 0;
+        return dateB - dateA; // Descending
+      });
 
-      if (dispatchedError) throw dispatchedError;
-
-      setPendingCases(pendingData || []);
-      setDispatchedCases(dispatchedData || []);
+      setPendingCases(pendingData);
+      setDispatchedCases(dispatchedData);
     } catch (err) {
       toast.error("Failed to load dispatch data");
       console.error(err);
