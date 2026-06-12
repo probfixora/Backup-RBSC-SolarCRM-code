@@ -33,7 +33,12 @@ const PROFILE_BIZ_DOCS = [
 const getKw = (q) => {
   if (!q) return 0;
   if (q.electrical_load)
-    return parseInt(String(q.electrical_load).replace(/kW$/i, ""), 10) || 0;
+    return parseInt(String(q.electrical_load).replace(/kw/i, "").trim(), 10) || 0;
+  if (q.load_required) return Math.round(q.load_required / 1000);
+  if (q.system_size)
+    return parseInt(String(q.system_size).replace(/kw/i, "").trim(), 10) || 0;
+  if (q.system_capacity)
+    return parseInt(String(q.system_capacity).replace(/kw/i, "").trim(), 10) || 0;
   if (q.total_watt) return Math.round(q.total_watt / 1000);
   return 0;
 };
@@ -108,7 +113,7 @@ export default function CustomerPortal() {
         const { data } = await supabase
           .from("cases")
           .select(
-            "case_id, customer_name, current_stage, customer_approved_at, customer_declined_at, quotation_amount, electrical_load, system_size, kw_capacity, system_capacity, customer_occupation",
+            "case_id, customer_name, current_stage, customer_approved_at, customer_declined_at, quotation_amount, electrical_load, load_required, system_size, kw_capacity, system_capacity, customer_occupation",
           )
           .eq("case_id", tokenRow.case_id)
           .single();
