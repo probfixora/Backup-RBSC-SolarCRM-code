@@ -324,20 +324,8 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Compute next stage from normalized (already declared above)
   useEffect(() => {
     if (!caseData) return;
-    const idx = STAGES.findIndex(
-      (s) => s.toLowerCase() === normalized.currentStage?.toLowerCase(),
-    );
-    if (idx >= 0 && idx < STAGES.length - 1) {
-      let nStage = STAGES[idx + 1];
-      if (nStage === "Bank & Finance" && (normalized.paymentType || "").toLowerCase() === "cash") {
-        nStage = "Sent to Store";
-      }
-      setNewStage(nStage);
-    }
-
     setDocStatuses(normalized.documentStatuses || {});
     setFData({
       paymentType: normalized.paymentType
@@ -362,6 +350,22 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     setGeoLocation(null);
     setGeoError("");
   }, [caseData]); // eslint-disable-line
+
+  // Compute next stage dynamically based on the current payment type
+  useEffect(() => {
+    if (!caseData) return;
+    const idx = STAGES.findIndex(
+      (s) => s.toLowerCase() === normalized.currentStage?.toLowerCase(),
+    );
+    if (idx >= 0 && idx < STAGES.length - 1) {
+      let nStage = STAGES[idx + 1];
+      const currentPType = (fData.paymentType || normalized.paymentType || "").toLowerCase();
+      if (nStage === "Bank & Finance" && currentPType === "cash") {
+        nStage = "Sent to Store";
+      }
+      setNewStage(nStage);
+    }
+  }, [caseData, fData.paymentType, normalized.currentStage, normalized.paymentType, STAGES]);
 
   // Fetch case history for timeline tab
   useEffect(() => {

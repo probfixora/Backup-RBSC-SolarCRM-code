@@ -262,11 +262,19 @@ const FinanceTab = ({ ctx }) => {
     const cleanName = doc.doc_name.replace("FINANCE_DOC::", "");
     if (!window.confirm(`Are you sure you want to delete ${cleanName}?`)) return;
     try {
-      const { error } = await supabase.from("customer_uploaded_docs").delete().eq("id", doc.id);
+      const { error } = await supabase.from("customer_uploaded_docs").delete().eq("doc_url", doc.doc_url);
       if (error) throw error;
+      
+      // Also delete from storage bucket
+      const urlParts = doc.doc_url?.split("/documents/");
+      if (urlParts && urlParts.length > 1) {
+        const filePath = urlParts[1];
+        await supabase.storage.from("documents").remove([filePath]);
+      }
+
       toast.success("Document deleted");
       if (ctx.setCustomerDocs) {
-        ctx.setCustomerDocs(prev => prev.filter(d => d.id !== doc.id));
+        ctx.setCustomerDocs(prev => prev.filter(d => d.doc_url !== doc.doc_url));
       }
     } catch (err) {
       toast.error(`Failed to delete document: ${err.message}`);
