@@ -415,6 +415,10 @@ const Cases = ({ onLogout }) => {
     if (!matchesSearch) return false;
 
     // 2. Visibility filter (Don't show cases that haven't reached this department yet)
+    if (userRole === "banking") {
+      const pt = (c.paymentType || c.payment_type || "").toLowerCase();
+      if (pt !== "loan") return false;
+    }
     if (userRole === "admin" || userRole === "sales") return true;
     if (myFirstStageIdx < 0) return true; // fallback for unknown roles
 
@@ -438,13 +442,6 @@ const Cases = ({ onLogout }) => {
 
   const isInProgress = (c) => {
     if (userRole === "admin") return c.status === "In Progress";
-    if (userRole === "banking") {
-      const pt = (c.paymentType || c.payment_type || "").toLowerCase();
-      return (
-        isAtMyStage(c) &&
-        (pt === "cash" || c.finance_final_status === "Approved")
-      );
-    }
     return isAtMyStage(c);
   };
 
