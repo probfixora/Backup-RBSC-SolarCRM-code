@@ -618,7 +618,10 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   const isBankingStage = normalized.currentStage === "Bank & Finance";
   const pType = (normalized.paymentType || "").toLowerCase();
   
-  const hasPaymentModeError = isPhoneVerificationStage && (!normalized.paymentType || !normalized.paymentMode || normalized.paymentMode.trim() === "");
+  const hasPaymentModeError = isPhoneVerificationStage && (
+    !normalized.paymentType || 
+    (pType === "cash" && (!normalized.paymentMode || normalized.paymentMode.trim() === ""))
+  );
 
   const isFinanceApproved =
     pType === "loan"
@@ -649,7 +652,11 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       return;
     }
     if (hasPaymentModeError) {
-      toast.error("Please select both Payment Type (Cash/Loan) and Payment Mode before proceeding.");
+      if (pType === "cash") {
+        toast.error("Please select both Payment Type (Cash) and Payment Mode before proceeding.");
+      } else {
+        toast.error("Please select a Payment Type before proceeding.");
+      }
       return;
     }
     if (hasFinanceError) {
