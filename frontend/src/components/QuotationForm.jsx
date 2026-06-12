@@ -665,7 +665,9 @@ export default function QuotationForm() {
 
       await edgeFetch(EDGE.quotation, payload);
       toast.success(`✅ Quotation submitted! PDF sent to ${f.email}`);
-      setF(INIT);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500); // Give toast time to show
     } catch (err) {
       toast.error(err.message || "Submission failed");
     } finally {
