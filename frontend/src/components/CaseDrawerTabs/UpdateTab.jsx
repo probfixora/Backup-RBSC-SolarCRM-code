@@ -146,6 +146,72 @@ const UpdateTab = ({ ctx }) => {
     updateLoading
   } = ctx;
 
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const photoInputRef = useRef(null);
+
+  const handlePhotoUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setPhotoUploading(true);
+    const newPhotos = [];
+    
+    try {
+      for (const file of files) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${caseId}/site_photo_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `documents/${fileName}`;
+
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from("documents")
+          .upload(filePath, file);
+
+        if (uploadError) {
+           const retry = await supabase.storage.from("Documents").upload(filePath, file);
+           if (retry.error) throw retry.error;
+        }
+
+        // Get public URL
+        let urlData = supabase.storage.from("documents").getPublicUrl(filePath).data;
+        if (!urlData?.publicUrl) {
+            urlData = supabase.storage.from("Documents").getPublicUrl(filePath).data;
+        }
+
+        const newDoc = {
+          name: "Site Photo - " + new Date().toLocaleDateString(),
+          url: urlData.publicUrl,
+          status: "Uploaded",
+          verified: false,
+          uploaded_by: role,
+          uploaded_at: new Date().toISOString(),
+          department: ownerDept || role,
+        };
+        newPhotos.push(newDoc);
+      }
+
+      // Update case documents in db
+      const currentDocs = caseData?.documents || [];
+      const updatedDocs = [...currentDocs, ...newPhotos];
+      
+      const { error: dbError } = await supabase
+        .from("cases")
+        .update({ documents: updatedDocs })
+        .eq("id", caseId);
+
+      if (dbError) throw dbError;
+
+      toast.success("Site photo(s) uploaded successfully");
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error("Photo upload error", err);
+      toast.error("Failed to upload photo");
+    } finally {
+      setPhotoUploading(false);
+      if (photoInputRef.current) photoInputRef.current.value = "";
+    }
+  };
+
   return (
     <div>
               {/* READ-ONLY BANNER — shown when this role doesn't own the current stage */}
@@ -1085,32 +1151,67 @@ const UpdateTab = ({ ctx }) => {
                             </button>
                           </div>
                         ) : (
-                          <>
-                            <button
-                              type="button"
-                              onClick={handleCaptureLocation}
-                              disabled={geoLoading}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "7px",
-                                padding: "8px 14px",
-                                borderRadius: "8px",
-                                background: geoLoading ? "#e0f2fe" : "#0ea5e9",
-                                color: geoLoading ? "#075985" : "#fff",
-                                border: "none",
-                                fontSize: "12.5px",
-                                fontWeight: 600,
-                                cursor: geoLoading ? "wait" : "pointer",
-                              }}
-                            >
-                              <Navigation
-                                style={{ width: "13px", height: "13px" }}
+                            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                              <button
+                                type="button"
+                                onClick={handleCaptureLocation}
+                                disabled={geoLoading}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "7px",
+                                  padding: "8px 14px",
+                                  borderRadius: "8px",
+                                  background: geoLoading ? "#e0f2fe" : "#0ea5e9",
+                                  color: geoLoading ? "#075985" : "#fff",
+                                  border: "none",
+                                  fontSize: "12.5px",
+                                  fontWeight: 600,
+                                  cursor: geoLoading ? "wait" : "pointer",
+                                }}
+                              >
+                                <Navigation
+                                  style={{ width: "13px", height: "13px" }}
+                                />
+                                {geoLoading
+                                  ? "Getting location…"
+                                  : "Capture GPS Location"}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => photoInputRef.current?.click()}
+                                disabled={photoUploading}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "7px",
+                                  padding: "8px 14px",
+                                  borderRadius: "8px",
+                                  background: photoUploading ? "#f3f4f6" : "#4f46e5",
+                                  color: photoUploading ? "#6b7280" : "#fff",
+                                  border: "none",
+                                  fontSize: "12.5px",
+                                  fontWeight: 600,
+                                  cursor: photoUploading ? "wait" : "pointer",
+                                }}
+                              >
+                                <FileText
+                                  style={{ width: "13px", height: "13px" }}
+                                />
+                                {photoUploading
+                                  ? "Uploading..."
+                                  : "Capture Site Photo"}
+                              </button>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                capture="environment"
+                                ref={photoInputRef}
+                                onChange={handlePhotoUpload}
+                                style={{ display: "none" }}
                               />
-                              {geoLoading
-                                ? "Getting location…"
-                                : "Capture GPS Location"}
-                            </button>
+                            </div>
                             {geoError && (
                               <p
                                 style={{
@@ -1129,7 +1230,7 @@ const UpdateTab = ({ ctx }) => {
                                 marginTop: "6px",
                               }}
                             >
-                              Location is appended to handoff remarks for field
+                              Location and photos are appended to handoff remarks for field
                               records.
                             </p>
                           </>

@@ -146,6 +146,36 @@ const WorkOrderTab = ({ ctx }) => {
     updateLoading
   } = ctx;
 
+  const [editDetailsMode, setEditDetailsMode] = useState(false);
+  const [assignedToInput, setAssignedToInput] = useState(normalized?.assignedTo || "");
+  const [siteVisitDateInput, setSiteVisitDateInput] = useState(normalized?.siteVisitDate || caseData?.site_visit_date || "");
+  const [detailsSaving, setDetailsSaving] = useState(false);
+
+  useEffect(() => {
+    setAssignedToInput(normalized?.assignedTo || "");
+    setSiteVisitDateInput(normalized?.siteVisitDate || caseData?.site_visit_date || "");
+  }, [normalized?.assignedTo, normalized?.siteVisitDate, caseData?.site_visit_date]);
+
+  const handleSaveDetails = async () => {
+    setDetailsSaving(true);
+    try {
+      const { error } = await supabase.from("cases").update({
+        assigned_to: assignedToInput,
+        site_visit_date: siteVisitDateInput || null
+      }).eq("id", caseId);
+
+      if (error) throw error;
+      toast.success("Assignment details updated");
+      setEditDetailsMode(false);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update assignment details");
+    } finally {
+      setDetailsSaving(false);
+    }
+  };
+
   return (
     <div id="work-order-print-area">
               {/* Print button — hidden in actual print via CSS */}
@@ -323,20 +353,36 @@ const WorkOrderTab = ({ ctx }) => {
                     borderRadius: "10px",
                     padding: "14px 16px",
                     marginBottom: "12px",
+                    position: "relative"
                   }}
                 >
-                  <p
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      color: "#166534",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    Installation Details
-                  </p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                    <p
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        color: "#166534",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                        margin: 0
+                      }}
+                    >
+                      Installation Details
+                    </p>
+                    {role === "installation" && !editDetailsMode && (
+                      <button className="no-print" onClick={() => setEditDetailsMode(true)} style={{ background: "none", border: "none", color: "#16a34a", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 600 }}>
+                        <Edit2 size={12} /> Edit Details
+                      </button>
+                    )}
+                    {editDetailsMode && (
+                      <div className="no-print" style={{ display: "flex", gap: "8px" }}>
+                        <button onClick={() => setEditDetailsMode(false)} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: "11px", fontWeight: 600 }}>Cancel</button>
+                        <button onClick={handleSaveDetails} disabled={detailsSaving} style={{ background: "#16a34a", border: "none", color: "#fff", cursor: "pointer", fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "4px" }}>
+                          {detailsSaving ? "Saving..." : "Save"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <div
                     style={{
                       display: "grid",
@@ -349,7 +395,15 @@ const WorkOrderTab = ({ ctx }) => {
                       { label: "Payment Type", val: normalized.paymentType },
                       {
                         label: "Assigned To",
-                        val: normalized.assignedTo || "—",
+                        val: editDetailsMode ? (
+                          <input 
+                            type="text" 
+                            value={assignedToInput} 
+                            onChange={(e) => setAssignedToInput(e.target.value)}
+                            style={{ width: "100%", padding: "4px", fontSize: "12px", border: "1px solid #86efac", borderRadius: "4px", boxSizing: "border-box" }} 
+                            placeholder="Assign to..."
+                          />
+                        ) : (normalized.assignedTo || "—"),
                       },
                       {
                         label: "Assigned Team",
@@ -357,13 +411,21 @@ const WorkOrderTab = ({ ctx }) => {
                       },
                       {
                         label: "Site Visit Date",
-                        val:
+                        val: editDetailsMode ? (
+                          <input 
+                            type="date" 
+                            value={siteVisitDateInput} 
+                            onChange={(e) => setSiteVisitDateInput(e.target.value)}
+                            style={{ width: "100%", padding: "4px", fontSize: "12px", border: "1px solid #86efac", borderRadius: "4px", boxSizing: "border-box", fontFamily: "inherit" }} 
+                          />
+                        ) : (
                           normalized.siteVisitDate || caseData?.site_visit_date
                             ? new Date(
                                 normalized.siteVisitDate ||
                                   caseData?.site_visit_date,
                               ).toLocaleDateString("en-IN")
-                            : "—",
+                            : "—"
+                        ),
                       },
                       { label: "Status", val: normalized.status },
                     ].map(({ label, val }) => (
