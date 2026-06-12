@@ -772,7 +772,7 @@ const FinanceTab = ({ ctx }) => {
                   </form>
 
                   {/* ── Loan Documents Upload Section ── */}
-                  {fData.paymentType === "Loan" && (
+                  {fData.paymentType === "Loan" && role !== "banking" && (
                     <div
                       style={{
                         marginTop: "24px",

@@ -155,7 +155,7 @@ const stageToDeptLabel = {
 const getTabs = (role, currentStage) => {
   const tabs = [
     { id: "update", icon: Zap, label: "Update" },
-    { id: "docs", icon: FileText, label: "Documents" },
+    { id: "docs", icon: FileText, label: role === "banking" ? "Loan Required Documents" : "Documents" },
   ];
   if (role === "admin") {
     tabs.push({ id: "history", icon: History, label: "History" });

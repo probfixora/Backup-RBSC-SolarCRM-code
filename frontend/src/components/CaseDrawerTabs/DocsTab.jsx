@@ -166,7 +166,7 @@ const DocsTab = ({ ctx }) => {
                     margin: 0,
                   }}
                 >
-                  Uploaded Documents
+                  {role === "banking" ? "Loan Required Documents" : "Uploaded Documents"}
                 </p>
               </div>
 
@@ -177,6 +177,9 @@ const DocsTab = ({ ctx }) => {
                 });
                 const docs = Object.entries(allDocsObj);
                 const visibleDocs = docs.filter(([docName]) => {
+                  if (role === "banking") {
+                    return docName.startsWith("FINANCE_DOC::");
+                  }
                   if (docName.startsWith("FINANCE_DOC::")) return false;
                   if (role === "admin" || role === "registration") return true;
                   const name = docName.toLowerCase();
@@ -410,7 +413,7 @@ const DocsTab = ({ ctx }) => {
                                 color: "#0f172a",
                               }}
                             >
-                              {docName}
+                              {docName.replace("FINANCE_DOC::", "")}
                             </span>
                           </div>
                           <div
