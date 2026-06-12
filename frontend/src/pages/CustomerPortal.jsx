@@ -65,7 +65,14 @@ export default function CustomerPortal() {
   const [uploadDone, setUploadDone] = useState(false);
 
   const kw = caseData ? getKw(caseData) : 0;
-  const profile = caseData?.customer_occupation === "Business" ? "Business" : "Job/Service";
+  const [profile, setProfile] = useState("Job/Service");
+
+  useEffect(() => {
+    if (caseData?.customer_occupation === "Business") {
+      setProfile("Business");
+    }
+  }, [caseData]);
+
   const REQUIRED_DOCS = caseData ? getRequiredDocuments(kw, profile) : BASE_DOCS;
 
   useEffect(() => {
@@ -101,7 +108,7 @@ export default function CustomerPortal() {
         const { data } = await supabase
           .from("cases")
           .select(
-            "case_id, customer_name, current_stage, customer_approved_at, customer_declined_at, quotation_amount",
+            "case_id, customer_name, current_stage, customer_approved_at, customer_declined_at, quotation_amount, electrical_load, system_size, kw_capacity, system_capacity, customer_occupation",
           )
           .eq("case_id", tokenRow.case_id)
           .single();
@@ -109,7 +116,7 @@ export default function CustomerPortal() {
       } else if (tokenRow.quotation_id) {
         const { data } = await supabase
           .from("quotations")
-          .select("id, quotation_id, customer_name, product_price, status")
+          .select("id, quotation_id, customer_name, product_price, status, electrical_load, customer_occupation")
           .eq("quotation_id", tokenRow.quotation_id)
           .single();
         if (data) {
@@ -121,6 +128,8 @@ export default function CustomerPortal() {
             is_quotation_only: true,
             quotation_pk: data.id,
             status: data.status,
+            electrical_load: data.electrical_load,
+            customer_occupation: data.customer_occupation || "Job/Service",
           };
         }
       }
@@ -779,6 +788,60 @@ export default function CustomerPortal() {
               with registration.
             </p>
           </div>
+
+          {kw > 3 && (
+            <div style={{ marginBottom: 20 }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "#374151",
+                  marginBottom: 8,
+                }}
+              >
+                Select Customer Profile
+              </label>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setProfile("Job/Service")}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    border: profile === "Job/Service" ? "1.5px solid #2463eb" : "1.5px solid #e2e8f0",
+                    background: profile === "Job/Service" ? "#eff6ff" : "#fff",
+                    color: profile === "Job/Service" ? "#1d4ed8" : "#64748b",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  Job / Service
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProfile("Business")}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    border: profile === "Business" ? "1.5px solid #2463eb" : "1.5px solid #e2e8f0",
+                    background: profile === "Business" ? "#eff6ff" : "#fff",
+                    color: profile === "Business" ? "#1d4ed8" : "#64748b",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  Business
+                </button>
+              </div>
+            </div>
+          )}
 
           <form
             onSubmit={handleDocUpload}
