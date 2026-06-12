@@ -374,7 +374,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
   const [customerDocs, setCustomerDocs] = useState([]);
   useEffect(() => {
-    if (activeTab !== "docs") return;
+    if (activeTab !== "docs" && activeTab !== "finance") return;
     const cId = caseData?.id || caseData?.case_id || caseData?.caseId;
     if (!cId) return;
     supabase

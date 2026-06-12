@@ -237,19 +237,16 @@ const FinanceTab = ({ ctx }) => {
       if (fData.paymentType === "Loan") {
         try {
           await edgeFetch(EDGE.workflow, {
-            action: "update_details",
+            action: "update_finance",
             caseId,
-            financeData: {
-              payment_type: fData.paymentType,
-              down_payment: fData.downPayment,
-              cash_amount: fData.cashAmount,
-              payment_mode: fData.paymentMode,
-              loan_amount: fData.loanAmount,
-              loan_approved_amount: fData.loanApprovedAmount,
-              emi_amount: fData.emiAmount,
-              bank_name: fData.bankName,
-              quotation_amount: fData.quotation_amount || fData.quotationAmount || fData.totalAmount || normalized.totalAmount,
-            },
+            paymentType: fData.paymentType,
+            downPayment: fData.downPayment ? Number(fData.downPayment) : 0,
+            cashAmount: fData.cashAmount ? Number(fData.cashAmount) : 0,
+            paymentMode: fData.paymentMode,
+            loanAmount: fData.loanAmount ? Number(fData.loanAmount) : 0,
+            loanApprovedAmount: fData.loanApprovedAmount ? Number(fData.loanApprovedAmount) : 0,
+            emiAmount: fData.emiAmount ? Number(fData.emiAmount) : 0,
+            bankName: fData.bankName,
           });
         } catch (e) {
           console.error("Auto save finance details failed:", e);
