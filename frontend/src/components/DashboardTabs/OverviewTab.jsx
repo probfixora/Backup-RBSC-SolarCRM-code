@@ -784,12 +784,15 @@ const OverviewTab = ({ ctx }) => {
                       </div>
                       {[
                         "Registration Done",
-                        "Banking In Process",
-                        "Loan Approved / Cash Confirmed",
+                        "Phone Verification Done",
+                        "Bank & Finance",
                         "Sent to Store",
                         "Installation Done",
-                        "Electrical Checked",
+                        "Electrical Verification Done",
                         "Plant Activated",
+                        "TQA Verified",
+                        "Accounts Verified",
+                        "Sent to Subsidy",
                         "Subsidy Registration Completed",
                       ]
                         .map((stage) => {

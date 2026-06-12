@@ -10,7 +10,7 @@ export default function TrackingLanding({ inputId, setInputId, setError, handleT
         <div
           className="hero-left"
           style={{
-            background: "linear-gradient(145deg, #0f0f2d 0%, #2463eb 100%)",
+            background: "#2463eb",
             padding: "clamp(40px,6vw,80px) clamp(24px,5vw,64px)",
             display: "flex",
             flexDirection: "column",
@@ -155,15 +155,18 @@ export default function TrackingLanding({ inputId, setInputId, setError, handleT
                 placeholder={`e.g. ${APP_CONFIG.trackingPrefix}RAME-94721`}
                 style={{
                   flex: 1,
+                  minWidth: 0,
+                  width: "100%",
                   border: "none",
                   outline: "none",
                   padding: "14px 12px",
-                  fontSize: 14,
+                  fontSize: 15,
                   fontFamily: "monospace",
                   fontWeight: 600,
                   color: "#1a1a2e",
                   background: "transparent",
                   letterSpacing: 0.5,
+                  lineHeight: "normal",
                 }}
               />
             </div>

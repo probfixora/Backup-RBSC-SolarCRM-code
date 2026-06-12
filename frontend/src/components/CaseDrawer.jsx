@@ -114,7 +114,10 @@ const STAGES = [
   "Bank & Finance",
   "Sent to Store",
   "Installation Done",
+  "Electrical Verification Done",
   "Plant Activated",
+  "TQA Verified",
+  "Accounts Verified",
   "Sent to Subsidy",
   "Subsidy Registration Completed",
   "Completed",
@@ -127,10 +130,13 @@ const stageToRole = {
   "Bank & Finance": "banking",
   "Sent to Store": "inventory",
   "Installation Done": "field_installation",
+  "Electrical Verification Done": "electrical",
   "Plant Activated": "field_installation",
+  "TQA Verified": "tqa",
+  "Accounts Verified": "accounts",
   "Sent to Subsidy": "subsidy",
   "Subsidy Registration Completed": "subsidy",
-  Completed: "admin",
+  Completed: "customer_service",
 };
 
 const stageToDeptLabel = {
@@ -138,11 +144,12 @@ const stageToDeptLabel = {
   banking: "Banking & Finance Department",
   inventory: "Inventory / Store Department",
   field_installation: "Installation Department",
-  subsidy: "Subsidy Department",
-  technical: "Technical QA Department",
+  electrical: "Electrical Department",
+  tqa: "TQA Department",
   accounts: "Accounts Department",
-  customer_service: "Customer Service Department",
-  admin: "Admin",
+  subsidy: "Subsidy Department",
+  customer_service: "Customer Service",
+  admin: "Administration",
 };
 
 const getTabs = (role, currentStage) => {

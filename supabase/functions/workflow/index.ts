@@ -19,7 +19,10 @@ const workflowStages = [
   "Bank & Finance",
   "Sent to Store",
   "Installation Done",
+  "Electrical Verification Done",
   "Plant Activated",
+  "TQA Verified",
+  "Accounts Verified",
   "Sent to Subsidy",
   "Subsidy Registration Completed",
   "Completed",
@@ -31,10 +34,13 @@ const stageToTeam: Record<string, string> = {
   "Bank & Finance": "Banking",
   "Sent to Store": "Inventory",
   "Installation Done": "Installation",
+  "Electrical Verification Done": "Electrical",
   "Plant Activated": "Installation",
+  "TQA Verified": "TQA",
+  "Accounts Verified": "Accounts",
   "Sent to Subsidy": "Subsidy",
   "Subsidy Registration Completed": "Subsidy",
-  Completed: "Admin",
+  Completed: "Customer Service",
 };
 
 const stageToAllowedRole: Record<string, string[]> = {
@@ -43,10 +49,13 @@ const stageToAllowedRole: Record<string, string[]> = {
   "Bank & Finance": ["banking", "admin"],
   "Sent to Store": ["inventory", "admin"],
   "Installation Done": ["field_installation", "admin"],
+  "Electrical Verification Done": ["electrical", "admin"],
   "Plant Activated": ["field_installation", "admin"],
+  "TQA Verified": ["tqa", "admin"],
+  "Accounts Verified": ["accounts", "admin"],
   "Sent to Subsidy": ["subsidy", "admin"],
   "Subsidy Registration Completed": ["subsidy", "admin"],
-  Completed: ["admin"],
+  Completed: ["customer_service", "admin"],
 };
 
 // Build role → allowed stages map
@@ -102,6 +111,7 @@ function maskDocumentsForRole(role: string, docsObj: any) {
     "field_installation",
     "electrical",
     "store",
+    "tqa",
   ];
   if (!restrictedRoles.includes(role)) return docsObj;
 
@@ -155,7 +165,7 @@ function maskDocumentsForRole(role: string, docsObj: any) {
 function maskCaseDataForRole(role: string, caseRow: any): any {
   if (!caseRow || typeof caseRow !== "object") return caseRow;
   // Full access roles — return as-is
-  if (["admin", "banking", "sales"].includes(role)) return caseRow;
+  if (["admin", "banking", "sales", "accounts", "customer_service"].includes(role)) return caseRow;
 
   // ── Registration: full access EXCEPT payment_mode (hide completely) ──────
   // Even Network Tab inspection will show payment_mode: null for this role.
@@ -204,6 +214,30 @@ function maskCaseDataForRole(role: string, caseRow: any): any {
     //                    load_required, status, address, phone, geo_location,
     //                    site_visit_date, installation_note, documents (masked)
     // Hidden: financials, subsidy, alternate_phone, pin_code, reference, consumer_id
+    alwaysHidden.push(
+      "alternate_phone",
+      "pin_code",
+      "reference",
+      "consumer_id",
+      "payment_type",
+      "payment_mode",
+      "cash_amount",
+      "down_payment",
+      "loan_amount",
+      "emi_amount",
+      "bank_name",
+      "lender_name",
+      "loan_account_number",
+      "loan_tenure",
+      "marked_delayed_by",
+      "marked_delayed_at",
+      "delay_reason",
+      "subsidy_ref_number",
+      "subsidy_phase1_amount",
+      "subsidy_phase2_amount",
+      "subsidy_note",
+    );
+  } else if (role === "electrical" || role === "tqa") {
     alwaysHidden.push(
       "alternate_phone",
       "pin_code",
@@ -381,7 +415,11 @@ serve(async (req: Request) => {
           effectiveRole === "inventory" ||
           effectiveRole === "field_installation" ||
           effectiveRole === "subsidy" ||
-          effectiveRole === "sales"
+          effectiveRole === "sales" ||
+          effectiveRole === "electrical" ||
+          effectiveRole === "tqa" ||
+          effectiveRole === "accounts" ||
+          effectiveRole === "customer_service"
         ) {
           // These departments need full pipeline visibility:
           //   • Registration  — creates all cases, needs to track the whole journey
@@ -441,10 +479,13 @@ serve(async (req: Request) => {
         "Bank & Finance": "banking",
         "Sent to Store": "inventory",
         "Installation Done": "field_installation",
+        "Electrical Verification Done": "electrical",
         "Plant Activated": "field_installation",
+        "TQA Verified": "tqa",
+        "Accounts Verified": "accounts",
         "Sent to Subsidy": "subsidy",
         "Subsidy Registration Completed": "subsidy",
-        Completed: "admin",
+        Completed: "customer_service",
       };
 
       const deptRole = stageToDeptRole[caseRow.current_stage];

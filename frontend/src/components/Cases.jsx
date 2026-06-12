@@ -29,8 +29,11 @@ const DEPT_STAGES = {
   banking: ["Bank & Finance"],
   inventory: ["Sent to Store"],
   installation: ["Installation Done", "Plant Activated"],
+  electrical: ["Electrical Verification Done"],
+  tqa: ["TQA Verified"],
+  accounts: ["Accounts Verified"],
   subsidy: ["Sent to Subsidy", "Subsidy Registration Completed"],
-  completed: ["Completed"],
+  customer_service: ["Completed"],
 };
 
 const DEPT_LABELS = {
@@ -39,8 +42,11 @@ const DEPT_LABELS = {
   banking: "Banking & Finance",
   inventory: "Inventory",
   installation: "Installation",
+  electrical: "Electrical",
+  tqa: "TQA",
+  accounts: "Accounts",
   subsidy: "Subsidy",
-  completed: "Completed",
+  customer_service: "Customer Service",
 };
 
 // For dept-relative status filtering:
@@ -53,7 +59,10 @@ const DEPT_STAGE_BOUNDS = {
       "Bank & Finance",
       "Sent to Store",
       "Installation Done",
+      "Electrical Verification Done",
       "Plant Activated",
+      "TQA Verified",
+      "Accounts Verified",
       "Sent to Subsidy",
       "Subsidy Registration Completed",
       "Completed",
@@ -64,7 +73,10 @@ const DEPT_STAGE_BOUNDS = {
     past: [
       "Sent to Store",
       "Installation Done",
+      "Electrical Verification Done",
       "Plant Activated",
+      "TQA Verified",
+      "Accounts Verified",
       "Sent to Subsidy",
       "Subsidy Registration Completed",
       "Completed",
@@ -74,7 +86,10 @@ const DEPT_STAGE_BOUNDS = {
     active: ["Sent to Store"],
     past: [
       "Installation Done",
+      "Electrical Verification Done",
       "Plant Activated",
+      "TQA Verified",
+      "Accounts Verified",
       "Sent to Subsidy",
       "Subsidy Registration Completed",
       "Completed",
@@ -82,13 +97,48 @@ const DEPT_STAGE_BOUNDS = {
   },
   installation: {
     active: ["Installation Done", "Plant Activated"],
-    past: ["Sent to Subsidy", "Subsidy Registration Completed", "Completed"],
+    past: [
+      "Electrical Verification Done",
+      "TQA Verified",
+      "Accounts Verified",
+      "Sent to Subsidy",
+      "Subsidy Registration Completed",
+      "Completed",
+    ],
+  },
+  electrical: {
+    active: ["Electrical Verification Done"],
+    past: [
+      "Plant Activated",
+      "TQA Verified",
+      "Accounts Verified",
+      "Sent to Subsidy",
+      "Subsidy Registration Completed",
+      "Completed",
+    ],
+  },
+  tqa: {
+    active: ["TQA Verified"],
+    past: [
+      "Accounts Verified",
+      "Sent to Subsidy",
+      "Subsidy Registration Completed",
+      "Completed",
+    ],
+  },
+  accounts: {
+    active: ["Accounts Verified"],
+    past: [
+      "Sent to Subsidy",
+      "Subsidy Registration Completed",
+      "Completed",
+    ],
   },
   subsidy: {
     active: ["Sent to Subsidy", "Subsidy Registration Completed"],
     past: ["Completed"],
   },
-  completed: {
+  customer_service: {
     active: ["Completed"],
     past: [],
   },
@@ -101,7 +151,11 @@ const roleStageMap = {
   banking: ["Bank & Finance"],
   inventory: ["Sent to Store"],
   field_installation: ["Installation Done", "Plant Activated"],
+  electrical: ["Electrical Verification Done"],
+  tqa: ["TQA Verified"],
+  accounts: ["Accounts Verified"],
   subsidy: ["Sent to Subsidy", "Subsidy Registration Completed"],
+  customer_service: ["Completed"],
 };
 
 // Full pipeline order — used to determine if a case has moved PAST my dept's stage
@@ -111,7 +165,10 @@ const STAGE_ORDER = [
   "Bank & Finance",
   "Sent to Store",
   "Installation Done",
+  "Electrical Verification Done",
   "Plant Activated",
+  "TQA Verified",
+  "Accounts Verified",
   "Sent to Subsidy",
   "Subsidy Registration Completed",
   "Completed",
@@ -235,7 +292,10 @@ const Cases = ({ onLogout }) => {
       "Bank & Finance": "Banking",
       "Sent to Store": "Inventory",
       "Installation Done": "Installation",
+      "Electrical Verification Done": "Electrical",
       "Plant Activated": "Installation",
+      "TQA Verified": "TQA",
+      "Accounts Verified": "Accounts",
       "Sent to Subsidy": "Subsidy",
       "Subsidy Registration Completed": "Subsidy",
       Completed: "Completed",

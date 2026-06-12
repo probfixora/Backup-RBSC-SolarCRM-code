@@ -4,7 +4,12 @@ export const STAGES = [
   { key: "Bank & Finance", label: "Banking", icon: "account_balance" },
   { key: "Sent to Store", label: "Inventory", icon: "inventory_2" },
   { key: "Installation Done", label: "Installed", icon: "construction" },
+  { key: "Electrical Verification Done", label: "Electrical", icon: "electrical_services" },
   { key: "Plant Activated", label: "Activated", icon: "bolt" },
+  { key: "TQA Verified", label: "TQA", icon: "fact_check" },
+  { key: "Accounts Verified", label: "Accounts", icon: "receipt_long" },
+  { key: "Sent to Subsidy", label: "Subsidy", icon: "account_balance_wallet" },
+  { key: "Subsidy Registration Completed", label: "Sub. Done", icon: "check_circle" },
   { key: "Completed", label: "Completed", icon: "task_alt" },
 ];
 
@@ -15,9 +20,13 @@ export const stageIndex = (stage) => {
     "Bank & Finance": 2,
     "Sent to Store": 3,
     "Installation Done": 4,
-    "Plant Activated": 5,
-    "Subsidy Registration Completed": 6,
-    Completed: 6,
+    "Electrical Verification Done": 5,
+    "Plant Activated": 6,
+    "TQA Verified": 7,
+    "Accounts Verified": 8,
+    "Sent to Subsidy": 9,
+    "Subsidy Registration Completed": 10,
+    Completed: 11,
   };
   return map[stage] ?? -1;
 };

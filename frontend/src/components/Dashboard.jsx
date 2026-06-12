@@ -144,10 +144,14 @@ const Dashboard = ({
                   banking: ["Bank & Finance"],
                   inventory: ["Sent to Store"],
                   field_installation: ["Installation Done", "Plant Activated"],
+                  electrical: ["Electrical Verification Done"],
+                  tqa: ["TQA Verified"],
+                  accounts: ["Accounts Verified"],
                   subsidy: [
                     "Sent to Subsidy",
                     "Subsidy Registration Completed",
                   ],
+                  customer_service: ["Completed"],
                 }[userRole] || [];
               const fullPipeline = [
                 "Registration Done",
@@ -155,7 +159,10 @@ const Dashboard = ({
                 "Bank & Finance",
                 "Sent to Store",
                 "Installation Done",
+                "Electrical Verification Done",
                 "Plant Activated",
+                "TQA Verified",
+                "Accounts Verified",
                 "Sent to Subsidy",
                 "Subsidy Registration Completed",
                 "Completed",
@@ -445,8 +452,8 @@ const Dashboard = ({
     ],
     electrical: [
       {
-        label: "Awaiting inspection",
-        val: cases.filter((c) => c.currentStage === "Electrical Checked")
+        label: "Awaiting verification",
+        val: cases.filter((c) => c.currentStage === "Electrical Verification Done")
           .length,
         color: "#0ea5e9",
         icon: Zap,
@@ -455,10 +462,50 @@ const Dashboard = ({
         label: "Delayed checks",
         val: cases.filter(
           (c) =>
-            c.currentStage === "Electrical Checked" && c.status === "Delayed",
+            c.currentStage === "Electrical Verification Done" && c.status === "Delayed",
         ).length,
         color: "#f43f5e",
         icon: AlertTriangle,
+      },
+    ],
+    tqa: [
+      {
+        label: "Awaiting TQA",
+        val: cases.filter((c) => c.currentStage === "TQA Verified").length,
+        color: "#0ea5e9",
+        icon: CheckCircle2,
+      },
+      {
+        label: "TQA Delayed",
+        val: cases.filter(
+          (c) => c.currentStage === "TQA Verified" && c.status === "Delayed",
+        ).length,
+        color: "#f43f5e",
+        icon: AlertTriangle,
+      },
+    ],
+    accounts: [
+      {
+        label: "Accounts Pending",
+        val: cases.filter((c) => c.currentStage === "Accounts Verified").length,
+        color: "#f59e0b",
+        icon: Clock,
+      },
+      {
+        label: "Accounts Delayed",
+        val: cases.filter(
+          (c) => c.currentStage === "Accounts Verified" && c.status === "Delayed",
+        ).length,
+        color: "#f43f5e",
+        icon: AlertTriangle,
+      },
+    ],
+    customer_service: [
+      {
+        label: "Completed",
+        val: cases.filter((c) => c.currentStage === "Completed").length,
+        color: "#10b981",
+        icon: CheckCircle2,
       },
     ],
     subsidy: [
