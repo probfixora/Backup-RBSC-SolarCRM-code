@@ -231,7 +231,6 @@ const FinanceTab = ({ ctx }) => {
     if (successCount > 0) {
       toast.success(`Successfully uploaded ${successCount} document(s)`);
       setStagedFiles([{ id: Date.now(), docName: "", file: null }]);
-      if (onRefresh) onRefresh();
       
       // Auto-save the payment type and down payment as well since we hid the save button
       if (fData.paymentType === "Loan") {
