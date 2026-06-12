@@ -298,26 +298,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     <p style="margin: 0;">DISCLAIMER: If the solar panel structure is installed at a height exceeding 7 feet, the company's warranty will be considered void. Any subsequent damage, structural failure, or operational issues will be the sole responsibility of the customer, and the company shall not be held liable.</p>
   </div>
 
-  ${"" /*
-    (function () {
-      const isAdani = q.product_brand && q.product_brand.toLowerCase().includes("adani");
-      const loadStr = String(q.electrical_load || "0");
-      const loadInKw = parseFloat(loadStr.replace(/[^0-9.]/g, "")) || 0;
-      const allowedPanels = loadInKw * 2;
-      const actualPanels = parseInt(q.panel_count, 10) || 0;
 
-      if (isAdani && loadInKw > 0 && actualPanels > allowedPanels) {
-        return `
-      <div style="margin-top:15px; border: 2px solid red; padding: 8px; text-align:center;">
-        <div style="color:red; font-size:13px; font-weight:bold; margin-bottom:5px;">DISCLAIMER / चेतावनी</div>
-        <div style="color:red; font-size:11px; line-height:1.5;">
-          आपने मानक क्षमता (${allowedPanels} पैनल) से अधिक ${actualPanels} पैनल लगवाए हैं। इसके कारण सिस्टम की वारंटी समाप्त होती है और भविष्य में होने वाली किसी भी समस्या के लिए कंपनी की कोई जिम्मेदारी नहीं होगी। सम्पूर्ण जिम्मेदारी क्रेता/उपभोक्ता की होगी।<br/>
-          You have installed ${actualPanels} panels, which exceeds the standard capacity of ${allowedPanels} panels. As a result, the warranty is voided and the company will take no responsibility for any future issues. All responsibility lies with the buyer/customer.
-        </div>
-      </div>`;
-      }
-      return "";
-    })()*/}
 
   <!-- ═══════════════════ PAGE 2 ═══════════════════ -->
   <div class="page-break"></div>
