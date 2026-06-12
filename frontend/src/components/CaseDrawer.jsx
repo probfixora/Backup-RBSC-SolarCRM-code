@@ -1330,9 +1330,10 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         }
       `}} />
       <div
+        className="drawer-modal"
         style={{ width: "100%", maxWidth: "800px", maxHeight: "95vh", backgroundColor: "#ffffff", borderRadius: "12px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
       >
-        <div style={{ backgroundColor: "#0f172a", padding: "12px 16px", color: "#ffffff", display: "flex", flexDirection: "column", gap: "8px", position: "relative", flexShrink: 0 }}>
+        <div className="no-print" style={{ backgroundColor: "#0f172a", padding: "12px 16px", color: "#ffffff", display: "flex", flexDirection: "column", gap: "8px", position: "relative", flexShrink: 0 }}>
           
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
@@ -1393,7 +1394,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
           </div>
         </div>
 
-        <div style={{ display: "flex", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none", borderBottom: "1px solid #e2e8f0", backgroundColor: "#ffffff", padding: "0 16px", flexShrink: 0 }}>
+        <div className="no-print" style={{ display: "flex", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none", borderBottom: "1px solid #e2e8f0", backgroundColor: "#ffffff", padding: "0 16px", flexShrink: 0 }}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -1427,7 +1428,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
           })}
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
+        <div className="print-visible-content" style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
           {activeTab === "update" && <UpdateTab ctx={ctx} />}
           {activeTab === "docs" && <DocsTab ctx={ctx} />}
           {activeTab === "history" && <HistoryTab ctx={ctx} />}
