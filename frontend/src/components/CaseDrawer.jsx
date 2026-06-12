@@ -861,7 +861,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
       // Systematic filename: Documents_[CustomerID]_[CustomerName].zip
       const custId = (normalized.customerId || "UNKNOWN").replace(
-        /[^a-zA-Z0-9_\-]/g,
+        /[^a-zA-Z0-9_-]/g,
         "_",
       );
       const custName = (normalized.customerName || "Customer")
@@ -1226,7 +1226,6 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     handleUpdateSubmit,
     hasDocError,
     hasFinanceError,
-    hasRegFinanceError,
     hasQuotationError,
     history,
     inventoryList,
