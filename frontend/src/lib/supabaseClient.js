@@ -56,8 +56,11 @@ export async function edgeFetch(url, body) {
         );
         supabase.auth.signOut().catch(() => {});
         localStorage.clear();
+        // Throw BEFORE redirect so calling code can catch it cleanly
+        const sessionError = new Error("Session expired. Please log in again.");
+        sessionError.isSessionExpired = true;
         window.location.href = "/login";
-        return; // prevent throw after redirect
+        throw sessionError;
       }
     }
     throw new Error(data.message || `HTTP ${res.status}`);

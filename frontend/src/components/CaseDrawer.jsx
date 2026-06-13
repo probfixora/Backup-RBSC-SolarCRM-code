@@ -365,7 +365,8 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       }
       setNewStage(nStage);
     }
-  }, [caseData, fData.paymentType, normalized.currentStage, normalized.paymentType, STAGES]);
+  }, [caseData, fData.paymentType, normalized.currentStage, normalized.paymentType]);
+  // Note: STAGES is defined at module scope — stable reference, not needed in deps
 
   // Fetch case history for timeline tab
   useEffect(() => {
@@ -1122,7 +1123,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
           : "#e0e7ff";
 
     const printHTML = `<!DOCTYPE html><html><head>
-      <title>{APP_CONFIG.companyName} — ${trackId}</title>
+      <title>${APP_CONFIG.companyName} — ${trackId}</title>
       <meta charset="UTF-8"/>
       <style>
         *{box-sizing:border-box;margin:0;padding:0}
@@ -1143,7 +1144,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       <body><div class="page">
         <div class="hdr">
           <div class="hdr-left">
-            <h1>&#9728; {APP_CONFIG.companyName} CRM</h1>
+            <h1>&#9728; ${APP_CONFIG.companyName} CRM</h1>
             <p>Official Case Document</p>
           </div>
           <div class="hdr-right">
@@ -1162,7 +1163,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         </table>
         <div class="footer">
           <span>&#9888; Confidential — Authorized for ${deptLabel} only. Do not share.</span>
-          <span>{APP_CONFIG.companyName} CRM &nbsp;&middot;&nbsp; ${today}</span>
+          <span>${APP_CONFIG.companyName} CRM &nbsp;&middot;&nbsp; ${today}</span>
         </div>
       </div></body></html>`;
 

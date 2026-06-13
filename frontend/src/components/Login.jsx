@@ -84,11 +84,14 @@ const Login = ({ setToken }) => {
         registration: "/registration-dashboard",
         banking: "/banking-dashboard",
         inventory: "/inventory-dashboard",
-        installation: "/installation-dashboard",
+        field_installation: "/installation-dashboard",
         electrical: "/electrical-dashboard",
         subsidy: "/subsidy-dashboard",
+        technical: "/technical-dashboard",
+        accounts: "/accounts-dashboard",
+        customer_service: "/customer-service-dashboard",
       };
-      navigate(routes[role] || "/");
+      navigate(routes[role] || "/admin-dashboard");
     } catch (err) {
       const msg =
         err.message || "Invalid credentials. Please verify your login details.";

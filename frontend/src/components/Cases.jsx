@@ -187,12 +187,55 @@ const Cases = ({ onLogout }) => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [showAdvFilters, setShowAdvFilters] = useState(false);
+  const [totalCases, setTotalCases] = useState(0);
 
   const navigate = useNavigate();
   const searchRef = useRef(null);
   const userRole = localStorage.getItem("role") || "";
 
-  /* ── Fetch cases ── */
+  const mapCase = (c) => ({
+    ...c,
+    caseId: c.id || c.case_id || c.caseId,
+    customerId: c.customer_id || c.customerId,
+    trackingId: c.tracking_id || c.trackingId,
+    customerName: c.customer_name || c.customerName,
+    currentStage: c.current_stage || c.currentStage,
+    assignedTeam: c.assigned_team || c.assignedTeam,
+    stageStartTime: c.stage_start_time || c.stageStartTime,
+    delayReason: c.delay_reason || c.delayReason,
+    delayFlag: c.delay_flag || c.delayFlag,
+    alternatePhone: c.alternate_phone || c.alternatePhone,
+    loadRequired: c.load_required || c.loadRequired,
+    paymentType: c.payment_type || c.paymentType,
+    createdBy: c.created_by || c.createdBy,
+    salesPerson: c.sales_person || c.salesPerson,
+    phone: c.phone,
+    address: c.address,
+    consumerId: c.consumer_id || c.consumerId,
+    loanAmount: c.loan_amount || c.loanAmount,
+    bankName: c.bank_name || c.bankName,
+    emiAmount: c.emi_amount || c.emiAmount,
+    downPayment: c.down_payment || c.downPayment,
+    cashAmount: c.cash_amount || c.cashAmount,
+    paymentMode: c.payment_mode || c.paymentMode,
+    assignedTo: c.assigned_to || c.assignedTo,
+    subsidyRefNumber: c.subsidy_ref_number || c.subsidyRefNumber,
+    subsidyNote: c.subsidy_note || c.subsidyNote,
+    siteVisitDate: c.site_visit_date || c.siteVisitDate,
+    installationNote: c.installation_note || c.installationNote,
+    dispatchedItems: c.dispatched_items || c.dispatchedItems,
+    dispatchVehicle: c.dispatch_vehicle || c.dispatchVehicle,
+    dispatchDriver: c.dispatch_driver || c.dispatchDriver,
+    dispatchDate: c.dispatch_date || c.dispatchDate,
+    companyName: c.company_name || c.companyName,
+    projectType: c.project_type || c.projectType,
+    employeeName: c.employee_name || c.employeeName,
+    employeeId: c.employee_id || c.employeeId,
+    gstin: c.gstin,
+    system_specs: c.system_specs,
+  });
+
+  /* ── Fetch cases (server-side pagination: 100 per page) ── */
   const fetchCases = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
@@ -200,58 +243,16 @@ const Cases = ({ onLogout }) => {
         navigate("/login");
         return;
       }
-      const data = await edgeFetch(EDGE.workflow, { action: "get_all" });
-      const mapped = data.map((c) => ({
-        ...c,
-        caseId: c.id || c.case_id || c.caseId,
-        customerId: c.customer_id || c.customerId,
-        trackingId: c.tracking_id || c.trackingId,
-        customerName: c.customer_name || c.customerName,
-        currentStage: c.current_stage || c.currentStage,
-        assignedTeam: c.assigned_team || c.assignedTeam,
-        stageStartTime: c.stage_start_time || c.stageStartTime,
-        delayReason: c.delay_reason || c.delayReason,
-        delayFlag: c.delay_flag || c.delayFlag,
-        alternatePhone: c.alternate_phone || c.alternatePhone,
-        loadRequired: c.load_required || c.loadRequired,
-        paymentType: c.payment_type || c.paymentType,
-        createdBy: c.created_by || c.createdBy,
-        salesPerson: c.sales_person || c.salesPerson,
-        // Drawer header info row
-        phone: c.phone,
-        address: c.address,
-        // Financial
-        consumerId: c.consumer_id || c.consumerId,
-        loanAmount: c.loan_amount || c.loanAmount,
-        bankName: c.bank_name || c.bankName,
-        emiAmount: c.emi_amount || c.emiAmount,
-        downPayment: c.down_payment || c.downPayment,
-        cashAmount: c.cash_amount || c.cashAmount,
-        paymentMode: c.payment_mode || c.paymentMode,
-        assignedTo: c.assigned_to || c.assignedTo,
-        // Subsidy
-        subsidyRefNumber: c.subsidy_ref_number || c.subsidyRefNumber,
-        subsidyNote: c.subsidy_note || c.subsidyNote,
-        // Installation
-        siteVisitDate: c.site_visit_date || c.siteVisitDate,
-        installationNote: c.installation_note || c.installationNote,
-        // Dispatch
-        dispatchedItems: c.dispatched_items || c.dispatchedItems,
-        dispatchVehicle: c.dispatch_vehicle || c.dispatchVehicle,
-        dispatchDriver: c.dispatch_driver || c.dispatchDriver,
-        dispatchDate: c.dispatch_date || c.dispatchDate,
-        // Company / project
-        companyName: c.company_name || c.companyName,
-        projectType: c.project_type || c.projectType,
-        employeeName: c.employee_name || c.employeeName,
-        employeeId: c.employee_id || c.employeeId,
-        gstin: c.gstin,
-        // Quotation / system specs (used by dispatch tab to auto-detect items)
-        system_specs: c.system_specs,
-      }));
+      const response = await edgeFetch(EDGE.workflow, { action: "get_all", limit: 100, offset: 0 });
+      // Handle paginated {data, total} response and legacy flat array
+      const rawList = Array.isArray(response) ? response : (response?.data || []);
+      const total = response?.total ?? rawList.length;
+      const mapped = rawList.map(mapCase);
       setCases(mapped);
+      setTotalCases(total);
       return mapped;
-    } catch {
+    } catch (err) {
+      console.error("[fetchCases]", err);
       toast.error("Could not load cases.");
       return null;
     } finally {

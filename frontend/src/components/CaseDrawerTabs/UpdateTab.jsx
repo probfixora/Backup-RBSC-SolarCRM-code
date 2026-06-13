@@ -153,22 +153,48 @@ const UpdateTab = ({ ctx }) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    // ── File validation ────────────────────────────────────────────────────
+    const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic"];
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+    const MAX_FILES = 10;
+
+    if (files.length > MAX_FILES) {
+      toast.error(`Maximum ${MAX_FILES} photos allowed per upload.`);
+      return;
+    }
+
+    for (const file of files) {
+      if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
+        toast.error(`"${file.name}" is not an allowed image type. Use JPG, PNG, WebP, or HEIC.`);
+        if (photoInputRef.current) photoInputRef.current.value = "";
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`"${file.name}" exceeds 10 MB limit. Please compress the image.`);
+        if (photoInputRef.current) photoInputRef.current.value = "";
+        return;
+      }
+    }
+    // ──────────────────────────────────────────────────────────────────────
+
     setPhotoUploading(true);
     const newPhotos = [];
     
     try {
       for (const file of files) {
-        const fileExt = file.name.split('.').pop();
+        // Sanitize filename — strip non-alphanumeric chars except dot
+        const rawExt = file.name.split(".").pop()?.replace(/[^a-zA-Z0-9]/g, "") || "jpg";
+        const fileExt = ALLOWED_TYPES.includes(file.type.toLowerCase()) ? rawExt.substring(0, 5) : "jpg";
         const fileName = `${caseId}/site_photo_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `documents/${fileName}`;
 
         // Upload to storage
         const { error: uploadError } = await supabase.storage
           .from("documents")
-          .upload(filePath, file);
+          .upload(filePath, file, { contentType: file.type });
 
         if (uploadError) {
-           const retry = await supabase.storage.from("Documents").upload(filePath, file);
+           const retry = await supabase.storage.from("Documents").upload(filePath, file, { contentType: file.type });
            if (retry.error) throw retry.error;
         }
 
@@ -201,11 +227,11 @@ const UpdateTab = ({ ctx }) => {
 
       if (dbError) throw dbError;
 
-      toast.success("Site photo(s) uploaded successfully");
+      toast.success(`${newPhotos.length} site photo${newPhotos.length !== 1 ? "s" : ""} uploaded successfully`);
       if (onRefresh) onRefresh();
     } catch (err) {
       console.error("Photo upload error", err);
-      toast.error("Failed to upload photo");
+      toast.error("Failed to upload photo. Please try again.");
     } finally {
       setPhotoUploading(false);
       if (photoInputRef.current) photoInputRef.current.value = "";

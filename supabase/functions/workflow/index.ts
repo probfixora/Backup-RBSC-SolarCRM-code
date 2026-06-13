@@ -6,6 +6,7 @@ declare const Deno: any;
 declare const EdgeRuntime: any;
 
 // @ts-ignore
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // @ts-ignore
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -68,12 +69,25 @@ for (const [stage, roles] of Object.entries(stageToAllowedRole)) {
 }
 
 // ─── CORS headers ─────────────────────────────────────────────────────────────
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-};
+// Restrict to known origins only — no wildcard in production.
+const ALLOWED_ORIGINS = [
+  "https://crm.rbscsolar.in",
+  "https://rbscsolar.in",
+  "http://localhost:3000",
+  "http://localhost:5173",
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("Origin") || "";
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
 
 // ─── Helper: verify JWT and get user profile ──────────────────────────────────
 async function getUser(
@@ -301,9 +315,19 @@ function maskCaseDataForRole(role: string, caseRow: any): any {
 
 // ─── Main server ──────────────────────────────────────────────────────────────
 serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  // Only accept POST requests
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ message: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   // Create Supabase admin client (bypasses RLS)
@@ -312,18 +336,7 @@ serve(async (req: Request) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  // ── PUBLIC: debug_schema ─────────────────────────────────────────────────
   const rawBody = await req.json().catch(() => ({}));
-  if (rawBody.action === "debug_schema") {
-    const { data, error } = await supabase
-      .from("case_history")
-      .select("*")
-      .limit(2);
-    // Let's just fix the bug! Remove updated_by_id!
-    return new Response(JSON.stringify({ rows: data }), {
-      headers: corsHeaders,
-    });
-  }
 
   // ── PUBLIC: track_status ─────────────────────────────────────────────────
   if (rawBody.action === "track_status") {
@@ -399,7 +412,7 @@ serve(async (req: Request) => {
     if (action === "get_all") {
       let query = supabase
         .from("cases")
-        .select("*")
+        .select("*", { count: "exact" })
         .order("created_at", { ascending: false });
 
       // Admin simulating an employee role — filter by that role's stages
@@ -421,19 +434,12 @@ serve(async (req: Request) => {
           effectiveRole === "accounts" ||
           effectiveRole === "customer_service"
         ) {
-          // These departments need full pipeline visibility:
-          //   • Registration  — creates all cases, needs to track the whole journey
-          //   • Banking       — tracks loan/cash approvals even after hand-off
-          //   • Inventory     — dispatches goods; needs to see dispatched+completed cases too
-          //   • Field Install — installs plants; needs to see installed+completed cases
-          //   • Subsidy       — registers subsidies; needs to see subsidy+completed cases
-          //   • Sales         — creates quotations; needs to see their customers progress
+          // These departments need full pipeline visibility — no stage restriction.
           // Sensitive docs are still masked per-role via maskDocumentsForRole.
-          // No stage restriction here — all cases are visible.
         } else {
           // All other depts: strict stage-based — see only cases at their active stage
           const allowedStages = roleStageMap[effectiveRole] || [];
-          if (allowedStages.length === 0) return jsonResponse([]);
+          if (allowedStages.length === 0) return jsonResponse({ data: [], total: 0 });
           query = query.in("current_stage", allowedStages);
         }
       }
@@ -441,12 +447,22 @@ serve(async (req: Request) => {
       if (body.stage) query = query.eq("current_stage", body.stage);
       if (body.team) query = query.eq("assigned_team", body.team);
       if (body.search) {
+        // Sanitize search: strip SQL wildcards and limit length to prevent abuse
+        const safeSearch = String(body.search)
+          .replace(/[%_\\]/g, "\\$&")
+          .substring(0, 100);
         query = query.or(
-          `customer_name.ilike.%${body.search}%,id.ilike.%${body.search}%`,
+          `customer_name.ilike.%${safeSearch}%,id.ilike.%${safeSearch}%,tracking_id.ilike.%${safeSearch}%,customer_id.ilike.%${safeSearch}%`,
         );
       }
 
-      const { data, error } = await query;
+      // ── Server-side pagination ─────────────────────────────────────────────
+      const PAGE_SIZE = 100; // max records per request
+      const requestedLimit = Math.min(Number(body.limit) || PAGE_SIZE, PAGE_SIZE);
+      const offset = Math.max(Number(body.offset) || 0, 0);
+
+      const { data, error, count } = await query
+        .range(offset, offset + requestedLimit - 1);
       if (error) throw error;
 
       const maskedData = data.map((caseObj: any) => {
@@ -457,7 +473,12 @@ serve(async (req: Request) => {
         return maskCaseDataForRole(effectiveRole, withMaskedDocs);
       });
 
-      return jsonResponse(maskedData);
+      return jsonResponse({
+        data: maskedData,
+        total: count ?? maskedData.length,
+        offset,
+        limit: requestedLimit,
+      });
     }
 
     // ── GET DEPT EMPLOYEES (for assign dropdown) ──────────────────────────────
