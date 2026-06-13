@@ -30,7 +30,7 @@ const DEPT_STAGES = {
   inventory: ["Sent to Store"],
   installation: ["Installation Done", "Plant Activated"],
   electrical: ["Electrical Verification Done"],
-  tqa: ["TQA Verified"],
+  technical: ["TQA Verified"],
   accounts: ["Accounts Verified"],
   subsidy: ["Sent to Subsidy", "Subsidy Registration Completed"],
   customer_service: ["Completed"],
@@ -43,7 +43,7 @@ const DEPT_LABELS = {
   inventory: "Inventory",
   installation: "Installation",
   electrical: "Electrical",
-  tqa: "TQA",
+  technical: "Technical QA",
   accounts: "Accounts",
   subsidy: "Subsidy",
   customer_service: "Customer Service",
@@ -117,7 +117,7 @@ const DEPT_STAGE_BOUNDS = {
       "Completed",
     ],
   },
-  tqa: {
+  technical: {
     active: ["TQA Verified"],
     past: [
       "Accounts Verified",

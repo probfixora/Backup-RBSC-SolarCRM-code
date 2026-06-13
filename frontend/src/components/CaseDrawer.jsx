@@ -132,7 +132,7 @@ const stageToRole = {
   "Installation Done": "field_installation",
   "Electrical Verification Done": "electrical",
   "Plant Activated": "field_installation",
-  "TQA Verified": "tqa",
+  "TQA Verified": "technical",
   "Accounts Verified": "accounts",
   "Sent to Subsidy": "subsidy",
   "Subsidy Registration Completed": "subsidy",
