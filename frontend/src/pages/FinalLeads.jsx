@@ -46,8 +46,10 @@ const FinalLeads = ({ onLogout }) => {
           projectType: c.project_type || c.projectType,
         }));
       setCases(mapped);
+      return mapped;
     } catch {
       toast.error("Could not load final leads.");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -175,9 +177,13 @@ const FinalLeads = ({ onLogout }) => {
           caseData={selectedCase}
           onClose={() => setSelectedCase(null)}
           onRefresh={async () => {
-            await fetchCases();
-            const { data } = await supabase.from("cases").select("*").eq("id", selectedCase.caseId || selectedCase.id).single();
-            if (data) setSelectedCase(data);
+            const freshCases = await fetchCases();
+            if (freshCases) {
+              const updated = freshCases.find(
+                (c) => c.caseId === (selectedCase.caseId || selectedCase.id)
+              );
+              if (updated) setSelectedCase(updated);
+            }
           }}
         />
       )}

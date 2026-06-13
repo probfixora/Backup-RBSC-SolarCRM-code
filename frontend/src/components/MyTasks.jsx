@@ -111,8 +111,10 @@ const MyTasks = ({ onLogout }) => {
           (a, b) => new Date(a.stageStartTime) - new Date(b.stageStartTime),
         ),
       );
+      return myCases;
     } catch {
       toast.error("Could not load tasks.");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -643,9 +645,13 @@ const MyTasks = ({ onLogout }) => {
           caseData={selectedCase}
           onClose={() => setSelectedCase(null)}
           onRefresh={async () => {
-            await fetchCases();
-            const { data } = await supabase.from("cases").select("*").eq("id", selectedCase.caseId || selectedCase.id).single();
-            if (data) setSelectedCase(data);
+            const freshCases = await fetchCases();
+            if (freshCases) {
+              const updated = freshCases.find(
+                (c) => c.caseId === (selectedCase.caseId || selectedCase.id)
+              );
+              if (updated) setSelectedCase(updated);
+            }
           }}
         />
       )}
