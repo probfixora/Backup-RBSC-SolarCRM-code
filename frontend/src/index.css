@@ -2358,6 +2358,22 @@ select.input {
     display: none !important;
   }
 
+  /* Isolate the modal: hide everything that isn't the modal, inside the modal, or a parent of the modal */
+  body *:not(:has(.drawer-modal-container)):not(.drawer-modal-container):not(.drawer-modal-container *) {
+    display: none !important;
+  }
+
+  /* Reset layout for parents of the modal so they don't take up extra blank pages */
+  body *:has(.drawer-modal-container) {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: block !important;
+    background: none !important;
+  }
+
   body {
     background: #fff !important;
     color: #000 !important;
@@ -2372,9 +2388,7 @@ select.input {
   }
 
   .drawer-modal {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+    position: static !important;
     width: 100% !important;
     max-width: 100% !important;
     height: auto !important;
@@ -2392,8 +2406,7 @@ select.input {
   }
 
   .drawer-modal-container {
-    position: absolute !important;
-    inset: 0 !important;
+    position: static !important;
     background: none !important;
     backdrop-filter: none !important;
     padding: 0 !important;
