@@ -311,7 +311,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
     <li><strong>Anti-Reflection (AR) Coated Glass</strong> – Reduces glare, enhances light absorption, and improves low-light performance.</li>
     <li><strong>Excellent Low-Light Generation</strong> – Optimized to perform even in cloudy or early/late daylight conditions.</li>
     <li><strong>Transparent White Backsheet</strong> – Increases light reflection for the bifacial rear side.</li>
-    <li><strong>3.2 mm Tempered Glass</strong> – High-strength, low-iron glass improves durability and impact resistance.</li>
+    <li><strong>Double strength Tempered Glass</strong> – High-strength, low-iron glass improves durability and impact resistance.</li>
     <li><strong>Ionized Aluminium Frame</strong> – Anodized aluminum frame enhances structural rigidity and corrosion resistance.</li>
     <li><strong>IP68-Rated Junction Box</strong> – Provides superior protection against dust and water ingress, improving system reliability.</li>
     <li><strong>PID-Free Technology</strong> – Prevents Potential Induced Degradation, preserving long-term performance.</li>
@@ -367,7 +367,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
       <ul style="margin-top:4px;">
         <li>1-year product warranty against workmanship and breakdown defects.</li>
         <li>Solar panels: 5-year performance warranty + 25-year manufacturing defect warranty.</li>
-        <li>Off-grid inverter warranty: 2 years.</li>
+        <li>${projectType.toLowerCase().includes('off') ? 'Off-grid inverter warranty: 2 years.' : 'On grid inverter warranty: 5/8/10 years.'}</li>
         <li>Extended individual component warranties will be passed to customer as per manufacturer.</li>
       </ul>
     </div>
@@ -416,7 +416,7 @@ function generateProposalHTML(q: any, logoBase64: string): string {
 
     <div style="margin-top:20px;">
       <p style="font-weight:bold; font-size:12px;">Renewable Energy Solutions for a Brighter Future</p>
-      <p style="margin-top:6px;">${Deno.env.get("COMPANY_NAME") || "RBSC Solar"} has been a leader in sustainable energy solutions for over 20+ years, providing innovative solar technologies.</p>
+      <p style="margin-top:6px;">${Deno.env.get("COMPANY_NAME") || "RBSC Solar"} has been a leader in sustainable energy solutions for over 10+ years, providing innovative solar technologies.</p>
       <p style="margin-top:4px;">At ${Deno.env.get("COMPANY_NAME") || "RBSC Solar"}, our mission is to revolutionize the energy industry by making solar power more accessible, efficient, and affordable for everyone. We strive to reduce carbon footprints and promote sustainable energy practices worldwide.</p>
     </div>
 
