@@ -620,7 +620,10 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   const pType = (normalized.paymentType || "").toLowerCase();
   
   const hasPaymentModeError = isPhoneVerificationStage && (
-    !normalized.paymentType || 
+    // Payment type must always be selected
+    !normalized.paymentType ||
+    // For Cash: paymentMode is also required
+    // For Loan: paymentMode is NOT required (banking team handles it)
     (pType === "cash" && (!normalized.paymentMode || normalized.paymentMode.trim() === ""))
   );
 
@@ -653,10 +656,10 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       return;
     }
     if (hasPaymentModeError) {
-      if (pType === "cash") {
-        toast.error("Please select both Payment Type (Cash) and Payment Mode before proceeding.");
-      } else {
-        toast.error("Please select a Payment Type before proceeding.");
+      if (!normalized.paymentType) {
+        toast.error("Please select a Payment Type (Cash or Loan) in the Finance tab before proceeding.");
+      } else if (pType === "cash") {
+        toast.error("Please select a Payment Mode (UPI/Cash/Cheque etc.) in the Finance tab before proceeding.");
       }
       return;
     }
