@@ -313,6 +313,19 @@ function maskCaseDataForRole(role: string, caseRow: any): any {
   return masked;
 }
 
+// ─── Global fallback CORS headers (used by jsonResponse outside serve scope) ────
+// These use the first allowed origin as the default (safe production fallback)
+const defaultCorsHeaders = getCorsHeaders(new Request("https://crm.rbscsolar.in"));
+
+// ─── JSON response helper ──────────────────────────────────────────────────────
+// corsHeaders parameter defaults to the global fallback when called outside serve()
+function jsonResponse(data: unknown, status = 200, ch: Record<string, string> = defaultCorsHeaders): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...ch, "Content-Type": "application/json" },
+  });
+}
+
 // ─── Main server ──────────────────────────────────────────────────────────────
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -473,12 +486,17 @@ serve(async (req: Request) => {
         return maskCaseDataForRole(effectiveRole, withMaskedDocs);
       });
 
-      return jsonResponse({
-        data: maskedData,
-        total: count ?? maskedData.length,
-        offset,
-        limit: requestedLimit,
-      });
+      if (body.limit === undefined && body.offset === undefined) {
+        // Backwards compatibility for old cached frontend clients
+        return jsonResponse(maskedData);
+      } else {
+        return jsonResponse({
+          data: maskedData,
+          total: count ?? maskedData.length,
+          offset,
+          limit: requestedLimit,
+        });
+      }
     }
 
     // ── GET DEPT EMPLOYEES (for assign dropdown) ──────────────────────────────
@@ -1925,7 +1943,7 @@ serve(async (req: Request) => {
       });
     }
 
-    return jsonResponse({ message: "Unknown action" }, 400);
+    return jsonResponse({ message: "Unknown action" }, 400, corsHeaders);
   } catch (err: unknown) {
     let message = "Internal error";
     if (err instanceof Error) {
@@ -1951,11 +1969,3 @@ serve(async (req: Request) => {
     });
   }
 });
-
-// ─── JSON response helper ──────────────────────────────────────────────────────
-function jsonResponse(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
