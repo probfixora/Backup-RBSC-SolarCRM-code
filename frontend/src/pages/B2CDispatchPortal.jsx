@@ -268,7 +268,7 @@ export default function B2CDispatchPortal({ onLogout }) {
                 </table>
               </div>
             )
-          )}
+          }
         </div>
 
         <Footer />
