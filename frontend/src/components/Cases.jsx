@@ -152,7 +152,7 @@ const roleStageMap = {
   inventory: ["Sent to Store"],
   field_installation: ["Installation Done", "Plant Activated"],
   electrical: ["Electrical Verification Done"],
-  tqa: ["TQA Verified"],
+  technical: ["TQA Verified"],
   accounts: ["Accounts Verified"],
   subsidy: ["Sent to Subsidy", "Subsidy Registration Completed"],
   customer_service: ["Completed"],
