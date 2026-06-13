@@ -51,7 +51,7 @@ const stageToAllowedRole: Record<string, string[]> = {
   "Installation Done": ["field_installation", "admin"],
   "Electrical Verification Done": ["electrical", "admin"],
   "Plant Activated": ["field_installation", "admin"],
-  "TQA Verified": ["tqa", "admin"],
+  "TQA Verified": ["technical", "admin"],
   "Accounts Verified": ["accounts", "admin"],
   "Sent to Subsidy": ["subsidy", "admin"],
   "Subsidy Registration Completed": ["subsidy", "admin"],
@@ -111,7 +111,7 @@ function maskDocumentsForRole(role: string, docsObj: any) {
     "field_installation",
     "electrical",
     "store",
-    "tqa",
+    "technical",
   ];
   if (!restrictedRoles.includes(role)) return docsObj;
 
@@ -237,7 +237,7 @@ function maskCaseDataForRole(role: string, caseRow: any): any {
       "subsidy_phase2_amount",
       "subsidy_note",
     );
-  } else if (role === "electrical" || role === "tqa") {
+  } else if (role === "electrical" || role === "technical") {
     alwaysHidden.push(
       "alternate_phone",
       "pin_code",
@@ -417,7 +417,7 @@ serve(async (req: Request) => {
           effectiveRole === "subsidy" ||
           effectiveRole === "sales" ||
           effectiveRole === "electrical" ||
-          effectiveRole === "tqa" ||
+          effectiveRole === "technical" ||
           effectiveRole === "accounts" ||
           effectiveRole === "customer_service"
         ) {
@@ -481,7 +481,7 @@ serve(async (req: Request) => {
         "Installation Done": "field_installation",
         "Electrical Verification Done": "electrical",
         "Plant Activated": "field_installation",
-        "TQA Verified": "tqa",
+        "TQA Verified": "technical",
         "Accounts Verified": "accounts",
         "Sent to Subsidy": "subsidy",
         "Subsidy Registration Completed": "subsidy",
