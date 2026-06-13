@@ -212,8 +212,8 @@ const getDeptStatus = (c) => {
         bg: "#fff1f2",
         border: "#fecdd3",
         icon: "alert",
-        dept: deptLabel,
-        stage: currentStage,
+        dept: null,
+        stage: null,
       };
     }
     return {
@@ -222,8 +222,8 @@ const getDeptStatus = (c) => {
       bg: "#eff6ff",
       border: "#bfdbfe",
       icon: "clock",
-      dept: deptLabel,
-      stage: currentStage,
+      dept: null,
+      stage: null,
     };
   }
 
@@ -235,8 +235,8 @@ const getDeptStatus = (c) => {
       bg: "#ecfdf5",
       border: "#bbf7d0",
       icon: "check",
-      dept: deptLabel,
-      stage: currentStage,
+      dept: null,
+      stage: null,
     };
   }
 
@@ -248,17 +248,18 @@ const getDeptStatus = (c) => {
       bg: "#eff6ff",
       border: "#bfdbfe",
       icon: "check",
-      dept: deptLabel,
-      stage: currentStage,
+      dept: null,
+      stage: null,
     };
+  }
   return {
     label: "In Progress",
     color: "#1d4ed8",
     bg: "#eff6ff",
     border: "#bfdbfe",
     icon: "clock",
-    dept: deptLabel,
-    stage: currentStage,
+    dept: null,
+    stage: null,
   };
 };
 
