@@ -1322,7 +1322,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(15, 23, 42, 0.7)", backdropFilter: "blur(6px)", padding: "16px" }}>
+    <div className="drawer-modal-container" style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(15, 23, 42, 0.7)", backdropFilter: "blur(6px)", padding: "16px" }}>
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes modalFadeIn {
           from { opacity: 0; transform: scale(0.95) translateY(10px); }

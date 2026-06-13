@@ -1629,7 +1629,10 @@ serve(async (req: Request) => {
 
       const { data: updated, error } = await supabase
         .from("cases")
-        .update({ assigned_to: body.assignedTo || "" })
+        .update({ 
+          assigned_to: body.assignedTo || "",
+          ...(body.siteVisitDate !== undefined && { site_visit_date: body.siteVisitDate || null })
+        })
         .eq("id", body.caseId)
         .select()
         .single();

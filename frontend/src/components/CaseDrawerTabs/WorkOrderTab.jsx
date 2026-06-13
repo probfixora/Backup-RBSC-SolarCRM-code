@@ -159,12 +159,12 @@ const WorkOrderTab = ({ ctx }) => {
   const handleSaveDetails = async () => {
     setDetailsSaving(true);
     try {
-      const { error } = await supabase.from("cases").update({
-        assigned_to: assignedToInput,
-        site_visit_date: siteVisitDateInput || null
-      }).eq("id", caseId);
-
-      if (error) throw error;
+      await edgeFetch(EDGE.workflow, {
+        action: "assign",
+        caseId,
+        assignedTo: assignedToInput,
+        siteVisitDate: siteVisitDateInput || null
+      });
       toast.success("Assignment details updated");
       setEditDetailsMode(false);
       onRefresh();

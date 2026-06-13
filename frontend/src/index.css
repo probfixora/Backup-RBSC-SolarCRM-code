@@ -2391,12 +2391,14 @@ select.input {
     padding: 0 !important;
   }
 
-  body > div[style*="position: fixed"][style*="background: rgba"] {
+  .drawer-modal-container {
     position: absolute !important;
+    inset: 0 !important;
     background: none !important;
     backdrop-filter: none !important;
     padding: 0 !important;
     display: block !important;
+    z-index: 1000 !important;
   }
 
   div[style*="position: fixed"][style*="width: 500px"] {
