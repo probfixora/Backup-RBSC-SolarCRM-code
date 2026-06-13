@@ -216,55 +216,32 @@ const WorkOrderTab = ({ ctx }) => {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "flex-start",
+                    alignItems: "center",
                     padding: "16px 20px",
                     borderRadius: "12px",
-                    background:
-                      "linear-gradient(135deg, #0f1724 0%, #0f2a1a 100%)",
+                    background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                    border: "1px solid #e2e8f0",
                     marginBottom: "16px",
                   }}
                 >
-                  <div>
-                    <p
-                      style={{
-                        fontSize: "18px",
-                        fontWeight: 800,
-                        color: "#fff",
-                        letterSpacing: "-0.02em",
-                      }}
-                    >
-                      {APP_CONFIG.companyName}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "11px",
-                        color: "rgba(255,255,255,0.5)",
-                        marginTop: "2px",
-                      }}
-                    >
-                      Work Order / Installation Job Sheet
-                    </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                    <img 
+                      src={APP_CONFIG.logoPath} 
+                      alt={APP_CONFIG.companyName}
+                      style={{ height: "45px", objectFit: "contain" }}
+                    />
+                    <div style={{ borderLeft: "2px solid #e2e8f0", paddingLeft: "16px", height: "35px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                      <p style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.01em", margin: 0, lineHeight: 1.2 }}>
+                        Installation Job Sheet
+                      </p>
+                      <p style={{ fontSize: "11px", color: "#64748b", margin: 0, fontWeight: 500 }}>
+                        Work Order Document
+                      </p>
+                    </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <p
-                      style={{
-                        fontSize: "13px",
-                        fontWeight: 700,
-                        color: "#60A5FA",
-                        fontFamily: "monospace",
-                      }}
-                    >
-                      {normalized.caseId}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "10px",
-                        color: "rgba(255,255,255,0.4)",
-                        marginTop: "2px",
-                      }}
-                    >
-                      Issued:{" "}
-                      {new Date().toLocaleDateString("en-IN", {
+                    <p style={{ fontSize: "11px", fontWeight: 600, color: "#475569", margin: 0 }}>
+                      Date: {new Date().toLocaleDateString("en-IN", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",

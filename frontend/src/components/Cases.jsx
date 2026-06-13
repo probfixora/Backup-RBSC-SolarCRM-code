@@ -1152,9 +1152,10 @@ const Cases = ({ onLogout }) => {
         <CaseDrawer
           caseData={selectedCase}
           onClose={() => setSelectedCase(null)}
-          onRefresh={() => {
-            fetchCases();
-            setSelectedCase(null);
+          onRefresh={async () => {
+            await fetchCases();
+            const { data } = await supabase.from("cases").select("*").eq("id", selectedCase.caseId || selectedCase.id).single();
+            if (data) setSelectedCase(data);
           }}
         />
       )}
