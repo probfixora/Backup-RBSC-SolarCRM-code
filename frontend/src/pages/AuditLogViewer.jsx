@@ -52,7 +52,8 @@ export default function AuditLogViewer({ onLogout }) {
 
   const fetchCasesMap = useCallback(async () => {
     try {
-      const data = await edgeFetch(EDGE.workflow, { action: "get_all" });
+      const raw = await edgeFetch(EDGE.workflow, { action: "get_all" });
+      const data = Array.isArray(raw) ? raw : (raw?.data || []);
       const map = {};
       data.forEach((c) => {
         map[c.id] = c;

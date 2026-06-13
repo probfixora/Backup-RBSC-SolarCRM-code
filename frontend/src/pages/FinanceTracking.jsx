@@ -22,7 +22,8 @@ const FinanceTracking = ({ onLogout }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const data = await edgeFetch(EDGE.workflow, { action: "get_all" });
+      const raw = await edgeFetch(EDGE.workflow, { action: "get_all" });
+      const data = Array.isArray(raw) ? raw : (raw?.data || []);
       setAllCases(data);
     } catch {
       toast.error("Failed to load finance cases");

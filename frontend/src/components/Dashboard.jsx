@@ -134,7 +134,8 @@ const Dashboard = ({
             } else {
               // For non-sales roles, count from the actual cases list
               // so that Dashboard numbers match the Customers list exactly
-              const rawCases = get(empCases) || [];
+              const empCasesResponse = get(empCases) || [];
+              const rawCases = Array.isArray(empCasesResponse) ? empCasesResponse : (empCasesResponse.data || []);
               const myStages =
                 {
                   registration: [
@@ -192,7 +193,8 @@ const Dashboard = ({
           }
 
           // Cases filtered by employee's role stages
-          const rawCases = get(empCases) || [];
+          const rawCasesResponse = get(empCases) || [];
+          const rawCases = Array.isArray(rawCasesResponse) ? rawCasesResponse : (rawCasesResponse.data || []);
           setCases(
             rawCases.map((c) => ({
               ...c,
@@ -237,7 +239,8 @@ const Dashboard = ({
         setActivities(getData(1) || []);
 
         // Normalize snake_case → camelCase for cases array
-        const rawCases = getData(2) || [];
+        const workflowResponse = getData(2) || [];
+        const rawCases = Array.isArray(workflowResponse) ? workflowResponse : (workflowResponse.data || []);
         setCases(
           rawCases.map((c) => ({
             ...c,

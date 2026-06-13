@@ -12,8 +12,9 @@ const AssignedTasksPopup = () => {
         const userName = localStorage.getItem("name");
         if (!userName) return;
 
-        const data = await edgeFetch(EDGE.workflow, { action: "get_all" });
-        const allMyTasks = data.filter(c => c.assigned_to === userName || c.assignedTo === userName);
+        const response = await edgeFetch(EDGE.workflow, { action: "get_all", limit: 100, offset: 0 });
+        const rawList = Array.isArray(response) ? response : (response?.data || []);
+        const allMyTasks = rawList.filter(c => c.assigned_to === userName || c.assignedTo === userName);
 
         // Filter out tasks that have already been accepted
         const acceptedTasksStr = localStorage.getItem("acceptedTasks") || "[]";

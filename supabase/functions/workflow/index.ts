@@ -452,7 +452,7 @@ serve(async (req: Request) => {
           .replace(/[%_\\]/g, "\\$&")
           .substring(0, 100);
         query = query.or(
-          `customer_name.ilike.%${safeSearch}%,id.ilike.%${safeSearch}%,tracking_id.ilike.%${safeSearch}%,customer_id.ilike.%${safeSearch}%`,
+          `customer_name.ilike.%${safeSearch}%,tracking_id.ilike.%${safeSearch}%,customer_id.ilike.%${safeSearch}%`,
         );
       }
 
@@ -465,7 +465,7 @@ serve(async (req: Request) => {
         .range(offset, offset + requestedLimit - 1);
       if (error) throw error;
 
-      const maskedData = data.map((caseObj: any) => {
+      const maskedData = (data || []).map((caseObj: any) => {
         const withMaskedDocs = {
           ...caseObj,
           documents: maskDocumentsForRole(effectiveRole, caseObj.documents),
@@ -1927,15 +1927,28 @@ serve(async (req: Request) => {
 
     return jsonResponse({ message: "Unknown action" }, 400);
   } catch (err: unknown) {
-    const message =
-      err instanceof Error
-        ? err.message
-        : (err as any).message || "Internal error";
-    const status =
-      message.includes("Unauthorized") || message.includes("inactive")
-        ? 401
-        : 500;
-    return jsonResponse({ message, details: err }, status);
+    let message = "Internal error";
+    if (err instanceof Error) {
+      message = err.message;
+    } else if (err && typeof (err as any).message === "string") {
+      message = (err as any).message;
+    }
+
+    const status = message.includes("Unauthorized") || message.includes("inactive") ? 401 : 500;
+    
+    let detailsStr;
+    try {
+      // Serialize PostgrestError cleanly
+      detailsStr = JSON.stringify(err, Object.getOwnPropertyNames(err));
+    } catch {
+      detailsStr = "Unserializable error details";
+    }
+
+    // Force application/json response so client doesn't get plain text HTML
+    return new Response(JSON.stringify({ message, details: detailsStr }), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
 

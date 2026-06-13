@@ -694,7 +694,8 @@ const BankingDashboard = ({ onLogout }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const data = await edgeFetch(EDGE.workflow, { action: "get_all" });
+      const raw = await edgeFetch(EDGE.workflow, { action: "get_all" });
+      const data = Array.isArray(raw) ? raw : (raw?.data || []);
       // Only consider Loan cases for the Banking Dashboard
       const loanCases = data.filter((c) => (c.payment_type || "").toLowerCase() === "loan");
       setAllCases(loanCases);

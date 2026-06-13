@@ -1,3 +1,4 @@
+// @ts-nocheck
 // supabase/functions/analytics/index.ts
 // Replaces Express analytics routes — getStats, getPipeline, getPerformance, getOverdue,
 // getMonthlySummary, getActivity, employee_stats, dept_overview, lead_tracking

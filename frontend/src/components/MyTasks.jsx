@@ -87,7 +87,8 @@ const MyTasks = ({ onLogout }) => {
         navigate("/login");
         return;
       }
-      const raw = await edgeFetch(EDGE.workflow, { action: "get_all" });
+      const response = await edgeFetch(EDGE.workflow, { action: "get_all" });
+      const raw = Array.isArray(response) ? response : (response?.data || []);
       const allMapped = (raw || []).map((c) => ({
         ...c,
         caseId: c.id ?? c.case_id ?? c.caseId,

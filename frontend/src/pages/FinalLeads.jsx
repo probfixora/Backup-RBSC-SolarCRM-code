@@ -29,7 +29,8 @@ const FinalLeads = ({ onLogout }) => {
     if (!userId) return;
     try {
       setLoading(true);
-      const data = await edgeFetch(EDGE.workflow, { action: "get_all" });
+      const raw = await edgeFetch(EDGE.workflow, { action: "get_all" });
+      const data = Array.isArray(raw) ? raw : (raw?.data || []);
       // Filter cases created by this sales user
       const mapped = data
         .filter((c) => c.created_by === userId || c.createdBy === userId)
