@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { edgeFetch, EDGE } from "../lib/supabaseClient";
+import { edgeFetch, EDGE, supabase } from "../lib/supabaseClient";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
