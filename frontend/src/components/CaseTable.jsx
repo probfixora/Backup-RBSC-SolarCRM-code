@@ -251,12 +251,11 @@ const getDeptStatus = (c) => {
       dept: deptLabel,
       stage: currentStage,
     };
-  }
   return {
-    label: "Pending",
-    color: "#92400e",
-    bg: "#fffbeb",
-    border: "#fde68a",
+    label: "In Progress",
+    color: "#1d4ed8",
+    bg: "#eff6ff",
+    border: "#bfdbfe",
     icon: "clock",
     dept: deptLabel,
     stage: currentStage,
