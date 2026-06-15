@@ -81,56 +81,152 @@ const CustomerTermsModal = ({ isOpen, onClose }) => {
             fontFamily: "Inter, system-ui, sans-serif",
           }}
         >
-          <p style={{ marginBottom: "16px" }}>
-            Welcome to {APP_CONFIG.companyName}. By uploading your documents and proceeding with our services, you acknowledge and agree to the following Terms and Conditions regarding the collection, storage, and processing of your personal and sensitive data.
+          <h1 style={{ fontSize: "18px", color: "#0f172a", fontWeight: "800", marginBottom: "8px", textTransform: "uppercase" }}>
+            Terms and Conditions for Data Processing and Services
+          </h1>
+          <p style={{ marginBottom: "16px", fontSize: "12px", color: "#64748b" }}>
+            <strong>Effective Date:</strong> June 16, 2026<br/>
+            <strong>Published By:</strong> RBSC Solar (hereinafter referred to as "the Company")
           </p>
 
           <h3 style={{ fontSize: "16px", color: "#0f172a", fontWeight: "700", marginTop: "24px", marginBottom: "12px" }}>
-            1. Data Collection and Purpose
+            1. PREAMBLE AND ACCEPTANCE OF TERMS
           </h3>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>1.1 Binding Agreement</h4>
           <p style={{ marginBottom: "16px" }}>
-            We collect personal documents (such as Aadhar Card, PAN Card, electricity bills, and property tax receipts) solely for the purpose of processing your solar installation application, applying for government subsidies (if applicable), and verifying your identity as required by relevant authorities.
+            Welcome to RBSC Solar. This document constitutes a legally binding agreement between you (the "User", "Customer", or "Data Subject") and RBSC Solar ("Company", "We", "Us", or "Our"). By accessing our platform, uploading documents, registering an account, or proceeding with any of our solar installation services, you explicitly acknowledge that you have read, understood, and agreed to be bound by these Terms and Conditions.
+          </p>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>1.2 Consent to Data Processing</h4>
+          <p style={{ marginBottom: "16px" }}>
+            By executing the digital checkbox, uploading files, or submitting information to our portal, you provide your explicit, unequivocal, and informed consent to the collection, storage, hosting, transmission, and processing of your personal and sensitive data as outlined herein. If you do not agree to these terms, you must immediately cease using our services and refrain from uploading any personal documentation.
           </p>
 
           <h3 style={{ fontSize: "16px", color: "#0f172a", fontWeight: "700", marginTop: "24px", marginBottom: "12px" }}>
-            2. Third-Party Infrastructure (Backend as a Service)
+            2. SCOPE OF DATA COLLECTION AND SPECIFIC PURPOSES
           </h3>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>2.1 Types of Information Collected</h4>
+          <p style={{ marginBottom: "8px" }}>To facilitate the assessment, design, approval, and execution of residential or commercial solar infrastructure, the Company must collect various categories of information, which may include but are not limited to:</p>
+          <ul style={{ paddingLeft: "20px", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            <li><strong>Identity Proof:</strong> Government-issued identification documents including PAN Card, Passport, Driver’s License, or identity card details (e.g., Aadhaar) for verification purposes.</li>
+            <li><strong>Utility & Financial Data:</strong> Recent electricity bills, consumer account numbers, load history, and property tax receipts.</li>
+            <li><strong>Property Information:</strong> Site layout, roof ownership documentation, geolocation data, and structural photographs.</li>
+            <li><strong>Contact Information:</strong> Full legal name, permanent address, installation address, email ID, and mobile numbers.</li>
+          </ul>
+
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>2.2 Lawful Purpose of Collection</h4>
+          <p style={{ marginBottom: "8px" }}>All data collected under this Section is strictly utilized for executing contractual obligations and statutory requirements. The primary purposes include:</p>
+          <ul style={{ paddingLeft: "20px", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            <li>Verifying the legal ownership of the property where the solar installation is proposed.</li>
+            <li>Assessing structural and electrical feasibility based on past energy consumption patterns.</li>
+            <li>Processing and submitting applications for Central or State Government subsidies, net-metering schemes, and grid-connectivity approvals on behalf of the customer.</li>
+            <li>Complying with Know Your Customer (KYC) guidelines mandated by electricity distribution companies (DISCOMs) and financial institutions.</li>
+          </ul>
+
+          <h3 style={{ fontSize: "16px", color: "#0f172a", fontWeight: "700", marginTop: "24px", marginBottom: "12px" }}>
+            3. THIRD-PARTY BACKEND-AS-A-SERVICE (BaaS) INFRASTRUCTURE
+          </h3>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>3.1 Use of Cloud Infrastructure</h4>
           <p style={{ marginBottom: "16px" }}>
-            In order to provide highly available and scalable services, {APP_CONFIG.companyName} utilizes third-party Backend-as-a-Service (BaaS) infrastructure. Specifically, your data and uploaded documents are stored using <strong>Supabase</strong>, which is hosted on <strong>Amazon Web Services (AWS)</strong> cloud servers.
+            To ensure enterprise-grade availability, high scalability, and seamless performance, RBSC Solar does not maintain local physical servers. Instead, the Company utilizes third-party Backend-as-a-Service (BaaS) and Infrastructure-as-a-Service (IaaS) providers.
           </p>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>3.2 Specific Service Providers</h4>
+          <p style={{ marginBottom: "8px" }}>Your data, including scanned copies of sensitive identity proofs, financial documents, and application records, are securely stored and processed via:</p>
+          <ul style={{ paddingLeft: "20px", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            <li><strong>Supabase Inc.:</strong> Actively acting as our database management system and application backend layer.</li>
+            <li><strong>Amazon Web Services (AWS):</strong> Acting as the primary cloud hosting environment where Supabase databases and storage buckets reside.</li>
+          </ul>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>3.3 Industry-Standard Security Standards</h4>
           <p style={{ marginBottom: "16px" }}>
-            AWS and Supabase employ industry-standard security measures, encryption, and compliance frameworks to protect the data stored on their servers.
+            The third-party providers (AWS and Supabase) utilize industry-leading security architectures, including but not limited to Advanced Encryption Standard (AES-256) for data-at-rest, Transport Layer Security (TLS 1.3) for data-in-transit, SOC 2 Type II certifications, and robust firewall configurations designed to prevent unauthorized physical or digital intrusion.
           </p>
 
           <h3 style={{ fontSize: "16px", color: "#0f172a", fontWeight: "700", marginTop: "24px", marginBottom: "12px" }}>
-            3. Limitation of Liability for Third-Party Data Breaches
+            4. STRICT LIMITATION OF LIABILITY FOR THIRD-PARTY DATA BREACHES
           </h3>
-          <p style={{ marginBottom: "16px", background: "#fff1f2", padding: "12px", borderLeft: "4px solid #e11d48", borderRadius: "0 8px 8px 0", color: "#9f1239", fontWeight: "500" }}>
-            While {APP_CONFIG.companyName} implements strict access controls and application-level security, we do not own or maintain the physical servers where your data is stored. <strong>Therefore, {APP_CONFIG.companyName} shall not be held liable or legally responsible for any data loss, data leaks, unauthorized access, or breaches that occur directly as a result of vulnerabilities, hacks, or failures on the infrastructure provided by Supabase or Amazon Web Services (AWS).</strong>
-          </p>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>4.1 Independent Infrastructure Acknowledgment</h4>
           <p style={{ marginBottom: "16px" }}>
-            By checking the agreement box and uploading your documents, you explicitly acknowledge this limitation of liability and consent to your data being stored on these third-party cloud platforms under their respective security policies.
+            The Customer explicitly acknowledges that RBSC Solar exercises no direct operational control over the physical servers, hardware architecture, network routing, or data-center security protocols maintained by Supabase or Amazon Web Services (AWS).
+          </p>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>4.2 Indemnification and Exclusion of Liability</h4>
+          <div style={{ marginBottom: "16px", background: "#fff1f2", padding: "14px", borderLeft: "4px solid #e11d48", borderRadius: "0 8px 8px 0" }}>
+            <p style={{ marginBottom: "8px", color: "#9f1239", fontWeight: "500" }}>
+              <strong>No Absolute Guarantee:</strong> While RBSC Solar implements strict application-level security, role-based access tokens, and secure API handshakes, no digital system is entirely immune to malicious cyber-attacks.
+            </p>
+            <p style={{ marginBottom: "8px", color: "#9f1239", fontWeight: "500" }}>
+              <strong>Exclusion Clause:</strong> RBSC Solar, its directors, employees, partners, and stakeholders shall not be held liable, legally responsible, or financially accountable under tort, contract, or strict liability for any data loss, accidental leaks, systemic hacks, zero-day vulnerabilities, ransomware attacks, or unauthorized third-party access that occurs due to a failure, exploit, or breach originating directly within the infrastructure or networks of Supabase, AWS, or related third-party telecommunication providers.
+            </p>
+            <p style={{ color: "#9f1239", fontWeight: "500" }}>
+              <strong>Assumption of Risk:</strong> By agreeing to these terms, the Customer voluntarily assumes all inherent risks associated with storing sensitive files on global cloud platforms and agrees not to initiate any class-action lawsuits, claims, or arbitration against RBSC Solar for infrastructure-level data compromises.
+            </p>
+          </div>
+
+          <h3 style={{ fontSize: "16px", color: "#0f172a", fontWeight: "700", marginTop: "24px", marginBottom: "12px" }}>
+            5. ROBUST DATA RETENTION, ARCHIVING, AND DELETION POLICIES
+          </h3>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>5.1 Retention Period</h4>
+          <p style={{ marginBottom: "8px" }}>The Company retains personal data only for the duration required to satisfy the operational lifecycle of the project. This includes:</p>
+          <ul style={{ paddingLeft: "20px", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            <li>The active installation, structural engineering, and grid-testing phase.</li>
+            <li>The statutory duration required to secure government-backed fiscal incentives or solar subsidies.</li>
+            <li>The duration of the operational warranty, maintenance agreements, or product performance guarantee cycles (which can span several years).</li>
+          </ul>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>5.2 Right to Erasure / Deletion</h4>
+          <p style={{ marginBottom: "16px" }}>
+            Customers have the right to request the permanent deletion of their personal records from our databases.<br/>
+            <strong>Procedure:</strong> You may submit a formal deletion request via email to our dedicated data privacy desk at support@rbscsolar.com.<br/>
+            <strong>Legal Exceptions:</strong> Upon receiving a verified request, the Company will initiate data erasure protocols within thirty (30) business days. However, the Company reserves the right to retain specific files or metadata if such documentation is strictly mandated by Indian tax laws, regulatory bodies, ongoing judicial disputes, or active contractual warranties that cannot be serviced without data visibility.
           </p>
 
           <h3 style={{ fontSize: "16px", color: "#0f172a", fontWeight: "700", marginTop: "24px", marginBottom: "12px" }}>
-            4. Data Retention and Deletion
+            6. DATA CONFIDENTIALITY, ACCESS CONTROL, AND RESTRICTION ON SHARING
           </h3>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>6.1 Internal Access Restriction (Role-Based Access Control)</h4>
+          <p style={{ marginBottom: "8px" }}>
+            RBSC Solar operates on a strict principle of least privilege ("Need-to-Know" basis). Access to your uploaded documents is restricted using secure, authenticated internal dashboards. Only verified personnel from the following specific departments are granted operational clearance:
+          </p>
+          <ul style={{ paddingLeft: "20px", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            <li><strong>Registration & Documentation Department:</strong> For verification and processing of legal paperwork.</li>
+            <li><strong>Engineering & Installation Department:</strong> For evaluating physical electrical capacity and structural feasibility.</li>
+          </ul>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>6.2 Zero Commercial Sharing Policy</h4>
           <p style={{ marginBottom: "16px" }}>
-            Your documents will be retained on our secure cloud storage for as long as necessary to fulfill the purposes outlined in these terms, including the lifecycle of your solar installation and subsequent maintenance or warranty periods. You reserve the right to request the deletion of your documents by contacting our support team, subject to any legal or regulatory retention requirements.
+            The Company strictly guarantees that your personal identifiable information (PII) is treated as highly confidential. RBSC Solar does not sell, trade, lease, rent, or unauthorizedly disclose your data, contact numbers, or documents to external marketing agencies, programmatic advertising networks, or any unrelated third-party entities for commercial gain.
+          </p>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>6.3 Authorized Disclosures</h4>
+          <p style={{ marginBottom: "16px" }}>
+            Data sharing is permitted exclusively to authorized public entities (such as State Electricity Boards, DISCOMs, and Ministry of New and Renewable Energy officials) solely for securing net-metering connections and processing standard subsidy applications.
           </p>
 
           <h3 style={{ fontSize: "16px", color: "#0f172a", fontWeight: "700", marginTop: "24px", marginBottom: "12px" }}>
-            5. Confidentiality and Access
+            7. GOVERNING LAW, DISPUTE RESOLUTION, AND JURISDICTION
           </h3>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>7.1 Governing Law</h4>
           <p style={{ marginBottom: "16px" }}>
-            Only authorized personnel from the Registration and Installation departments of {APP_CONFIG.companyName} have access to your uploaded documents. We do not sell, rent, or unauthorizedly share your personal data with external marketing agencies or unrelated third parties.
+            These Terms and Conditions, along with the entire data privacy framework of RBSC Solar, shall be governed, interpreted, and construed strictly in accordance with the substantive laws of the Republic of India, including the Information Technology Act, 2000, and any subsequent digital personal data protection enactments.
+          </p>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>7.2 Amicable Settlement</h4>
+          <p style={{ marginBottom: "16px" }}>
+            In the event of any dispute, claim, controversy, or grievance arising out of or relating to these terms, data storage protocols, or service delivery, both parties shall first attempt to resolve the matter amicably through good-faith mutual consultations lasting at least thirty (30) business days from the date of written notice.
+          </p>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>7.3 Exclusive Jurisdiction</h4>
+          <p style={{ marginBottom: "16px" }}>
+            If an amicable settlement cannot be achieved, all legal proceedings, litigations, or arbitrations connected directly or indirectly with these terms shall be subject to the exclusive jurisdiction of the competent courts located within the city/operating region of the registered headquarters of RBSC Solar.
           </p>
 
           <h3 style={{ fontSize: "16px", color: "#0f172a", fontWeight: "700", marginTop: "24px", marginBottom: "12px" }}>
-            6. Governing Law
+            8. MISCELLANEOUS PROVISIONS
           </h3>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>8.1 Severability</h4>
           <p style={{ marginBottom: "16px" }}>
-            These terms shall be governed and construed in accordance with the laws of India. Any disputes arising out of these terms related to data storage shall be subject to the exclusive jurisdiction of the courts in our operating region.
+            If any provision or clause of these Terms and Conditions is found to be invalid, illegal, or unenforceable by a court of competent jurisdiction, such invalidity shall not affect the remaining portions of this agreement. The remaining clauses shall continue in full force and effect as if the invalid portion had been omitted.
+          </p>
+          <h4 style={{ fontSize: "14px", color: "#334155", fontWeight: "600", marginBottom: "8px" }}>8.2 Amendments and Updates</h4>
+          <p style={{ marginBottom: "16px" }}>
+            RBSC Solar reserves the right, at its sole discretion, to modify, update, or revise these Terms and Conditions at any time to reflect changes in cloud infrastructure, legal regulations, or operational upgrades. Any modifications will become effective immediately upon being posted on our official portal. Continued utilization of our services post-update implies complete acceptance of the revised terms.
+          </p>
+
+          <p style={{ marginTop: "32px", fontSize: "13px", fontWeight: "600", color: "#1e293b", textAlign: "center", background: "#f1f5f9", padding: "12px", borderRadius: "8px" }}>
+            By checking the "I Agree" box, you formally declare that you have full legal capacity to consent to these terms and willingly authorize RBSC Solar to process your records under these provisions.
           </p>
         </div>
 
