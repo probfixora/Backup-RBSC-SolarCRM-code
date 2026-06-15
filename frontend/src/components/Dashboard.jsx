@@ -291,7 +291,12 @@ const Dashboard = ({
         }
 
         if (failures.length > 0) {
-          console.error("Some dashboard requests failed:", failures);
+          results.forEach((r, i) => {
+            if (r.status === "rejected") {
+              const labels = ["stats","activity","get_all","pipeline","monthly_summary","overdue","performance"];
+              console.error(`[Dashboard] Request #${i} (${labels[i] || "unknown"}) failed:`, r.reason);
+            }
+          });
           toast.error(`Partial load: ${failures.length} widgets failed.`);
         }
       } catch (err) {

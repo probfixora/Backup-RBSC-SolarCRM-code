@@ -69,24 +69,17 @@ for (const [stage, roles] of Object.entries(stageToAllowedRole)) {
 }
 
 // ─── CORS headers ─────────────────────────────────────────────────────────────
-// Restrict to known origins only — no wildcard in production.
-const ALLOWED_ORIGINS = [
-  "https://crm.rbscsolar.in",
-  "https://rbscsolar.in",
-  "http://localhost:3000",
-  "http://localhost:5173",
-];
+// Use wildcard CORS — auth is JWT-based in Authorization header (not cookies),
+// so wildcard is safe and avoids origin-mismatch issues across subdomains.
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
-function getCorsHeaders(req: Request) {
-  const origin = req.headers.get("Origin") || "";
-  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Vary": "Origin",
-  };
+function getCorsHeaders(_req?: Request) {
+  return corsHeaders;
 }
 
 // ─── Helper: verify JWT and get user profile ──────────────────────────────────
@@ -314,8 +307,7 @@ function maskCaseDataForRole(role: string, caseRow: any): any {
 }
 
 // ─── Global fallback CORS headers (used by jsonResponse outside serve scope) ────
-// These use the first allowed origin as the default (safe production fallback)
-const defaultCorsHeaders = getCorsHeaders(new Request("https://crm.rbscsolar.in"));
+const defaultCorsHeaders = corsHeaders;
 
 // ─── JSON response helper ──────────────────────────────────────────────────────
 // corsHeaders parameter defaults to the global fallback when called outside serve()
