@@ -8,6 +8,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { APP_CONFIG } from "../config";
+import CustomerTermsModal from "../components/CustomerTermsModal";
 
 // ── Solar Loan Document Rules ─────────────────────────────────────────────────
 const BASE_DOCS = [
@@ -68,6 +69,8 @@ export default function CustomerPortal() {
   const [uploading, setUploading] = useState(false);
   const [docs, setDocs] = useState({});
   const [uploadDone, setUploadDone] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const kw = caseData ? getKw(caseData) : 0;
   const [profile, setProfile] = useState("Job/Service");
@@ -848,6 +851,8 @@ export default function CustomerPortal() {
             </div>
           )}
 
+          <CustomerTermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
+
           <form
             onSubmit={handleDocUpload}
             style={{ display: "flex", flexDirection: "column", gap: 14 }}
@@ -907,14 +912,37 @@ export default function CustomerPortal() {
               </div>
             ))}
 
+            <div style={{ marginTop: 8, display: "flex", alignItems: "flex-start", gap: 10 }}>
+              <input
+                type="checkbox"
+                id="terms_checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                style={{ marginTop: 4, cursor: "pointer", width: 16, height: 16 }}
+              />
+              <label htmlFor="terms_checkbox" style={{ fontSize: 13, color: "#475569", lineHeight: 1.5, cursor: "pointer", userSelect: "none" }}>
+                I have read and agree to the{" "}
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowTerms(true);
+                  }}
+                  style={{ color: "#2563EB", fontWeight: 600, textDecoration: "underline" }}
+                >
+                  Terms & Conditions for Data Storage
+                </span>
+                . I understand my data is stored on AWS/Supabase cloud infrastructure.
+              </label>
+            </div>
+
             <button
               type="submit"
-              disabled={uploading}
+              disabled={uploading || !termsAccepted}
               style={{
                 width: "100%",
                 padding: "13px",
                 marginTop: 8,
-                background: uploading
+                background: (uploading || !termsAccepted)
                   ? "#94a3b8"
                   : "linear-gradient(135deg, #2563EB, #1d4ed8)",
                 color: "#fff",
@@ -922,7 +950,7 @@ export default function CustomerPortal() {
                 borderRadius: 12,
                 fontSize: 14,
                 fontWeight: 700,
-                cursor: uploading ? "not-allowed" : "pointer",
+                cursor: (uploading || !termsAccepted) ? "not-allowed" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
