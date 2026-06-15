@@ -59,7 +59,7 @@ serve(async (req: Request) => {
 
     // ── CREATE USER ────────────────────────────────────────────────────────
     if (action === "create_user") {
-      const { name, email, role } = body;
+      const { name, email, role, mobile, dob, state, city } = body;
 
       // Validation
       if (!name || !email || !role) {
@@ -94,7 +94,23 @@ serve(async (req: Request) => {
 
       // Generate default password and Employee ID
       const password = Deno.env.get("DEFAULT_PASSWORD") || "RBSCsolar@123";
-      const employeeId = "EMP-" + Math.floor(1000 + Math.random() * 9000);
+      
+      let employeeId = body.employeeId;
+      if (!employeeId) {
+        const nameParts = name.trim().split(/\s+/);
+        let initials = "";
+        if (nameParts.length > 1) {
+          initials = (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+        } else if (nameParts.length === 1 && nameParts[0].length >= 2) {
+          initials = nameParts[0].substring(0, 2).toUpperCase();
+        } else if (nameParts.length === 1) {
+          initials = nameParts[0].toUpperCase() + "X";
+        } else {
+          initials = "XX";
+        }
+        const random5 = Math.floor(10000 + Math.random() * 90000);
+        employeeId = `RBSC${initials}${random5}`;
+      }
 
       // Create auth user
       const { data: authData, error: authError } =
@@ -126,6 +142,11 @@ serve(async (req: Request) => {
         status: "active",
         is_first_login: true,
         employee_id: employeeId,
+        mobile,
+        dob,
+        state,
+        city,
+        country: "India",
       });
 
       if (profileError) {
@@ -310,7 +331,7 @@ serve(async (req: Request) => {
       const { data: profiles, error } = await supabase
         .from("profiles")
         .select(
-          "id, name, role, status, is_first_login, created_at, employee_id",
+          "id, name, role, status, status_date, status_duration, is_first_login, created_at, employee_id, mobile, dob, gender, country, state, city, emergency_name, emergency_phone, home_address, bank_name, branch_name, account_number, ifsc_code, experience_years, company_name, work_location, professional_designation, last_ctc, aadhar_card, pan_card",
         );
       if (error) throw error;
 
@@ -330,9 +351,31 @@ serve(async (req: Request) => {
           email: u.email || "",
           role: p?.role || "sales",
           status: p?.status || "inactive",
+          statusDate: p?.status_date || null,
+          statusDuration: p?.status_duration || null,
           isFirstLogin: p?.is_first_login ?? true,
           createdAt: u.created_at,
           employeeId: p?.employee_id || "N/A",
+          mobile: p?.mobile || "",
+          dob: p?.dob || "",
+          gender: p?.gender || "",
+          country: p?.country || "India",
+          state: p?.state || "",
+          city: p?.city || "",
+          emergencyName: p?.emergency_name || "",
+          emergencyPhone: p?.emergency_phone || "",
+          homeAddress: p?.home_address || "",
+          bankName: p?.bank_name || "",
+          branchName: p?.branch_name || "",
+          accountNumber: p?.account_number || "",
+          ifscCode: p?.ifsc_code || "",
+          experienceYears: p?.experience_years || "",
+          companyName: p?.company_name || "",
+          workLocation: p?.work_location || "",
+          professionalDesignation: p?.professional_designation || "",
+          lastCtc: p?.last_ctc || "",
+          aadharCard: p?.aadhar_card || "",
+          panCard: p?.pan_card || "",
         };
       });
 
@@ -341,13 +384,35 @@ serve(async (req: Request) => {
 
     // ── UPDATE USER ────────────────────────────────────────────────────────
     if (action === "update_user") {
-      const { userId, name, role, status } = body;
+      const { userId, employeeId, name, role, status, statusDate, statusDuration, mobile, dob, gender, state, city, emergencyName, emergencyPhone, homeAddress, bankName, branchName, accountNumber, ifscCode, experienceYears, companyName, workLocation, professionalDesignation, lastCtc, aadharCard, panCard } = body;
       if (!userId) return jsonResponse({ message: "userId required" }, 400);
 
       const updatePayload: Record<string, unknown> = {};
+      if (employeeId !== undefined) updatePayload.employee_id = employeeId;
       if (name !== undefined) updatePayload.name = name;
       if (role !== undefined) updatePayload.role = role;
       if (status !== undefined) updatePayload.status = status;
+      if (statusDate !== undefined) updatePayload.status_date = statusDate;
+      if (statusDuration !== undefined) updatePayload.status_duration = statusDuration;
+      if (mobile !== undefined) updatePayload.mobile = mobile;
+      if (dob !== undefined) updatePayload.dob = dob === "" ? null : dob;
+      if (gender !== undefined) updatePayload.gender = gender;
+      if (state !== undefined) updatePayload.state = state;
+      if (city !== undefined) updatePayload.city = city;
+      if (emergencyName !== undefined) updatePayload.emergency_name = emergencyName;
+      if (emergencyPhone !== undefined) updatePayload.emergency_phone = emergencyPhone;
+      if (homeAddress !== undefined) updatePayload.home_address = homeAddress;
+      if (bankName !== undefined) updatePayload.bank_name = bankName;
+      if (branchName !== undefined) updatePayload.branch_name = branchName;
+      if (accountNumber !== undefined) updatePayload.account_number = accountNumber;
+      if (ifscCode !== undefined) updatePayload.ifsc_code = ifscCode;
+      if (experienceYears !== undefined) updatePayload.experience_years = experienceYears;
+      if (companyName !== undefined) updatePayload.company_name = companyName;
+      if (workLocation !== undefined) updatePayload.work_location = workLocation;
+      if (professionalDesignation !== undefined) updatePayload.professional_designation = professionalDesignation;
+      if (lastCtc !== undefined) updatePayload.last_ctc = lastCtc;
+      if (aadharCard !== undefined) updatePayload.aadhar_card = aadharCard;
+      if (panCard !== undefined) updatePayload.pan_card = panCard;
 
       const { error } = await supabase
         .from("profiles")

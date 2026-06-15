@@ -1,24 +1,18 @@
 // src/lib/supabaseClient.js
-// Central Supabase client — proxied securely to hide API keys
 import { createClient } from "@supabase/supabase-js";
 
-// The URL and Key are now completely hidden from the frontend!
-// All requests are routed through our Serverless Proxy (/api/supabase)
-const supabaseUrl = window.location.origin + "/api/supabase";
-const supabaseAnonKey = "hidden-key";
+const SUPABASE_URL = "https://rgipmrviqapxxilsiclm.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnaXBtcnZpcWFweHhpbHNpY2xtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMzEyNDYsImV4cCI6MjA5MzgwNzI0Nn0.8Dd5klNtsPGFCikUZYihVJTq-TLiS1Tn58pJ2vENHgM";
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ─── Edge Function base URLs ──────────────────────────────────────────────────
-// All complex operations go through Edge Functions using the user's JWT.
-// Simple reads could use PostgREST directly via supabase.from('table').select(),
-// but for consistency and RBAC enforcement we route everything through Edge Functions.
-
 export const EDGE = {
-  workflow: `${supabaseUrl}/functions/v1/workflow`,
-  analytics: `${supabaseUrl}/functions/v1/analytics`,
-  quotation: `${supabaseUrl}/functions/v1/quotation`,
-  admin: `${supabaseUrl}/functions/v1/admin`,
+  workflow: `${SUPABASE_URL}/functions/v1/workflow`,
+  analytics: `${SUPABASE_URL}/functions/v1/analytics`,
+  quotation: `${SUPABASE_URL}/functions/v1/quotation`,
+  admin: `${SUPABASE_URL}/functions/v1/admin`,
 };
 
 // ─── Authenticated fetch helper ───────────────────────────────────────────────

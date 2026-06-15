@@ -56,6 +56,11 @@ import DispatchCustomers from "./pages/DispatchCustomers";
 import TechnicalDashboard from "./pages/TechnicalDashboard";
 import AccountsDashboard from "./pages/AccountsDashboard";
 import CustomerServiceDashboard from "./pages/CustomerServiceDashboard";
+// Employee List
+import EmployeeListPage from "./pages/EmployeeListPage";
+
+// Public Pages
+import TermsOfService from "./pages/TermsOfService";
 
 // Public pages
 import TrackingPage from "./pages/TrackingPage";
@@ -481,6 +486,14 @@ function App() {
             }
           />
           <Route
+            path="/employee-list"
+            element={
+              <ProtectedRoute role="admin">
+                <EmployeeListPage onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/profile"
             element={
               <ProtectedRoute>
@@ -565,6 +578,7 @@ function App() {
 
           {/* Public Routes — no auth required */}
           <Route path="/customer-portal" element={<CustomerPortal />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
 
           {/* Default Redirects */}
           <Route path="/" element={<DashboardRedirect />} />

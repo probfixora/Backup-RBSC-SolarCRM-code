@@ -52,7 +52,7 @@ const Login = ({ setToken }) => {
 
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("name, role, status, employee_id")
+        .select("name, role, status, status_date, status_duration, employee_id")
         .eq("id", user.id)
         .single();
 
@@ -64,8 +64,24 @@ const Login = ({ setToken }) => {
         throw new Error(
           "Could not load user profile metadata: profile is null",
         );
-      if (profile.status === "inactive")
-        throw new Error("Account is deactivated. Please contact support.");
+
+      const pStatus = profile.status || "active";
+      if (pStatus === "inactive") throw new Error("You are inactive. Please contact support.");
+      if (pStatus === "terminate") throw new Error("You are terminated. Please contact support.");
+      if (pStatus === "resign") throw new Error("You have resigned. Please contact support.");
+      
+      if (pStatus === "suspend") {
+        if (profile.status_date && profile.status_duration) {
+          const suspendStart = new Date(profile.status_date);
+          const diffDays = Math.floor((new Date() - suspendStart) / (1000 * 60 * 60 * 24));
+          if (diffDays <= profile.status_duration) {
+            throw new Error(`You are suspended for ${profile.status_duration} days. Please contact support.`);
+          }
+        } else {
+          // Fallback if no dates set but status is suspend
+          throw new Error("You are suspended. Please contact support.");
+        }
+      }
 
       const { name, role, employee_id } = profile;
 

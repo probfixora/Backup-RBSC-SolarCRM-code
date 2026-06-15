@@ -58,9 +58,18 @@ const UserTable = ({ ctx }) => {
                     </span>
                   </td>
                   <td>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <div className="status-dot online" />
-                      <span style={{ fontSize: "12.5px", color: "#15803d", fontWeight: 500 }}>Active</span>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px", alignItems: "flex-start" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <div className={`status-dot ${user.status === 'active' || !user.status ? 'online' : 'offline'}`} style={{ background: user.status === 'suspend' ? '#d97706' : user.status === 'terminate' ? '#dc2626' : user.status === 'resign' ? '#4f46e5' : user.status === 'inactive' ? '#9ca3af' : '' }} />
+                        <span style={{ fontSize: "12.5px", color: user.status === 'active' || !user.status ? "#15803d" : user.status === 'suspend' ? '#d97706' : user.status === 'terminate' ? '#dc2626' : user.status === 'resign' ? '#4f46e5' : '#6b7280', fontWeight: 600, textTransform: "capitalize" }}>
+                          {user.status || "Active"}
+                        </span>
+                      </div>
+                      {user.status && user.status !== "active" && (
+                        <span style={{ fontSize: "10.5px", color: "#6b7280", fontWeight: 500, marginLeft: "14px" }}>
+                          {user.status === "suspend" ? `Duration: ${user.statusDuration || "-"} Days` : `Date: ${user.statusDate ? new Date(user.statusDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "-"}`}
+                        </span>
+                      )}
                     </div>
                   </td>
                   {loggedInRole === "admin" && (
@@ -121,9 +130,18 @@ const UserTable = ({ ctx }) => {
                     <p style={{ fontSize: "13px", color: "var(--text-4)" }}>{user.email}</p>
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <div className="status-dot online" />
-                  <span style={{ fontSize: "12px", color: "#15803d", fontWeight: 600 }}>Active</span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div className={`status-dot ${user.status === 'active' || !user.status ? 'online' : 'offline'}`} style={{ background: user.status === 'suspend' ? '#d97706' : user.status === 'terminate' ? '#dc2626' : user.status === 'resign' ? '#4f46e5' : user.status === 'inactive' ? '#9ca3af' : '' }} />
+                    <span style={{ fontSize: "12px", color: user.status === 'active' || !user.status ? "#15803d" : user.status === 'suspend' ? '#d97706' : user.status === 'terminate' ? '#dc2626' : user.status === 'resign' ? '#4f46e5' : '#6b7280', fontWeight: 600, textTransform: "capitalize" }}>
+                      {user.status || "Active"}
+                    </span>
+                  </div>
+                  {user.status && user.status !== "active" && (
+                    <span style={{ fontSize: "10.5px", color: "#6b7280", fontWeight: 500 }}>
+                      {user.status === "suspend" ? `${user.statusDuration || "-"} Days` : user.statusDate ? new Date(user.statusDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "-"}
+                    </span>
+                  )}
                 </div>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", background: "var(--surface-2)", padding: "12px", borderRadius: "8px" }}>

@@ -1,161 +1,211 @@
 import React, { useState } from "react";
-import { UserPlus, X, Shield, User, Mail } from "lucide-react";
-import { APP_CONFIG } from "../../config";
-import { ROLE_OPTIONS, fieldStyle, fieldFocusStyle } from "./usersConstants";
+import { X } from "lucide-react";
+import toast from "react-hot-toast";
+import { edgeFetch, EDGE } from "../../lib/supabaseClient";
+import { State, City } from "country-state-city";
+
+const roleMeta = {
+  sales: { label: "Sales" },
+  banking: { label: "Banking & Finance" },
+  field_installation: { label: "Installation" },
+  subsidy: { label: "Subsidy" },
+  accounts: { label: "Accounts" },
+  procurement: { label: "Procurement" },
+  registration: { label: "Registration" },
+  inventory: { label: "Inventory" },
+  electrical: { label: "Electrical" },
+  technical: { label: "Technical QA" },
+  customer_service: { label: "Customer Service" },
+  admin: { label: "Admin" },
+};
 
 const AddMemberModal = ({ ctx }) => {
-  const {
-    showAddModal, setShowAddModal,
-    handleAddSubmit, formData, setFormData,
-    addLoading,
-  } = ctx;
+  const { showAddModal, setShowAddModal, fetchUsers } = ctx;
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    employeeId: "",
+    name: "",
+    email: "",
+    role: "",
+    mobile: "",
+    countryCode: "IN +91",
+    dob: "",
+    country: "India",
+    stateIsoCode: "",
+    state: "",
+    city: "",
+  });
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  const [focusedField, setFocusedField] = useState("");
+  const indianStates = State.getStatesOfCountry("IN");
+  const citiesOfState = form.stateIsoCode ? City.getCitiesOfState("IN", form.stateIsoCode) : [];
 
   if (!showAddModal) return null;
 
-  return (
-    <div className="modal-overlay" style={{ alignItems: "center", padding: "16px" }}>
-      <div className="modal-card" style={{ maxWidth: "500px", maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        
-        {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #2563EB 60%, #3b82f6 100%)", padding: "18px 24px", position: "relative", overflow: "hidden", flexShrink: 0 }}>
-          <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
-          <div style={{ position: "absolute", bottom: "-30px", left: "30px", width: "80px", height: "80px", borderRadius: "50%", background: "rgba(255,255,255,0.04)" }} />
+  const handleStateChange = (e) => {
+    const isoCode = e.target.value;
+    const selected = indianStates.find(s => s.isoCode === isoCode);
+    setForm(prev => ({ ...prev, stateIsoCode: isoCode, state: selected ? selected.name : "", city: "" }));
+  };
 
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.2)", flexShrink: 0 }}>
-                <UserPlus style={{ width: "17px", height: "17px", color: "#fff" }} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", margin: 0 }}>Add Team Member</h3>
-                <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", marginTop: "2px" }}>Create a new employee account</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowAddModal(false)}
-              style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "8px", padding: "7px", cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", backdropFilter: "blur(10px)" }}
-            >
-              <X style={{ width: "15px", height: "15px" }} />
-            </button>
-          </div>
+  const set = (k) => (e) => {
+    const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    if (k === 'name') {
+      const nameParts = val.trim().split(/\s+/);
+      let initials = "";
+      if (val.trim() === "") {
+        initials = "";
+      } else if (nameParts.length > 1) {
+        initials = (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+      } else if (nameParts.length === 1 && nameParts[0].length >= 2) {
+        initials = nameParts[0].substring(0, 2).toUpperCase();
+      } else if (nameParts.length === 1) {
+        initials = nameParts[0].toUpperCase() + "X";
+      } else {
+        initials = "XX";
+      }
+      // Only generate if we have a valid name and no custom employee ID was manually typed (or if we always want to auto-generate)
+      const random5 = Math.floor(10000 + Math.random() * 90000);
+      const generatedId = initials ? `RBSC${initials}${random5}` : "";
+      setForm((prev) => ({ ...prev, name: val, employeeId: prev.employeeId && prev.employeeId.startsWith(`RBSC${initials}`) ? prev.employeeId : generatedId }));
+    } else {
+      setForm((prev) => ({ ...prev, [k]: val }));
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim()) return toast.error("Full Name cannot be empty");
+    if (!form.email.trim()) return toast.error("Work Email ID cannot be empty");
+    if (!form.role) return toast.error("Please select a role");
+
+    setSaving(true);
+    try {
+      await edgeFetch(EDGE.admin, {
+        action: "create_user",
+        employeeId: form.employeeId.trim() || undefined,
+        name: form.name.trim(),
+        email: form.email.trim(),
+        role: form.role,
+        mobile: form.mobile.trim(),
+        dob: form.dob,
+        state: form.state,
+        city: form.city,
+      });
+      toast.success("Employee registered successfully!");
+      if (fetchUsers) fetchUsers();
+      setShowAddModal(false);
+    } catch (err) {
+      toast.error(err.message || "Registration failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const inputStyle = {
+    width: "100%", padding: "9px 12px", border: "1px solid #d1d5db",
+    borderRadius: "6px", fontSize: "13.5px", color: "#1f2937",
+    outline: "none", background: "#fff", boxSizing: "border-box",
+  };
+  const labelStyle = {
+    display: "block", fontSize: "12.5px", fontWeight: 600,
+    color: "#374151", marginBottom: "5px",
+  };
+
+  return (
+    <div onClick={() => setShowAddModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: "20px", overflow: "auto" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "#f8fafc", borderRadius: "12px", width: "560px", maxWidth: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", overflow: "hidden", margin: "auto" }}>
+        {/* Header */}
+        <div style={{ background: "#4338ca", padding: "18px", textAlign: "center", position: "relative" }}>
+          <h2 style={{ color: "#fff", fontSize: "18px", fontWeight: 700, margin: 0 }}>Register New Employee</h2>
+          <button type="button" onClick={() => setShowAddModal(false)} style={{ position: "absolute", right: "16px", top: "18px", background: "transparent", border: "none", color: "#fff", cursor: "pointer", display: "flex" }}>
+            <X style={{ width: "20px", height: "20px" }} />
+          </button>
         </div>
 
-        {/* ── Form Body ──────────────────────────────────────────────────── */}
-        <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1 }}>
-          <form onSubmit={handleAddSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            
-            {/* Auto-generated ID notice */}
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "8px", background: "#eff6ff", border: "1px solid #bfdbfe" }}>
-              <Shield style={{ width: "13px", height: "13px", color: "#2563EB", flexShrink: 0 }} />
-              <p style={{ fontSize: "12px", color: "#1d4ed8", lineHeight: 1.4 }}>
-                <strong>Employee ID</strong> will be auto-generated upon creation.
-              </p>
-            </div>
+        {/* Body */}
+        <div style={{ padding: "24px 30px", background: "#fff" }}>
+          <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "16px", margin: 0 }}>
 
-            {/* Full Name */}
-            <div>
-              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", fontWeight: 700, color: "#1e293b", marginBottom: "8px", letterSpacing: "-0.01em" }}>
-                <User style={{ width: "13px", height: "13px", color: "#2563EB" }} /> Full Name <span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span>
-              </label>
-              <div style={{ position: "relative" }}>
-                <User style={{ position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)", width: "15px", height: "15px", color: focusedField === "name" ? "#2563EB" : "#94a3b8", pointerEvents: "none", transition: "color 0.2s" }} />
-                <input
-                  type="text"
-                  required
-                  style={focusedField === "name" ? fieldFocusStyle : fieldStyle}
-                  placeholder="e.g. Rahul Sharma"
-                  value={formData.name}
-                  onFocus={() => setFocusedField("name")}
-                  onBlur={() => setFocusedField("")}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div>
+                <label style={labelStyle}>Employee ID</label>
+                <input type="text" value={form.employeeId} onChange={set("employeeId")} style={{ ...inputStyle, background: "#f8fafc" }} placeholder="Auto-generated" />
+              </div>
+              <div>
+                <label style={labelStyle}>Full Name</label>
+                <input type="text" value={form.name} onChange={set("name")} style={inputStyle} placeholder="Enter full name" required />
               </div>
             </div>
 
-            {/* Email */}
             <div>
-              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", fontWeight: 700, color: "#1e293b", marginBottom: "8px", letterSpacing: "-0.01em" }}>
-                <Mail style={{ width: "13px", height: "13px", color: "#2563EB" }} /> Email Address <span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span>
-              </label>
-              <div style={{ position: "relative" }}>
-                <Mail style={{ position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)", width: "15px", height: "15px", color: focusedField === "email" ? "#2563EB" : "#94a3b8", pointerEvents: "none", transition: "color 0.2s" }} />
-                <input
-                  type="email"
-                  required
-                  style={focusedField === "email" ? fieldFocusStyle : fieldStyle}
-                  placeholder={`rahul@${APP_CONFIG.supportEmail.split("@")[1] || "example.com"}`}
-                  value={formData.email}
-                  onFocus={() => setFocusedField("email")}
-                  onBlur={() => setFocusedField("")}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
+              <label style={labelStyle}>Email ID</label>
+              <input type="email" value={form.email} onChange={set("email")} style={inputStyle} placeholder="Enter email" required />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div>
+                <label style={labelStyle}>Select Department</label>
+                <select value={form.role} onChange={set("role")} style={{ ...inputStyle, cursor: "pointer" }} required>
+                  <option value="">Select department</option>
+                  {Object.entries(roleMeta).map(([k, v]) => (
+                    <option key={k} value={k}>{v.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Mobile Number</label>
+                <div style={{ ...inputStyle, padding: 0, display: "flex", overflow: "hidden" }}>
+                  <select value={form.countryCode} onChange={set("countryCode")} style={{ border: "none", background: "transparent", outline: "none", padding: "9px 8px", width: "85px", borderRight: "1px solid #d1d5db", cursor: "pointer" }}>
+                    <option value="IN +91">IN +91</option>
+                  </select>
+                  <input type="tel" value={form.mobile} onChange={set("mobile")} style={{ border: "none", background: "transparent", outline: "none", flex: 1, padding: "9px 12px" }} placeholder="Mobile number" />
+                </div>
               </div>
             </div>
 
-            {/* Role Selection */}
-            <div>
-              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", fontWeight: 700, color: "#1e293b", marginBottom: "8px", letterSpacing: "-0.01em" }}>
-                <Shield style={{ width: "13px", height: "13px", color: "#2563EB" }} /> Department / Role <span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span>
-              </label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-                {ROLE_OPTIONS.map((r) => {
-                  const isSelected = formData.role === r.value;
-                  return (
-                    <button
-                      key={r.value}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, role: r.value })}
-                      style={{
-                        display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px",
-                        borderRadius: "8px", cursor: "pointer",
-                        border: isSelected ? `2px solid ${r.color}` : "1.5px solid #e2e8f0",
-                        background: isSelected ? r.bg : "#fafafa",
-                        transition: "all 0.15s ease",
-                        boxShadow: isSelected ? `0 0 0 2px ${r.border}80` : "none",
-                      }}
-                    >
-                      <span style={{ fontSize: "12px", fontWeight: isSelected ? 700 : 500, color: isSelected ? r.color : "#475569", textAlign: "left", lineHeight: 1.2 }}>
-                        {r.label}
-                      </span>
-                      {isSelected && (
-                        <div style={{ marginLeft: "auto", width: "14px", height: "14px", borderRadius: "50%", background: r.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <span style={{ color: "#fff", fontSize: "9px", fontWeight: 700 }}>✓</span>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div>
+                <label style={labelStyle}>Date of Birth</label>
+                <input type="date" value={form.dob} onChange={set("dob")} style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Country</label>
+                <input type="text" value={form.country} readOnly style={{ ...inputStyle, background: "#e2e8f0", color: "#64748b" }} />
               </div>
             </div>
 
-            {/* Actions */}
-            <div style={{ display: "flex", gap: "10px", paddingTop: "4px", borderTop: "1px solid #f1f5f9", marginTop: "4px" }}>
-              <button
-                type="submit"
-                disabled={addLoading}
-                style={{
-                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-                  padding: "12px", borderRadius: "10px", border: "none",
-                  cursor: addLoading ? "not-allowed" : "pointer",
-                  background: "linear-gradient(135deg, #2563EB, #1d4ed8)", color: "#fff",
-                  fontSize: "14px", fontWeight: 700, boxShadow: "0 4px 14px rgba(37,99,235,0.35)",
-                  opacity: addLoading ? 0.7 : 1, transition: "all 0.2s ease"
-                }}
-              >
-                {addLoading ? (
-                  <><div style={{ width: "15px", height: "15px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Adding…</>
-                ) : (
-                  <><UserPlus style={{ width: "15px", height: "15px" }} /> Add Member</>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowAddModal(false)}
-                style={{ padding: "12px 20px", borderRadius: "10px", border: "1.5px solid var(--color-border)", background: "var(--color-surface)", color: "var(--text-2)", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
-              >
-                Cancel
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div>
+                <label style={labelStyle}>State</label>
+                <select value={form.stateIsoCode} onChange={handleStateChange} style={{ ...inputStyle, cursor: "pointer" }} required>
+                  <option value="">Select State</option>
+                  {indianStates.map(st => (
+                    <option key={st.isoCode} value={st.isoCode}>{st.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>City</label>
+                <select value={form.city} onChange={set("city")} style={{ ...inputStyle, cursor: "pointer" }} required disabled={!form.stateIsoCode}>
+                  <option value="">Select City</option>
+                  {citiesOfState.map(c => (
+                    <option key={c.name} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", margin: "16px 0 8px 0" }}>
+              <input type="checkbox" id="termsAgreeModal" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)} required style={{ cursor: "pointer" }} />
+              <label htmlFor="termsAgreeModal" style={{ fontSize: "13px", color: "#4b5563", cursor: "pointer" }}>
+                I agree to all statements in <a href="/terms-of-service" target="_blank" rel="noreferrer" style={{ color: "#4338ca", textDecoration: "none" }}>Terms of Service</a>
+              </label>
+            </div>
+
+            <div style={{ marginTop: "10px" }}>
+              <button type="submit" disabled={saving || !agreedToTerms} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "none", background: "#4338ca", color: "#fff", fontWeight: 600, fontSize: "14px", cursor: saving || !agreedToTerms ? "not-allowed" : "pointer", opacity: saving || !agreedToTerms ? 0.8 : 1 }}>
+                {saving ? "Registering..." : "Register"}
               </button>
             </div>
 

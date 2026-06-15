@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { edgeFetch, EDGE } from "../lib/supabaseClient";
 import toast from "react-hot-toast";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Footer from "./Footer";
-import { Search, UserPlus } from "lucide-react";
+import { Search, UserPlus, Users as UsersIcon } from "lucide-react";
 
 import UserTable from "./UserSections/UserTable";
 import UserProfilePanel from "./UserSections/UserProfilePanel";
@@ -31,6 +32,7 @@ const Users = ({ onLogout }) => {
   const [actionLoading, setActionLoading] = useState(false);
 
   const loggedInRole = localStorage.getItem("role");
+  const navigate = useNavigate();
 
   const fetchUsers = async () => {
     try {
@@ -131,6 +133,7 @@ const Users = ({ onLogout }) => {
     formData, setFormData,
     addLoading, actionLoading,
     handleAddSubmit, handleDeleteUser, handleResetPassword,
+    fetchUsers,
   };
 
   if (loading)
@@ -167,10 +170,16 @@ const Users = ({ onLogout }) => {
             />
           </div>
           {loggedInRole === "admin" && (
-            <button onClick={() => setShowAddModal(true)} className="btn btn-primary btn-sm" style={{ whiteSpace: "nowrap" }}>
-              <UserPlus style={{ width: "14px", height: "14px" }} />
-              Add member
-            </button>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button className="btn btn-primary btn-sm" onClick={() => navigate("/employee-list")} style={{ whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px" }}>
+                <UsersIcon style={{ width: "14px", height: "14px" }} />
+                Employee List
+              </button>
+              <button onClick={() => setShowAddModal(true)} className="btn btn-primary btn-sm" style={{ whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px" }}>
+                <UserPlus style={{ width: "14px", height: "14px" }} />
+                Add Employee
+              </button>
+            </div>
           )}
         </div>
 

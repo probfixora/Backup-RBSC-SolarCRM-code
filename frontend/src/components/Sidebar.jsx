@@ -10,7 +10,7 @@ const ICONS = {
   Finance: "ti ti-report-money",
   "All Customers": "ti ti-users",
   "Quotation List": "ti ti-file-invoice",
-  Team: "ti ti-users-group",
+  Employees: "ti ti-users-group",
   "Create Case": "ti ti-circle-plus",
   Customers: "ti ti-users",
   "Quotation Form": "ti ti-file-plus",
@@ -37,7 +37,7 @@ const ICONS = {
 const getMobileNav = (role, dashPath) => {
   const home = { name: "Home", path: dashPath, icon: "ti ti-layout-dashboard" };
   const clients = { name: "Clients", path: "/cases", icon: "ti ti-users" };
-  const team = { name: "Team", path: "/users", icon: "ti ti-users-group" };
+  const team = { name: "Employees", path: "/users", icon: "ti ti-users-group" };
   const finance = {
     name: "Finance",
     path: "/finance-tracking",
@@ -120,7 +120,7 @@ const NAV = {
       items: [
         { name: "All Customers", path: "/cases" },
         { name: "Quotation List", path: "/quotations" },
-        { name: "Team", path: "/users" },
+        { name: "Employees", path: "/users" },
       ],
     },
     {
@@ -184,6 +184,7 @@ const getRoleGroups = (role) => {
         items: [
           { name: "Dashboard", path: "/technical-dashboard" },
           { name: "Customers", path: "/cases" },
+          { name: "Tracking", path: "/track", external: true },
         ],
       },
     ];
@@ -197,6 +198,7 @@ const getRoleGroups = (role) => {
           { name: "Dashboard", path: "/accounts-dashboard" },
           { name: "Customers", path: "/cases" },
           { name: "Finance", path: "/finance-tracking" },
+          { name: "Tracking", path: "/track", external: true },
         ],
       },
     ];
@@ -209,6 +211,7 @@ const getRoleGroups = (role) => {
         items: [
           { name: "Dashboard", path: "/customer-service-dashboard" },
           { name: "Customers", path: "/cases" },
+          { name: "Tracking", path: "/track", external: true },
         ],
       },
     ];
@@ -223,6 +226,7 @@ const getRoleGroups = (role) => {
           { name: "Customers", path: "/cases" },
           { name: "Dispatch", path: "/b2c-dispatch" },
           { name: "Procurement", path: "/procurement-portal" },
+          { name: "Tracking", path: "/track", external: true },
         ],
       },
     ];
@@ -232,6 +236,7 @@ const getRoleGroups = (role) => {
   const items = [
     { name: "Dashboard", path: dashMap[role] || "/admin-dashboard" },
     { name: "Customers", path: "/cases" },
+    { name: "Tracking", path: "/track", external: true },
   ];
   if (role === "registration") {
     items.splice(1, 0, { name: "Create Case", path: "/create-case" });

@@ -1,0 +1,11 @@
+-- Add extended fields to the existing profiles table
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS mobile TEXT,
+ADD COLUMN IF NOT EXISTS dob DATE,
+ADD COLUMN IF NOT EXISTS gender TEXT,
+ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'India',
+ADD COLUMN IF NOT EXISTS state TEXT,
+ADD COLUMN IF NOT EXISTS city TEXT,
+ADD COLUMN IF NOT EXISTS emergency_name TEXT,
+ADD COLUMN IF NOT EXISTS emergency_phone TEXT,
+ADD COLUMN IF NOT EXISTS home_address TEXT;
