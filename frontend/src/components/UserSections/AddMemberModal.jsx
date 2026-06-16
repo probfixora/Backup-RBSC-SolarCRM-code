@@ -211,6 +211,12 @@ const AddMemberModal = ({ ctx }) => {
           </form>
         </div>
       </div>
+      <style>{`
+        .grid-responsive-2 { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 768px) {
+          .grid-responsive-2 { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 };

@@ -314,7 +314,7 @@ const Profile = ({ onLogout }) => {
         {/* ── Body ── */}
         <div className="profile-layout" style={{ display: "flex", flex: 1, overflow: "hidden" }}>
           {/* Left sidebar */}
-          <div style={{
+          <div className="profile-sidebar" style={{
             width: "260px", flexShrink: 0, borderRight: "1px solid #e5e7eb", background: "#fff",
             padding: "32px 20px", display: "flex", flexDirection: "column", overflowY: "auto"
           }}>
@@ -387,7 +387,7 @@ const Profile = ({ onLogout }) => {
           </div>
 
           {/* Right content */}
-          <div style={{ flex: 1, overflow: "auto", padding: "40px", background: "#f9fafb" }}>
+          <div className="profile-content" style={{ flex: 1, overflow: "auto", padding: "40px", background: "#f9fafb" }}>
             <div style={{ maxWidth: "800px", margin: "0 auto", background: "#fff", padding: "32px", borderRadius: "12px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e5e7eb" }}>
               
               {activeTab === "profile" && (
@@ -542,6 +542,16 @@ const Profile = ({ onLogout }) => {
           </div>
         </div>
       </main>
+
+      <style>{`
+        .grid-responsive-2 { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 768px) {
+          .profile-layout { flex-direction: column !important; overflow-y: auto !important; }
+          .profile-sidebar { width: 100% !important; border-right: none !important; border-bottom: 1px solid #e5e7eb !important; }
+          .profile-content { padding: 20px !important; overflow: visible !important; }
+          .grid-responsive-2 { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 };

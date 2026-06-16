@@ -170,6 +170,13 @@ const UserTable = ({ ctx }) => {
           );
         })}
       </div>
+      <style>{`
+        .mobile-only { display: none; }
+        @media (max-width: 768px) {
+          .hide-on-mobile { display: none !important; }
+          .mobile-only { display: flex !important; }
+        }
+      `}</style>
     </>
   );
 };
