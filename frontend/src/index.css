@@ -2595,6 +2595,21 @@ select.input {
   .hero-bg {
     left: 0 !important;
   }
+
+  .employee-details-body {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+  }
+  .employee-details-sidebar {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 20px !important;
+  }
+  .employee-details-content {
+    padding: 20px !important;
+    overflow: visible !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

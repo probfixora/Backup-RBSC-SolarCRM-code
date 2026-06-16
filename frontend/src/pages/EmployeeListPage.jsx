@@ -140,7 +140,7 @@ const AddEmployeeModal = ({ onClose, onSaved }) => {
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: "20px", overflow: "auto" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: "#f8fafc", borderRadius: "12px", width: "560px", maxWidth: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", overflow: "hidden", margin: "auto" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "#f8fafc", borderRadius: "12px", width: "560px", maxWidth: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", overflow: "hidden", margin: "auto", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
         {/* Header */}
         <div style={{ background: "#4338ca", padding: "18px", textAlign: "center", position: "relative" }}>
           <h2 style={{ color: "#fff", fontSize: "18px", fontWeight: 700, margin: 0 }}>Register New Employee</h2>
@@ -150,10 +150,10 @@ const AddEmployeeModal = ({ onClose, onSaved }) => {
         </div>
 
         {/* Body */}
-        <div style={{ padding: "24px 30px", background: "#fff" }}>
+        <div style={{ padding: "24px 30px", background: "#fff", overflowY: "auto", flex: 1 }}>
           <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
               <div>
                 <label style={labelStyle}>Employee ID</label>
                 <input type="text" value={form.employeeId} onChange={set("employeeId")} style={{ ...inputStyle, background: "#f8fafc" }} placeholder="Auto-generated" />
@@ -169,7 +169,7 @@ const AddEmployeeModal = ({ onClose, onSaved }) => {
               <input type="email" value={form.email} onChange={set("email")} style={inputStyle} placeholder="Enter email" required />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
               <div>
                 <label style={labelStyle}>Select Department</label>
                 <select value={form.role} onChange={set("role")} style={{ ...inputStyle, cursor: "pointer" }} required>
@@ -185,12 +185,12 @@ const AddEmployeeModal = ({ onClose, onSaved }) => {
                   <select value={form.countryCode} onChange={set("countryCode")} style={{ border: "none", background: "transparent", outline: "none", padding: "9px 8px", width: "85px", borderRight: "1px solid #d1d5db", cursor: "pointer" }}>
                     <option value="IN +91">IN +91</option>
                   </select>
-                  <input type="tel" value={form.mobile} onChange={set("mobile")} style={{ border: "none", background: "transparent", outline: "none", flex: 1, padding: "9px 12px" }} placeholder="Mobile number" />
+                  <input type="tel" value={form.mobile} onChange={set("mobile")} style={{ border: "none", background: "transparent", outline: "none", flex: 1, padding: "9px 12px", width: "100%" }} placeholder="Mobile number" />
                 </div>
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
               <div>
                 <label style={labelStyle}>Date of Birth</label>
                 <input type="date" value={form.dob} onChange={set("dob")} style={inputStyle} />
@@ -201,7 +201,7 @@ const AddEmployeeModal = ({ onClose, onSaved }) => {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
               <div>
                 <label style={labelStyle}>State</label>
                 <select value={form.stateIsoCode} onChange={handleStateChange} style={{ ...inputStyle, cursor: "pointer" }} required>
@@ -388,9 +388,9 @@ const EmployeeDetailsView = ({ user, onClose, onSaved }) => {
       </div>
 
       {/* ── Body ── */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div className="employee-details-body" style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* Left sidebar */}
-        <div style={{
+        <div className="employee-details-sidebar" style={{
           width: "250px",
           flexShrink: 0,
           borderRight: "1px solid #e5e7eb",
@@ -439,7 +439,7 @@ const EmployeeDetailsView = ({ user, onClose, onSaved }) => {
         </div>
 
         {/* Right content */}
-        <div style={{ flex: 1, overflow: "auto", padding: "40px", background: "#f9fafb" }}>
+        <div className="employee-details-content" style={{ flex: 1, overflow: "auto", padding: "40px", background: "#f9fafb" }}>
           <div style={{ maxWidth: "800px", margin: "0 auto", background: "#fff", padding: "32px", borderRadius: "12px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e5e7eb" }}>
             {activeTab === "profile" && (
               <form onSubmit={handleSave}>
@@ -447,7 +447,7 @@ const EmployeeDetailsView = ({ user, onClose, onSaved }) => {
                   Update Employee Details
                 </h3>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                   {/* Employee ID */}
                   <div>
                     <label style={labelStyle}>Employee ID</label>
@@ -597,7 +597,7 @@ const EmployeeDetailsView = ({ user, onClose, onSaved }) => {
                 <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#111827", margin: "0 0 20px", textAlign: "center" }}>
                   Bank Information
                 </h3>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                   <div>
                     <label style={labelStyle}>Bank Name</label>
                     <input type="text" value={form.bankName} onChange={set("bankName")} style={inputStyle} />
@@ -628,7 +628,7 @@ const EmployeeDetailsView = ({ user, onClose, onSaved }) => {
                 <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#111827", margin: "0 0 20px", textAlign: "center" }}>
                   Professional Information
                 </h3>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                   <div>
                     <label style={labelStyle}>Experience (Years)</label>
                     <input type="text" value={form.experienceYears} onChange={set("experienceYears")} style={inputStyle} />
@@ -767,7 +767,7 @@ const ChangeStatusModal = ({ user, onClose, onSaved }) => {
           )}
 
           {form.status === "suspend" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               <div>
                 <label style={{ ...labelStyle, color: "#6b7280" }}>From</label>
                 <input
@@ -955,27 +955,27 @@ const EmployeeListPage = ({ onLogout }) => {
             </div>
 
             {/* ── Toolbar ─────────────────────────────────────────────────────── */}
-            <div style={{
+            <div className="header-controls" style={{
               display: "flex", alignItems: "center", gap: "10px",
               padding: "14px 32px", background: "#fff",
               borderBottom: "1px solid #e5e7eb", flexWrap: "wrap",
             }}>
-              <button onClick={() => setShowAdd(true)} style={{ background: "#2563EB", color: "#fff", border: "none", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+              <button onClick={() => setShowAdd(true)} className="btn btn-primary btn-sm" style={{ padding: "8px 16px", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
                 <UserPlus style={{ width: "13px", height: "13px" }} /> Add Employees
               </button>
-              <button onClick={handleDownload} style={{ background: "#f59e0b", color: "#fff", border: "none", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+              <button onClick={handleDownload} className="btn btn-sm" style={{ background: "#f59e0b", color: "#fff", border: "none", padding: "8px 16px", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
                 <Download style={{ width: "13px", height: "13px" }} /> Download file
               </button>
-              <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} style={{ border: "1px solid #d1d5db", borderRadius: "6px", padding: "7px 10px", fontSize: "13px", color: "#374151", background: "#fff", cursor: "pointer", outline: "none" }}>
+              <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} style={{ border: "1px solid #d1d5db", borderRadius: "6px", padding: "7px 10px", fontSize: "13px", color: "#374151", background: "#fff", cursor: "pointer", outline: "none", flex: "1 1 100px", maxWidth: "200px" }}>
                 {depts.map((d) => <option key={d}>{d}</option>)}
               </select>
-              <button onClick={() => setSearch(inputVal)} style={{ background: "#2563EB", color: "#fff", border: "none", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={() => setSearch(inputVal)} className="btn btn-primary btn-sm" style={{ padding: "8px 16px", fontSize: "13px", fontWeight: 600 }}>
                 Search
               </button>
-              <div style={{ flex: 1 }} />
-              <div style={{ position: "relative" }}>
+              <div style={{ flex: 1 }} className="hide-on-mobile" />
+              <div className="header-search" style={{ position: "relative" }}>
                 <Search style={{ position: "absolute", left: "9px", top: "50%", transform: "translateY(-50%)", width: "13px", height: "13px", color: "#9ca3af", pointerEvents: "none" }} />
-                <input type="text" value={inputVal} onChange={(e) => { setInputVal(e.target.value); setSearch(e.target.value); }} placeholder="Search" style={{ border: "1px solid #d1d5db", borderRadius: "6px", padding: "7px 12px 7px 28px", fontSize: "13px", color: "#374151", outline: "none", width: "180px", background: "#fff" }} />
+                <input type="text" value={inputVal} onChange={(e) => { setInputVal(e.target.value); setSearch(e.target.value); }} placeholder="Search" style={{ border: "1px solid #d1d5db", borderRadius: "6px", padding: "7px 12px 7px 28px", fontSize: "13px", color: "#374151", outline: "none", width: "100%", background: "#fff", minWidth: "180px" }} />
               </div>
             </div>
 
