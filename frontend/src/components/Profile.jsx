@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
+import { State, City } from "country-state-city";
 import {
   User,
   CreditCard,
@@ -52,6 +53,10 @@ const Profile = ({ onLogout }) => {
     ifscCode: "",
     profilePhotoUrl: "",
   });
+
+  const indianStates = State.getStatesOfCountry("IN");
+  const currentIsoCode = indianStates.find(s => s.name === form.state)?.isoCode;
+  const citiesOfState = currentIsoCode ? City.getCitiesOfState("IN", currentIsoCode) : [];
 
   useEffect(() => {
     fetchProfile();
@@ -174,7 +179,11 @@ const Profile = ({ onLogout }) => {
       reader.onloadend = async () => {
         const base64String = reader.result;
         setForm((prev) => ({ ...prev, profilePhotoUrl: base64String }));
-        
+        try {
+          localStorage.setItem("profilePhotoUrl", base64String);
+        } catch(e) {} // Ignore quota errors
+        window.dispatchEvent(new CustomEvent("profilePhotoChanged", { detail: base64String }));
+
         await edgeFetch(EDGE.admin, {
           action: "update_own_profile",
           profilePhotoUrl: base64String,
@@ -185,6 +194,24 @@ const Profile = ({ onLogout }) => {
       reader.readAsDataURL(file);
     } catch (err) {
       toast.error("Failed to upload photo", { id: toastId });
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    const toastId = toast.loading("Removing photo...");
+    try {
+      setForm((prev) => ({ ...prev, profilePhotoUrl: "" }));
+      localStorage.removeItem("profilePhotoUrl");
+      window.dispatchEvent(new CustomEvent("profilePhotoChanged", { detail: "" }));
+      
+      await edgeFetch(EDGE.admin, {
+        action: "update_own_profile",
+        profilePhotoUrl: "",
+      });
+      
+      toast.success("Profile photo removed", { id: toastId });
+    } catch (err) {
+      toast.error("Failed to remove photo", { id: toastId });
     }
   };
 
@@ -259,23 +286,39 @@ const Profile = ({ onLogout }) => {
           }}>
             {/* Avatar Section */}
             <div style={{ textAlign: "center", marginBottom: "20px", position: "relative" }}>
-              <div style={{
-                width: "80px", height: "80px", borderRadius: "50%",
-                background: form.profilePhotoUrl ? `url(${form.profilePhotoUrl}) center/cover` : avatarColor(user.name),
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "28px", fontWeight: 700, color: "#fff", margin: "0 auto 10px",
-                position: "relative", overflow: "hidden", border: "2px solid #e5e7eb"
-              }}>
-                {!form.profilePhotoUrl && (user.name?.charAt(0)?.toUpperCase() || "?")}
-                
-                {/* Upload Overlay */}
-                <label style={{
-                  position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.5)",
-                  padding: "4px 0", cursor: "pointer", display: "flex", justifyContent: "center"
+              <div style={{ position: "relative", width: "80px", margin: "0 auto 10px" }}>
+                <div style={{
+                  width: "80px", height: "80px", borderRadius: "50%",
+                  background: form.profilePhotoUrl ? `url(${form.profilePhotoUrl}) center/cover` : avatarColor(user.name),
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "28px", fontWeight: 700, color: "#fff",
+                  position: "relative", overflow: "hidden", border: "2px solid #e5e7eb"
                 }}>
-                  <Camera style={{ width: "14px", height: "14px", color: "#fff" }} />
-                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
-                </label>
+                  {!form.profilePhotoUrl && (user.name?.charAt(0)?.toUpperCase() || "?")}
+                  
+                  {/* Upload Overlay */}
+                  <label style={{
+                    position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.5)",
+                    padding: "4px 0", cursor: "pointer", display: "flex", justifyContent: "center"
+                  }}>
+                    <Camera style={{ width: "14px", height: "14px", color: "#fff" }} />
+                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
+                  </label>
+                </div>
+                {form.profilePhotoUrl && (
+                  <button
+                    onClick={handleRemovePhoto}
+                    style={{
+                      position: "absolute", top: 0, right: 0, background: "#ef4444", color: "#fff",
+                      border: "none", borderRadius: "50%", width: "22px", height: "22px",
+                      display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)"
+                    }}
+                    title="Remove Photo"
+                  >
+                    <X style={{ width: "12px", height: "12px" }} />
+                  </button>
+                )}
               </div>
               <p style={{ fontWeight: 700, fontSize: "15px", color: "#111827", margin: "0 0 2px" }}>{user.name}</p>
               <p style={{ fontSize: "12px", color: "#6b7280", margin: "0 0 8px", wordBreak: "break-all" }}>{user.email}</p>
@@ -349,16 +392,21 @@ const Profile = ({ onLogout }) => {
                     </div>
                     <div>
                       <label style={labelStyle}>State</label>
-                      <select value={form.state} onChange={set("state")} style={{ ...inputStyle, cursor: "pointer" }}>
+                      <select value={form.state} onChange={(e) => setForm(prev => ({ ...prev, state: e.target.value, city: "" }))} style={{ ...inputStyle, cursor: "pointer" }}>
                         <option value="">Select State</option>
-                        {["Uttar Pradesh", "Delhi", "Maharashtra", "Karnataka", "Tamil Nadu", "Gujarat", "Rajasthan", "Madhya Pradesh", "Bihar", "West Bengal"].map((s) => (
-                          <option key={s}>{s}</option>
+                        {indianStates.map((s) => (
+                          <option key={s.isoCode} value={s.name}>{s.name}</option>
                         ))}
                       </select>
                     </div>
                     <div>
                       <label style={labelStyle}>City</label>
-                      <input type="text" value={form.city} onChange={set("city")} style={inputStyle} />
+                      <select value={form.city} onChange={set("city")} style={{ ...inputStyle, cursor: "pointer" }} disabled={!form.state}>
+                        <option value="">Select City</option>
+                        {citiesOfState.map((c) => (
+                          <option key={c.name} value={c.name}>{c.name}</option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label style={labelStyle}>Emergency Contact Name</label>
@@ -409,47 +457,51 @@ const Profile = ({ onLogout }) => {
               )}
 
               {activeTab === "password" && (
-                <div>
+                <form onSubmit={handleChangePassword}>
                   <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#111827", margin: "0 0 20px", textAlign: "center" }}>
                     Change Password
                   </h3>
                   
-                  <div style={{ display: "flex", gap: "10px", padding: "12px 14px", borderRadius: "10px", background: "#fffbeb", border: "1px solid #fde68a", marginBottom: "24px", maxWidth: "420px", margin: "0 auto 24px" }}>
-                    <Key style={{ width: "14px", height: "14px", color: "#b45309", flexShrink: 0, marginTop: "2px" }} />
-                    <p style={{ fontSize: "12.5px", color: "#92400e", lineHeight: 1.6 }}>
-                      Changing your password will require you to sign in again on other devices.
+                  <div style={{ display: "flex", gap: "10px", padding: "14px 18px", borderRadius: "8px", background: "#fffbeb", border: "1px solid #fde68a", marginBottom: "24px" }}>
+                    <Key style={{ width: "16px", height: "16px", color: "#b45309", flexShrink: 0, marginTop: "2px" }} />
+                    <p style={{ fontSize: "13px", color: "#92400e", lineHeight: 1.5, margin: 0 }}>
+                      Changing your password will require you to sign in again on other devices. Ensure your new password is secure.
                     </p>
                   </div>
 
-                  <form onSubmit={handleChangePassword} style={{ display: "flex", flexDirection: "column", gap: "16px", maxWidth: "420px", margin: "0 auto" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}>
                     <div>
                       <label style={labelStyle}>Current Password</label>
                       <div style={{ position: "relative" }}>
-                        <Lock style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", width: "14px", height: "14px", color: "#9ca3af" }} />
-                        <input type="password" required style={{ ...inputStyle, paddingLeft: "36px" }} placeholder="Enter current password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
+                        <Lock style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", width: "16px", height: "16px", color: "#9ca3af" }} />
+                        <input type="password" required style={{ ...inputStyle, paddingLeft: "40px", paddingRight: "16px", height: "42px" }} placeholder="Enter current password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
                       </div>
                     </div>
-                    <div>
-                      <label style={labelStyle}>New Password</label>
-                      <div style={{ position: "relative" }}>
-                        <Key style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", width: "14px", height: "14px", color: "#9ca3af" }} />
-                        <input type="password" required style={{ ...inputStyle, paddingLeft: "36px" }} placeholder="Enter new password" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
+                    
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                      <div>
+                        <label style={labelStyle}>New Password</label>
+                        <div style={{ position: "relative" }}>
+                          <Key style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", width: "16px", height: "16px", color: "#9ca3af" }} />
+                          <input type="password" required style={{ ...inputStyle, paddingLeft: "40px", paddingRight: "16px", height: "42px" }} placeholder="Enter new password" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Confirm New Password</label>
+                        <div style={{ position: "relative" }}>
+                          <Key style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", width: "16px", height: "16px", color: "#9ca3af" }} />
+                          <input type="password" required style={{ ...inputStyle, paddingLeft: "40px", paddingRight: "16px", height: "42px" }} placeholder="Re-enter new password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} />
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <label style={labelStyle}>Confirm New Password</label>
-                      <div style={{ position: "relative" }}>
-                        <Key style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", width: "14px", height: "14px", color: "#9ca3af" }} />
-                        <input type="password" required style={{ ...inputStyle, paddingLeft: "36px" }} placeholder="Re-enter new password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} />
-                      </div>
-                    </div>
-                    <div style={{ paddingTop: "10px" }}>
-                      <button type="submit" disabled={passwordSaving} style={{ width: "100%", background: "#2563EB", color: "#fff", border: "none", borderRadius: "6px", padding: "11px", fontSize: "14px", fontWeight: 700, cursor: passwordSaving ? "not-allowed" : "pointer", opacity: passwordSaving ? 0.7 : 1, display: "flex", justifyContent: "center", alignItems: "center", gap: "8px" }}>
-                        {passwordSaving ? "Saving..." : <><Save size={16} /> Update Password</>}
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                  </div>
+
+                  <div style={{ marginTop: "30px", textAlign: "right" }}>
+                    <button type="submit" disabled={passwordSaving} style={{ background: "#2563EB", color: "#fff", border: "none", borderRadius: "6px", padding: "11px 28px", fontSize: "14px", fontWeight: 700, cursor: passwordSaving ? "not-allowed" : "pointer", opacity: passwordSaving ? 0.7 : 1, display: "inline-flex", justifyContent: "center", alignItems: "center", gap: "8px" }}>
+                      {passwordSaving ? "Saving..." : <><Save size={16} /> Update Password</>}
+                    </button>
+                  </div>
+                </form>
               )}
 
             </div>

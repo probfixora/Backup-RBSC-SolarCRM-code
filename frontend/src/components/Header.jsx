@@ -55,6 +55,9 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("theme") === "dark",
   );
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState(
+    () => localStorage.getItem("profilePhotoUrl") || ""
+  );
   const [liveProfile, setLiveProfile] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false); // eslint-disable-line no-unused-vars
@@ -161,15 +164,25 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Listen for name changes from the Profile page
+  // Listen for name and photo changes from the Profile page
   useEffect(() => {
     const handleStorage = (e) => {
       if (e.key === "name" && e.newValue) {
         setUserName(e.newValue);
       }
+      if (e.key === "profilePhotoUrl") {
+        setProfilePhotoUrl(e.newValue || "");
+      }
     };
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    
+    const handlePhotoChange = (e) => setProfilePhotoUrl(e.detail || "");
+    window.addEventListener("profilePhotoChanged", handlePhotoChange);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("profilePhotoChanged", handlePhotoChange);
+    };
   }, []);
 
   // Fetch live profile from DB whenever dropdown opens
@@ -179,11 +192,17 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
     if (!userId) return;
     supabase
       .from("profiles")
-      .select("name, role, email, employee_id")
+      .select("name, role, email, employee_id, profile_photo_url")
       .eq("id", userId)
       .single()
       .then(({ data }) => {
-        if (data) setLiveProfile(data);
+        if (data) {
+          setLiveProfile(data);
+          if (data.profile_photo_url !== undefined) {
+            try { localStorage.setItem("profilePhotoUrl", data.profile_photo_url || ""); } catch(e){}
+            setProfilePhotoUrl(data.profile_photo_url || "");
+          }
+        }
       })
       .catch(() => {});
   }, [showProfile]);
@@ -686,7 +705,7 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
                   width: "34px",
                   height: "34px",
                   borderRadius: "50%",
-                  background: "var(--color-primary-muted)",
+                  background: profilePhotoUrl ? `url(${profilePhotoUrl}) center/cover` : "var(--color-primary-muted)",
                   flexShrink: 0,
                   display: "flex",
                   alignItems: "center",
@@ -697,7 +716,7 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
                   letterSpacing: "0.5px",
                 }}
               >
-                {initials}
+                {!profilePhotoUrl && initials}
               </div>
               <span
                 className="admin-profile-label"
@@ -754,7 +773,7 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
                       width: "40px",
                       height: "40px",
                       borderRadius: "50%",
-                      background: "var(--color-primary-muted)",
+                      background: profilePhotoUrl ? `url(${profilePhotoUrl}) center/cover` : "var(--color-primary-muted)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -764,7 +783,7 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
                       flexShrink: 0,
                     }}
                   >
-                    {(liveProfile?.name || userName)
+                    {!profilePhotoUrl && (liveProfile?.name || userName)
                       .split(" ")
                       .map((n) => n[0])
                       .join("")

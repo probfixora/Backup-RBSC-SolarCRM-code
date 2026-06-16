@@ -294,6 +294,9 @@ const Sidebar = ({ onLogout }) => {
   const [userRole, setUserRole] = useState(
     (localStorage.getItem("role") || "user").toLowerCase(),
   );
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState(
+    localStorage.getItem("profilePhotoUrl") || ""
+  );
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const initials = userName
@@ -375,7 +378,7 @@ const Sidebar = ({ onLogout }) => {
         if (!user) return;
         const { data: profile } = await supabase
           .from("profiles")
-          .select("name, role")
+          .select("name, role, profile_photo_url")
           .eq("id", user.id)
           .single();
         if (profile) {
@@ -387,12 +390,20 @@ const Sidebar = ({ onLogout }) => {
             localStorage.setItem("role", profile.role);
             setUserRole(profile.role.toLowerCase());
           }
+          if (profile.profile_photo_url !== undefined) {
+            try { localStorage.setItem("profilePhotoUrl", profile.profile_photo_url || ""); } catch(e){}
+            setProfilePhotoUrl(profile.profile_photo_url || "");
+          }
         }
       } catch {
         /* silent fail */
       }
     };
     syncProfile();
+
+    const handlePhotoChange = (e) => setProfilePhotoUrl(e.detail || "");
+    window.addEventListener("profilePhotoChanged", handlePhotoChange);
+    return () => window.removeEventListener("profilePhotoChanged", handlePhotoChange);
   }, []);
 
   /* ── Close mobile sidebar on route change ──────────────────────────── */
@@ -605,7 +616,7 @@ const Sidebar = ({ onLogout }) => {
               height: "32px",
               borderRadius: "var(--radius-sm)",
               flexShrink: 0,
-              background: roleColor,
+              background: profilePhotoUrl ? `url(${profilePhotoUrl}) center/cover` : roleColor,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -615,7 +626,7 @@ const Sidebar = ({ onLogout }) => {
               letterSpacing: "0.5px",
             }}
           >
-            {initials}
+            {!profilePhotoUrl && initials}
           </div>
 
           {/* Name + role */}
@@ -775,7 +786,7 @@ const Sidebar = ({ onLogout }) => {
                     height: "44px",
                     borderRadius: "50%",
                     flexShrink: 0,
-                    background: roleColor,
+                    background: profilePhotoUrl ? `url(${profilePhotoUrl}) center/cover` : roleColor,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -784,7 +795,7 @@ const Sidebar = ({ onLogout }) => {
                     color: "#fff",
                   }}
                 >
-                  {initials}
+                  {!profilePhotoUrl && initials}
                 </div>
                 <div>
                   <h4
