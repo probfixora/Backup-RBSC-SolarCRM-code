@@ -1,87 +1,130 @@
-import React, { useState } from "react";
-import { supabase } from "../lib/supabaseClient";
-import { edgeFetch, EDGE } from "../lib/supabaseClient";
+import React, { useState, useEffect } from "react";
+import { supabase, edgeFetch, EDGE } from "../lib/supabaseClient";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import Header from "./Header";
 import Footer from "./Footer";
 import {
   User,
-  Mail,
-  Shield,
+  CreditCard,
+  Camera,
+  X,
+  Lock,
+  LogOut,
+  ChevronUp,
+  ChevronDown,
   Key,
   Save,
-  ArrowLeft,
-  Lock,
-  CheckCircle2,
-  LogOut,
-  ChevronDown,
-  ChevronUp,
+  ArrowLeft
 } from "lucide-react";
+
+const AVATAR_COLORS = ["#D97706", "#2563EB", "#7C3AED", "#059669", "#DC2626", "#0891B2", "#DB2777", "#9333ea"];
+const avatarColor = (name = "") => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
 const Profile = ({ onLogout }) => {
   const navigate = useNavigate();
-  const [userName, setUserName] = useState(
-    localStorage.getItem("name") || "User",
-  );
-  const userEmail = localStorage.getItem("email") || "—";
   const userRole = localStorage.getItem("role") || "user";
-  const initials = userName
-    .split(" ")
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-  const roleLabel = userRole.charAt(0).toUpperCase() + userRole.slice(1);
 
+  const [activeTab, setActiveTab] = useState("profile");
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [newName, setNewName] = useState(userName);
-  const [savingName, setSavingName] = useState(false);
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
 
-  const roleMeta = {
-    admin: { bg: "#eef2ff", text: "#4338ca", border: "#c7d2fe" },
-    sales: { bg: "#ecfdf5", text: "#065f46", border: "#a7f3d0" },
-    banking: { bg: "#fffbeb", text: "#92400e", border: "#fde68a" },
-    inventory: { bg: "#fff1f2", text: "#9f1239", border: "#fecdd3" },
-    installation: { bg: "#f0f9ff", text: "#075985", border: "#bae6fd" },
-    electrical: { bg: "#fdf4ff", text: "#7e22ce", border: "#e9d5ff" },
-    subsidy: { bg: "#fff7ed", text: "#9a3412", border: "#fed7aa" },
-  };
-  const rm = roleMeta[userRole] || {
-    bg: "#f1f5f9",
-    text: "#475569",
-    border: "#e2e8f0",
-  };
+  const [user, setUser] = useState({});
+  const [form, setForm] = useState({
+    employeeId: "",
+    email: "",
+    name: "",
+    mobile: "",
+    dob: "",
+    gender: "",
+    state: "",
+    city: "",
+    emergencyName: "",
+    emergencyPhone: "",
+    bankName: "",
+    branchName: "",
+    accountNumber: "",
+    ifscCode: "",
+    profilePhotoUrl: "",
+  });
 
-  const handleUpdateName = async (e) => {
-    e.preventDefault();
-    if (!newName.trim()) return toast.error("Name cannot be empty");
-    setSavingName(true);
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
     try {
-      // Route through edge function (service role bypasses RLS)
-      await edgeFetch(EDGE.admin, {
-        action: "update_own_name",
-        name: newName.trim(),
-      });
+      const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser();
+      if (authErr || !authUser) throw authErr || new Error("User not found");
 
-      localStorage.setItem("name", newName.trim());
-      setUserName(newName.trim());
-      // Notify Header to update name display instantly
-      window.dispatchEvent(
-        new StorageEvent("storage", { key: "name", newValue: newName.trim() }),
-      );
-      toast.success("Name updated successfully");
+      const { data: profile, error: profileErr } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", authUser.id)
+        .single();
+
+      if (profileErr) throw profileErr;
+
+      setUser({ ...authUser, ...profile });
+      setForm({
+        employeeId: profile.employee_id || "",
+        email: authUser.email || "",
+        name: profile.name || "",
+        mobile: profile.mobile ? profile.mobile.replace(/^\+91\s*/, "") : "",
+        dob: profile.dob || "",
+        gender: profile.gender || "",
+        state: profile.state || "",
+        city: profile.city || "",
+        emergencyName: profile.emergency_name || "",
+        emergencyPhone: profile.emergency_phone || "",
+        bankName: profile.bank_name || "",
+        branchName: profile.branch_name || "",
+        accountNumber: profile.account_number || "",
+        ifscCode: profile.ifsc_code || "",
+        profilePhotoUrl: profile.profile_photo_url || "",
+      });
     } catch (err) {
-      console.error("[Profile] Name update error:", err);
-      toast.error(err.message || "Failed to update name");
+      console.error("Error fetching profile:", err);
+      toast.error("Failed to load profile");
     } finally {
-      setSavingName(false);
+      setLoadingProfile(false);
+    }
+  };
+
+  const set = (k) => (e) => setForm((prev) => ({ ...prev, [k]: e.target.value }));
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim()) return toast.error("Name cannot be empty");
+    setSaving(true);
+    try {
+      await edgeFetch(EDGE.admin, {
+        action: "update_own_profile",
+        name: form.name.trim(),
+        mobile: form.mobile.trim(),
+        state: form.state,
+        city: form.city.trim(),
+        emergencyName: form.emergencyName.trim(),
+        emergencyPhone: form.emergencyPhone.trim(),
+        bankName: form.bankName.trim(),
+        branchName: form.branchName.trim(),
+        accountNumber: form.accountNumber.trim(),
+        ifscCode: form.ifscCode.trim(),
+        profilePhotoUrl: form.profilePhotoUrl,
+      });
+      toast.success("Profile updated successfully!");
+      localStorage.setItem("name", form.name.trim());
+      window.dispatchEvent(new StorageEvent("storage", { key: "name", newValue: form.name.trim() }));
+      setUser((prev) => ({ ...prev, name: form.name.trim() }));
+    } catch (err) {
+      toast.error(err.message || "Update failed");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -95,16 +138,14 @@ const Profile = ({ onLogout }) => {
       toast.error("Password must be at least 6 characters");
       return;
     }
-    setSaving(true);
+    setPasswordSaving(true);
     try {
-      // Re-authenticate with current password first
       const { error: authError } = await supabase.auth.signInWithPassword({
-        email: userEmail,
+        email: user.email,
         password: currentPw,
       });
       if (authError) throw new Error("Current password is incorrect");
 
-      // Now update to new password
       const { error } = await supabase.auth.updateUser({ password: newPw });
       if (error) throw error;
       toast.success("Password changed successfully");
@@ -114,631 +155,306 @@ const Profile = ({ onLogout }) => {
     } catch (err) {
       toast.error(err.message || "Failed to change password");
     } finally {
-      setSaving(false);
+      setPasswordSaving(false);
     }
   };
 
-  return (
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      return toast.error("Image must be smaller than 2MB");
+    }
+
+    const toastId = toast.loading("Uploading photo...");
+    try {
+      // Use base64 encoding to store in database since explicit storage isn't specified
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result;
+        setForm((prev) => ({ ...prev, profilePhotoUrl: base64String }));
+        
+        await edgeFetch(EDGE.admin, {
+          action: "update_own_profile",
+          profilePhotoUrl: base64String,
+        });
+        
+        toast.success("Profile photo updated!", { id: toastId });
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      toast.error("Failed to upload photo", { id: toastId });
+    }
+  };
+
+  const inputStyle = {
+    width: "100%", padding: "9px 12px", border: "1px solid #d1d5db",
+    borderRadius: "6px", fontSize: "13.5px", color: "#1f2937",
+    outline: "none", background: "#fff", boxSizing: "border-box",
+  };
+  const labelStyle = { display: "block", fontSize: "12.5px", fontWeight: 600, color: "#374151", marginBottom: "5px" };
+  
+  const navItem = (tab, Icon, label) => (
     <div
+      onClick={() => setActiveTab(tab)}
       style={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "var(--page-bg)",
+        display: "flex", alignItems: "center", gap: "10px", padding: "10px 16px",
+        borderRadius: "6px", cursor: "pointer", fontSize: "13px",
+        fontWeight: activeTab === tab ? 700 : 500,
+        color: activeTab === tab ? "#2563EB" : "#6b7280",
+        background: activeTab === tab ? "#eff6ff" : "transparent",
+        marginBottom: "2px",
       }}
     >
+      <Icon style={{ width: "15px", height: "15px" }} />
+      {label}
+    </div>
+  );
+
+  if (loadingProfile) {
+    return (
+      <div style={{ display: "flex", minHeight: "100vh", background: "#f9fafb" }}>
+        <Sidebar onLogout={onLogout} />
+        <main style={{ flex: 1, marginLeft: "var(--main-offset)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="animate-spin" style={{ width: "30px", height: "30px", border: "3px solid #e5e7eb", borderTopColor: "#2563EB", borderRadius: "50%" }} />
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f9fafb" }}>
       <Sidebar onLogout={onLogout} />
 
-      <main
-        style={{
-          flex: 1,
-          marginLeft: "var(--main-offset)",
-          padding: "28px 32px",
-        }}
-      >
-        <Header
-          title="My Profile"
-          subtitle="View and manage your account details"
-          onLogout={onLogout}
-        />
-
-        {/* Back button */}
-        <button
-          onClick={() => navigate("/")}
-          className="btn btn-ghost btn-sm"
-          style={{ marginBottom: "24px" }}
-        >
-          <ArrowLeft style={{ width: "14px", height: "14px" }} />
-          Go back
-        </button>
-
-        <div
-          className="grid-stack-mobile"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "300px 1fr",
-            gap: "20px",
-            alignItems: "start",
-          }}
-        >
-          {/* ── Left: Identity card ── */}
-          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-            {/* Dark header */}
-            <div
-              style={{
-                padding: "32px 24px 28px",
-                textAlign: "center",
-                background: "linear-gradient(145deg, #0f1724 0%, #0f2a1a 100%)",
-              }}
-            >
-              <div
-                style={{
-                  width: "72px",
-                  height: "72px",
-                  borderRadius: "18px",
-                  margin: "0 auto 16px",
-                  background: "linear-gradient(135deg, #2563EB, #7C3AED)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "26px",
-                  fontWeight: 800,
-                  color: "#fff",
-                  boxShadow: "0 8px 24px rgba(37,99,235,0.35)",
-                }}
-              >
-                {initials}
-              </div>
-              <p
-                style={{
-                  fontFamily: "DM Sans, sans-serif",
-                  fontSize: "18px",
-                  fontWeight: 700,
-                  color: "#fff",
-                  marginBottom: "8px",
-                }}
-              >
-                {userName}
-              </p>
-              <span
-                style={{
-                  display: "inline-block",
-                  padding: "3px 12px",
-                  borderRadius: "20px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  background: "rgba(37,99,235,0.12)",
-                  color: "#2563EB",
-                  border: "1px solid rgba(37,99,235,0.2)",
-                  textTransform: "capitalize",
-                }}
-              >
-                {roleLabel}
-              </span>
-            </div>
-
-            {/* Detail rows */}
-            <div style={{ padding: "20px 22px" }}>
-              <p
-                style={{
-                  fontSize: "10.5px",
-                  fontWeight: 700,
-                  color: "var(--text-5)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  marginBottom: "16px",
-                }}
-              >
-                Account details
-              </p>
-              {[
-                { icon: User, label: "Full name", value: userName },
-                { icon: Mail, label: "Email", value: userEmail },
-                { icon: Shield, label: "Role", value: roleLabel },
-                { icon: CheckCircle2, label: "Status", value: "Active" },
-              ].map(({ icon: Icon, label, value }) => (
-                <div
-                  key={label}
-                  style={{ display: "flex", gap: "12px", marginBottom: "16px" }}
-                >
-                  <div
-                    style={{
-                      width: "34px",
-                      height: "34px",
-                      borderRadius: "9px",
-                      flexShrink: 0,
-                      background: "var(--surface-2)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Icon
-                      style={{
-                        width: "15px",
-                        height: "15px",
-                        color: "var(--brand)",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <p
-                      style={{
-                        fontSize: "11px",
-                        color: "var(--text-4)",
-                        marginBottom: "2px",
-                      }}
-                    >
-                      {label}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "13.5px",
-                        fontWeight: 600,
-                        color: "var(--text-1)",
-                      }}
-                    >
-                      {value}
-                    </p>
-                  </div>
-                </div>
-              ))}
-
-              {/* Role badge */}
-              <div
-                style={{
-                  marginTop: "4px",
-                  padding: "12px",
-                  borderRadius: "10px",
-                  background: rm.bg,
-                  border: `1px solid ${rm.border}`,
-                }}
-              >
-                <p
-                  style={{ fontSize: "12px", color: rm.text, fontWeight: 600 }}
-                >
-                  🔐 Access level:{" "}
-                  <span style={{ textTransform: "capitalize" }}>
-                    {roleLabel}
-                  </span>
-                </p>
-                <p
-                  style={{
-                    fontSize: "11.5px",
-                    color: rm.text,
-                    opacity: 0.75,
-                    marginTop: "3px",
-                  }}
-                >
-                  Your permissions are managed by the admin
-                </p>
-              </div>
-
-              {/* Support Button (for mobile access) */}
-              <button
-                onClick={() => navigate("/support")}
-                className="btn"
-                style={{
-                  width: "100%",
-                  marginTop: "20px",
-                  padding: "12px",
-                  background: "var(--surface-2)",
-                  color: "var(--text-2)",
-                  border: "1px solid var(--border)",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                  transition: "background 0.2s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "var(--brand-dim)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "var(--surface-2)")
-                }
-              >
-                <span style={{ fontSize: "15px" }}>🎧</span>
-                Contact Support
-              </button>
-
-              {/* Sign Out Button */}
-              <button
-                onClick={() => onLogout && onLogout()}
-                className="btn"
-                style={{
-                  width: "100%",
-                  marginTop: "20px",
-                  padding: "12px",
-                  background: "#fff1f2",
-                  color: "#be123c",
-                  border: "1px solid #fecdd3",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                }}
-              >
-                <LogOut style={{ width: "15px", height: "15px" }} />
-                Sign Out
-              </button>
-            </div>
-          </div>
-
-          {/* ── Right: Forms ── */}
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+      <main style={{ flex: 1, marginLeft: "var(--main-offset)", display: "flex", flexDirection: "column", height: "100vh" }}>
+        {/* ── Header ── */}
+        <div style={{
+          background: "linear-gradient(135deg, #1d3a6e 0%, #2563EB 100%)",
+          padding: "16px 32px", display: "flex", alignItems: "center", flexShrink: 0, gap: "16px"
+        }}>
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              background: "rgba(255,255,255,0.15)", border: "none",
+              color: "#fff", borderRadius: "6px", width: "36px", height: "36px",
+              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+            title="Go Back"
           >
-            {/* ── Update Profile ── */}
-            <div className="card" style={{ padding: "28px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  marginBottom: "24px",
-                }}
-              >
-                <div
-                  style={{
-                    width: "38px",
-                    height: "38px",
-                    borderRadius: "10px",
-                    background: "#eef2ff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <User
-                    style={{ width: "16px", height: "16px", color: "#4f46e5" }}
-                  />
-                </div>
-                <div>
-                  <h3
-                    style={{
-                      fontFamily: "DM Sans, sans-serif",
-                      fontSize: "15px",
-                      fontWeight: 700,
-                      color: "var(--text-1)",
-                    }}
-                  >
-                    Update Profile
-                  </h3>
-                  <p style={{ fontSize: "12.5px", color: "var(--text-4)" }}>
-                    Change your personal details
-                  </p>
-                </div>
-              </div>
-
-              <form
-                onSubmit={handleUpdateName}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
-                  maxWidth: "420px",
-                }}
-              >
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      color: "var(--text-2)",
-                      marginBottom: "6px",
-                    }}
-                  >
-                    Full name
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <User
-                      style={{
-                        position: "absolute",
-                        left: "12px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        width: "14px",
-                        height: "14px",
-                        color: "var(--text-4)",
-                        pointerEvents: "none",
-                      }}
-                    />
-                    <input
-                      type="text"
-                      required
-                      className="input"
-                      style={{ paddingLeft: "36px" }}
-                      placeholder="Enter full name"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ paddingTop: "4px" }}>
-                  <button
-                    type="submit"
-                    disabled={savingName}
-                    className="btn btn-primary"
-                    style={{ opacity: savingName ? 0.65 : 1 }}
-                  >
-                    {savingName ? (
-                      <div
-                        className="animate-spin"
-                        style={{
-                          width: "15px",
-                          height: "15px",
-                          border: "2px solid rgba(255,255,255,0.3)",
-                          borderTopColor: "#fff",
-                          borderRadius: "50%",
-                        }}
-                      />
-                    ) : (
-                      <>
-                        <Save style={{ width: "14px", height: "14px" }} />{" "}
-                        Update Name
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* ── Change password ── */}
-            <div className="card" style={{ padding: "28px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  marginBottom: showPasswordForm ? "24px" : "0",
-                  cursor: "pointer",
-                }}
-                onClick={() => setShowPasswordForm(!showPasswordForm)}
-              >
-                <div
-                  style={{
-                    width: "38px",
-                    height: "38px",
-                    borderRadius: "10px",
-                    background: "#eef2ff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Lock
-                    style={{ width: "16px", height: "16px", color: "#4f46e5" }}
-                  />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <h3
-                    style={{
-                      fontFamily: "DM Sans, sans-serif",
-                      fontSize: "15px",
-                      fontWeight: 700,
-                      color: "var(--text-1)",
-                    }}
-                  >
-                    Change password
-                  </h3>
-                  <p style={{ fontSize: "12.5px", color: "var(--text-4)" }}>
-                    Update your account password
-                  </p>
-                </div>
-                <div>
-                  {showPasswordForm ? (
-                    <ChevronUp
-                      style={{
-                        width: "20px",
-                        height: "20px",
-                        color: "var(--text-4)",
-                      }}
-                    />
-                  ) : (
-                    <ChevronDown
-                      style={{
-                        width: "20px",
-                        height: "20px",
-                        color: "var(--text-4)",
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-
-              {showPasswordForm && (
-                <>
-                  {/* Warning */}
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "10px",
-                      padding: "12px 14px",
-                      borderRadius: "10px",
-                      background: "#fffbeb",
-                      border: "1px solid #fde68a",
-                      marginBottom: "24px",
-                    }}
-                  >
-                    <Key
-                      style={{
-                        width: "14px",
-                        height: "14px",
-                        color: "#b45309",
-                        flexShrink: 0,
-                        marginTop: "2px",
-                      }}
-                    />
-                    <p
-                      style={{
-                        fontSize: "12.5px",
-                        color: "#92400e",
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      Changing your password will require you to sign in again
-                      on other devices.
-                    </p>
-                  </div>
-
-                  <form
-                    onSubmit={handleChangePassword}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "16px",
-                      maxWidth: "420px",
-                    }}
-                  >
-                    <div>
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "var(--text-2)",
-                          marginBottom: "6px",
-                        }}
-                      >
-                        Current password
-                      </label>
-                      <div style={{ position: "relative" }}>
-                        <Lock
-                          style={{
-                            position: "absolute",
-                            left: "12px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            width: "14px",
-                            height: "14px",
-                            color: "var(--text-4)",
-                            pointerEvents: "none",
-                          }}
-                        />
-                        <input
-                          type="password"
-                          required
-                          className="input"
-                          style={{ paddingLeft: "36px" }}
-                          placeholder="Enter current password"
-                          value={currentPw}
-                          onChange={(e) => setCurrentPw(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "var(--text-2)",
-                          marginBottom: "6px",
-                        }}
-                      >
-                        New password
-                      </label>
-                      <div style={{ position: "relative" }}>
-                        <Key
-                          style={{
-                            position: "absolute",
-                            left: "12px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            width: "14px",
-                            height: "14px",
-                            color: "var(--text-4)",
-                            pointerEvents: "none",
-                          }}
-                        />
-                        <input
-                          type="password"
-                          required
-                          className="input"
-                          style={{ paddingLeft: "36px" }}
-                          placeholder="Enter new password"
-                          value={newPw}
-                          onChange={(e) => setNewPw(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "var(--text-2)",
-                          marginBottom: "6px",
-                        }}
-                      >
-                        Confirm new password
-                      </label>
-                      <div style={{ position: "relative" }}>
-                        <Key
-                          style={{
-                            position: "absolute",
-                            left: "12px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            width: "14px",
-                            height: "14px",
-                            color: "var(--text-4)",
-                            pointerEvents: "none",
-                          }}
-                        />
-                        <input
-                          type="password"
-                          required
-                          className="input"
-                          style={{ paddingLeft: "36px" }}
-                          placeholder="Re-enter new password"
-                          value={confirmPw}
-                          onChange={(e) => setConfirmPw(e.target.value)}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ paddingTop: "4px" }}>
-                      <button
-                        type="submit"
-                        disabled={saving}
-                        className="btn btn-primary"
-                        style={{ opacity: saving ? 0.65 : 1 }}
-                      >
-                        {saving ? (
-                          <div
-                            className="animate-spin"
-                            style={{
-                              width: "15px",
-                              height: "15px",
-                              border: "2px solid rgba(255,255,255,0.3)",
-                              borderTopColor: "#fff",
-                              borderRadius: "50%",
-                            }}
-                          />
-                        ) : (
-                          <>
-                            <Save style={{ width: "14px", height: "14px" }} />{" "}
-                            Save changes
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </form>
-                </>
-              )}
-            </div>
+            <ArrowLeft style={{ width: "20px", height: "20px" }} />
+          </button>
+          <div>
+            <p style={{ color: "#fff", fontWeight: 700, fontSize: "18px", margin: 0 }}>Employee Details</p>
+            <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "14px", margin: "2px 0 0" }}>{user.name}</p>
           </div>
         </div>
 
-        <Footer />
+        {/* ── Body ── */}
+        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+          {/* Left sidebar */}
+          <div style={{
+            width: "260px", flexShrink: 0, borderRight: "1px solid #e5e7eb", background: "#fff",
+            padding: "32px 20px", display: "flex", flexDirection: "column", overflowY: "auto"
+          }}>
+            {/* Avatar Section */}
+            <div style={{ textAlign: "center", marginBottom: "20px", position: "relative" }}>
+              <div style={{
+                width: "80px", height: "80px", borderRadius: "50%",
+                background: form.profilePhotoUrl ? `url(${form.profilePhotoUrl}) center/cover` : avatarColor(user.name),
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "28px", fontWeight: 700, color: "#fff", margin: "0 auto 10px",
+                position: "relative", overflow: "hidden", border: "2px solid #e5e7eb"
+              }}>
+                {!form.profilePhotoUrl && (user.name?.charAt(0)?.toUpperCase() || "?")}
+                
+                {/* Upload Overlay */}
+                <label style={{
+                  position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.5)",
+                  padding: "4px 0", cursor: "pointer", display: "flex", justifyContent: "center"
+                }}>
+                  <Camera style={{ width: "14px", height: "14px", color: "#fff" }} />
+                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
+                </label>
+              </div>
+              <p style={{ fontWeight: 700, fontSize: "15px", color: "#111827", margin: "0 0 2px" }}>{user.name}</p>
+              <p style={{ fontSize: "12px", color: "#6b7280", margin: "0 0 8px", wordBreak: "break-all" }}>{user.email}</p>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#2563EB", background: "#eff6ff", padding: "2px 8px", borderRadius: "4px" }}>
+                {form.employeeId || "N/A"}
+              </span>
+            </div>
+
+            {/* Nav */}
+            <p style={{ fontSize: "10.5px", fontWeight: 700, color: "#9ca3af", letterSpacing: "0.05em", textTransform: "uppercase", padding: "0 4px", marginBottom: "6px" }}>
+              Menu
+            </p>
+            {navItem("profile", User, "Edit Profile")}
+            {navItem("bank", CreditCard, "Bank Information")}
+            
+            <div style={{ flex: 1 }} />
+            
+            <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "16px", marginTop: "16px" }}>
+              {navItem("password", Lock, "Change Password")}
+              <div
+                onClick={() => onLogout && onLogout()}
+                style={{
+                  display: "flex", alignItems: "center", gap: "10px", padding: "10px 16px",
+                  borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: 600,
+                  color: "#be123c", background: "#fff1f2", marginTop: "8px"
+                }}
+              >
+                <LogOut style={{ width: "15px", height: "15px" }} />
+                Log Out
+              </div>
+            </div>
+          </div>
+
+          {/* Right content */}
+          <div style={{ flex: 1, overflow: "auto", padding: "40px", background: "#f9fafb" }}>
+            <div style={{ maxWidth: "800px", margin: "0 auto", background: "#fff", padding: "32px", borderRadius: "12px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e5e7eb" }}>
+              
+              {activeTab === "profile" && (
+                <form onSubmit={handleSave}>
+                  <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#111827", margin: "0 0 20px", textAlign: "center" }}>
+                    Employee Details
+                  </h3>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                    <div>
+                      <label style={labelStyle}>Employee ID</label>
+                      <input type="text" value={form.employeeId} readOnly style={{ ...inputStyle, background: "#f3f4f6", color: "#6b7280", cursor: "not-allowed" }} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Full Name</label>
+                      <input type="text" value={form.name} onChange={set("name")} style={inputStyle} placeholder="Full name" required />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Email Address</label>
+                      <input type="email" value={form.email} readOnly style={{ ...inputStyle, background: "#f3f4f6", color: "#9ca3af", cursor: "not-allowed" }} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Mobile Number</label>
+                      <div style={{ display: "flex", alignItems: "center", ...inputStyle, padding: 0, overflow: "hidden" }}>
+                        <div style={{ padding: "9px 12px", background: "#f3f4f6", color: "#6b7280", borderRight: "1px solid #d1d5db", fontWeight: 500 }}>+91</div>
+                        <input type="tel" value={form.mobile} onChange={set("mobile")} style={{ border: "none", outline: "none", flex: 1, padding: "9px 12px", fontSize: "13.5px", color: "#1f2937" }} maxLength={10} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Date of Birth</label>
+                      <input type="date" value={form.dob} readOnly style={{ ...inputStyle, background: "#f3f4f6", color: "#6b7280", cursor: "not-allowed" }} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Gender</label>
+                      <input type="text" value={form.gender || "Not Specified"} readOnly style={{ ...inputStyle, background: "#f3f4f6", color: "#6b7280", cursor: "not-allowed" }} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>State</label>
+                      <select value={form.state} onChange={set("state")} style={{ ...inputStyle, cursor: "pointer" }}>
+                        <option value="">Select State</option>
+                        {["Uttar Pradesh", "Delhi", "Maharashtra", "Karnataka", "Tamil Nadu", "Gujarat", "Rajasthan", "Madhya Pradesh", "Bihar", "West Bengal"].map((s) => (
+                          <option key={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>City</label>
+                      <input type="text" value={form.city} onChange={set("city")} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Emergency Contact Name</label>
+                      <input type="text" value={form.emergencyName} onChange={set("emergencyName")} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Emergency Contact Phone</label>
+                      <input type="tel" value={form.emergencyPhone} onChange={set("emergencyPhone")} style={inputStyle} />
+                    </div>
+                  </div>
+                  <div style={{ marginTop: "30px", textAlign: "right" }}>
+                    <button type="submit" disabled={saving} style={{ background: "#2563EB", color: "#fff", border: "none", borderRadius: "6px", padding: "11px 28px", fontSize: "14px", fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1 }}>
+                      {saving ? "Saving…" : "Update Details"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {activeTab === "bank" && (
+                <form onSubmit={handleSave}>
+                  <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#111827", margin: "0 0 20px", textAlign: "center" }}>
+                    Bank Information
+                  </h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                    <div>
+                      <label style={labelStyle}>Bank Name</label>
+                      <input type="text" value={form.bankName} onChange={set("bankName")} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Branch Name</label>
+                      <input type="text" value={form.branchName} onChange={set("branchName")} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Account Number</label>
+                      <input type="text" value={form.accountNumber} onChange={set("accountNumber")} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>IFSC Code</label>
+                      <input type="text" value={form.ifscCode} onChange={set("ifscCode")} style={inputStyle} />
+                    </div>
+                  </div>
+                  <div style={{ marginTop: "30px", textAlign: "center" }}>
+                    <button type="submit" disabled={saving} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: "6px", padding: "11px 28px", fontSize: "14px", fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1 }}>
+                      {saving ? "Saving…" : "Update Details"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {activeTab === "password" && (
+                <div>
+                  <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#111827", margin: "0 0 20px", textAlign: "center" }}>
+                    Change Password
+                  </h3>
+                  
+                  <div style={{ display: "flex", gap: "10px", padding: "12px 14px", borderRadius: "10px", background: "#fffbeb", border: "1px solid #fde68a", marginBottom: "24px", maxWidth: "420px", margin: "0 auto 24px" }}>
+                    <Key style={{ width: "14px", height: "14px", color: "#b45309", flexShrink: 0, marginTop: "2px" }} />
+                    <p style={{ fontSize: "12.5px", color: "#92400e", lineHeight: 1.6 }}>
+                      Changing your password will require you to sign in again on other devices.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleChangePassword} style={{ display: "flex", flexDirection: "column", gap: "16px", maxWidth: "420px", margin: "0 auto" }}>
+                    <div>
+                      <label style={labelStyle}>Current Password</label>
+                      <div style={{ position: "relative" }}>
+                        <Lock style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", width: "14px", height: "14px", color: "#9ca3af" }} />
+                        <input type="password" required style={{ ...inputStyle, paddingLeft: "36px" }} placeholder="Enter current password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>New Password</label>
+                      <div style={{ position: "relative" }}>
+                        <Key style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", width: "14px", height: "14px", color: "#9ca3af" }} />
+                        <input type="password" required style={{ ...inputStyle, paddingLeft: "36px" }} placeholder="Enter new password" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Confirm New Password</label>
+                      <div style={{ position: "relative" }}>
+                        <Key style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", width: "14px", height: "14px", color: "#9ca3af" }} />
+                        <input type="password" required style={{ ...inputStyle, paddingLeft: "36px" }} placeholder="Re-enter new password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} />
+                      </div>
+                    </div>
+                    <div style={{ paddingTop: "10px" }}>
+                      <button type="submit" disabled={passwordSaving} style={{ width: "100%", background: "#2563EB", color: "#fff", border: "none", borderRadius: "6px", padding: "11px", fontSize: "14px", fontWeight: 700, cursor: passwordSaving ? "not-allowed" : "pointer", opacity: passwordSaving ? 0.7 : 1, display: "flex", justifyContent: "center", alignItems: "center", gap: "8px" }}>
+                        {passwordSaving ? "Saving..." : <><Save size={16} /> Update Password</>}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );

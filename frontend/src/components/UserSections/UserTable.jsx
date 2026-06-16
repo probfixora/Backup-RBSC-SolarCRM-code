@@ -75,9 +75,6 @@ const UserTable = ({ ctx }) => {
                   {loggedInRole === "admin" && (
                     <td style={{ textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
                       <div style={{ display: "flex", justifyContent: "flex-end", gap: "6px" }}>
-                        <button title="Reset password" onClick={() => { setSelectedUser(user); setShowResetModal(true); }} className="btn btn-ghost btn-sm" style={{ padding: "6px 8px" }}>
-                          <Key style={{ width: "13px", height: "13px" }} />
-                        </button>
                         <button title="Remove user" onClick={() => { setSelectedUser(user); setShowDeleteModal(true); }} className="btn btn-sm" style={{ padding: "6px 8px", background: "#fff1f2", color: "#be123c", border: "1px solid #fecdd3" }}>
                           <Trash2 style={{ width: "13px", height: "13px" }} />
                         </button>
@@ -160,9 +157,6 @@ const UserTable = ({ ctx }) => {
               </div>
               {loggedInRole === "admin" && (
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "4px" }} onClick={(e) => e.stopPropagation()}>
-                  <button title="Reset password" onClick={() => { setSelectedUser(user); setShowResetModal(true); }} className="btn btn-secondary btn-sm" style={{ padding: "6px 12px" }}>
-                    <Key style={{ width: "13px", height: "13px" }} />
-                  </button>
                   <button title="Remove user" onClick={() => { setSelectedUser(user); setShowDeleteModal(true); }} className="btn btn-sm" style={{ padding: "6px 12px", background: "#fff1f2", color: "#be123c", border: "1px solid #fecdd3" }}>
                     <Trash2 style={{ width: "13px", height: "13px" }} />
                   </button>

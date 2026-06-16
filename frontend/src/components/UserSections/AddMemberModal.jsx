@@ -10,7 +10,6 @@ const roleMeta = {
   field_installation: { label: "Installation" },
   subsidy: { label: "Subsidy" },
   accounts: { label: "Accounts" },
-  procurement: { label: "Procurement" },
   registration: { label: "Registration" },
   inventory: { label: "Inventory" },
   electrical: { label: "Electrical" },

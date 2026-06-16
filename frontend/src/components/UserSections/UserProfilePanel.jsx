@@ -81,14 +81,6 @@ const UserProfilePanel = ({ ctx }) => {
               Open Department View
             </button>
             <button
-              onClick={() => { setSelectedUser(profileUser); setShowResetModal(true); }}
-              className="btn btn-secondary btn-sm"
-              style={{ width: "100%", justifyContent: "center" }}
-            >
-              <Key style={{ width: "13px", height: "13px" }} />
-              Reset password
-            </button>
-            <button
               onClick={() => { setSelectedUser(profileUser); setShowDeleteModal(true); }}
               className="btn btn-danger btn-sm"
               style={{ width: "100%", justifyContent: "center" }}

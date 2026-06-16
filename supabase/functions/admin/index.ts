@@ -492,8 +492,8 @@ serve(async (req: Request) => {
       return jsonResponse({ message: "First login marked complete" });
     }
 
-    // ── UPDATE OWN NAME (any authenticated user) ───────────────────────────
-    if (action === "update_own_name") {
+    // ── UPDATE OWN PROFILE (any authenticated user) ───────────────────────────
+    if (action === "update_own_profile") {
       const authHeader = req.headers.get("Authorization");
       const token = (authHeader || "").replace("Bearer ", "");
       const {
@@ -503,18 +503,38 @@ serve(async (req: Request) => {
       if (authErr || !user)
         return jsonResponse({ message: "Unauthorized" }, 401);
 
-      const { name } = body;
-      if (!name || !name.trim())
-        return jsonResponse({ message: "Name cannot be empty" }, 400);
+      const { name, mobile, state, city, emergencyName, emergencyPhone, bankName, branchName, accountNumber, ifscCode, profilePhotoUrl } = body;
 
-      const { error } = await supabase
-        .from("profiles")
-        .update({ name: name.trim() })
-        .eq("id", user.id);
+      const updatePayload: Record<string, unknown> = {};
+      if (name !== undefined) updatePayload.name = name.trim();
+      if (mobile !== undefined) updatePayload.mobile = mobile.trim() ? `+91 ${mobile.trim()}` : "";
+      if (state !== undefined) updatePayload.state = state;
+      if (city !== undefined) updatePayload.city = city.trim();
+      if (emergencyName !== undefined) updatePayload.emergency_name = emergencyName.trim();
+      if (emergencyPhone !== undefined) updatePayload.emergency_phone = emergencyPhone.trim();
+      if (bankName !== undefined) updatePayload.bank_name = bankName.trim();
+      if (branchName !== undefined) updatePayload.branch_name = branchName.trim();
+      if (accountNumber !== undefined) updatePayload.account_number = accountNumber.trim();
+      if (ifscCode !== undefined) updatePayload.ifsc_code = ifscCode.trim();
+      if (profilePhotoUrl !== undefined) updatePayload.profile_photo_url = profilePhotoUrl.trim();
 
-      if (error) throw error;
+      if (Object.keys(updatePayload).length > 0) {
+        const { error } = await supabase
+          .from("profiles")
+          .update(updatePayload)
+          .eq("id", user.id);
 
-      return jsonResponse({ message: "Name updated successfully" });
+        if (error) throw error;
+      }
+
+      // If name changed, update auth user metadata
+      if (name !== undefined && name.trim() !== "") {
+        await supabase.auth.admin.updateUserById(user.id, {
+          user_metadata: { name: name.trim() },
+        });
+      }
+
+      return jsonResponse({ message: "Profile updated successfully" });
     }
 
     return jsonResponse({ message: `Unknown action: ${action}` }, 400);
