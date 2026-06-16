@@ -9,61 +9,83 @@ import { Toaster } from "react-hot-toast";
 import "./App.css";
 import { supabase } from "./lib/supabaseClient";
 
-// Core components that load immediately
+// ── Core components — always loaded immediately (on critical render path) ──
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OfflineBanner from "./components/OfflineBanner";
-import LowStockPopup from "./components/LowStockPopup";
-import AssignedTasksPopup from "./components/AssignedTasksPopup";
 
-// Lazy-loaded pages/components to reduce initial bundle size
-import Cases from "./components/Cases";
-import CreateCase from "./components/CreateCase";
-import Users from "./components/Users";
-import Profile from "./components/Profile";
-import Support from "./components/Support";
+// ── Non-critical core — lazy loaded but shown soon after auth ──
+const LowStockPopup = lazy(() => import("./components/LowStockPopup"));
+const AssignedTasksPopup = lazy(() => import("./components/AssignedTasksPopup"));
 
-import QuotationForm from "./components/QuotationForm";
-import QuotationList from "./components/QuotationList";
-import ApprovedQuotations from "./pages/ApprovedQuotations";
-import FinalLeads from "./pages/FinalLeads";
+// ── Feature pages — lazy loaded for code splitting ──
+const Cases = lazy(() => import("./components/Cases"));
+const CreateCase = lazy(() => import("./components/CreateCase"));
+const Users = lazy(() => import("./components/Users"));
+const Profile = lazy(() => import("./components/Profile"));
+const Support = lazy(() => import("./components/Support"));
+const QuotationForm = lazy(() => import("./components/QuotationForm"));
+const QuotationList = lazy(() => import("./components/QuotationList"));
+const ApprovedQuotations = lazy(() => import("./pages/ApprovedQuotations"));
+const FinalLeads = lazy(() => import("./pages/FinalLeads"));
 
-// Lazy-loaded Dashboards
-import AdminDashboard from "./pages/AdminDashboard";
-import SalesDashboard from "./pages/SalesDashboard";
-import RegistrationDashboard from "./pages/RegistrationDashboard";
-import BankingDashboard from "./pages/BankingDashboard";
-import FinanceTracking from "./pages/FinanceTracking";
-import InventoryDashboard from "./pages/InventoryDashboard";
-import InstallationDashboard from "./pages/InstallationDashboard";
-import ElectricalDashboard from "./pages/ElectricalDashboard";
-import SubsidyDashboard from "./pages/SubsidyDashboard";
+// ── Dashboards — lazy loaded ──
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const SalesDashboard = lazy(() => import("./pages/SalesDashboard"));
+const RegistrationDashboard = lazy(() => import("./pages/RegistrationDashboard"));
+const BankingDashboard = lazy(() => import("./pages/BankingDashboard"));
+const FinanceTracking = lazy(() => import("./pages/FinanceTracking"));
+const InventoryDashboard = lazy(() => import("./pages/InventoryDashboard"));
+const InstallationDashboard = lazy(() => import("./pages/InstallationDashboard"));
+const ElectricalDashboard = lazy(() => import("./pages/ElectricalDashboard"));
+const SubsidyDashboard = lazy(() => import("./pages/SubsidyDashboard"));
 
-// Admin portal pages
-import DepartmentPortal from "./pages/DepartmentPortal";
-import EmployeeDrillDown from "./pages/EmployeeDrillDown";
+// ── Admin portal pages ──
+const DepartmentPortal = lazy(() => import("./pages/DepartmentPortal"));
+const EmployeeDrillDown = lazy(() => import("./pages/EmployeeDrillDown"));
 
-// New ERP pages
-import ProcurementPortal from "./pages/ProcurementPortal";
-import ProcurementDashboard from "./pages/ProcurementDashboard";
-import B2CDispatchPortal from "./pages/B2CDispatchPortal";
-import WattageSettings from "./pages/WattageSettings";
-import CustomerPortal from "./pages/CustomerPortal";
-import AuditLogViewer from "./pages/AuditLogViewer";
-import DispatchCustomers from "./pages/DispatchCustomers";
+// ── ERP pages ──
+const ProcurementPortal = lazy(() => import("./pages/ProcurementPortal"));
+const ProcurementDashboard = lazy(() => import("./pages/ProcurementDashboard"));
+const B2CDispatchPortal = lazy(() => import("./pages/B2CDispatchPortal"));
+const WattageSettings = lazy(() => import("./pages/WattageSettings"));
+const CustomerPortal = lazy(() => import("./pages/CustomerPortal"));
+const AuditLogViewer = lazy(() => import("./pages/AuditLogViewer"));
+const DispatchCustomers = lazy(() => import("./pages/DispatchCustomers"));
 
-// New department dashboards
-import TechnicalDashboard from "./pages/TechnicalDashboard";
-import AccountsDashboard from "./pages/AccountsDashboard";
-import CustomerServiceDashboard from "./pages/CustomerServiceDashboard";
-// Employee List
-import EmployeeListPage from "./pages/EmployeeListPage";
+// ── Department dashboards ──
+const TechnicalDashboard = lazy(() => import("./pages/TechnicalDashboard"));
+const AccountsDashboard = lazy(() => import("./pages/AccountsDashboard"));
+const CustomerServiceDashboard = lazy(() => import("./pages/CustomerServiceDashboard"));
+const EmployeeListPage = lazy(() => import("./pages/EmployeeListPage"));
 
-// Public Pages
-import TermsOfService from "./pages/TermsOfService";
+// ── Public pages ──
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const TrackingPage = lazy(() => import("./pages/TrackingPage"));
 
-// Public pages
-import TrackingPage from "./pages/TrackingPage";
+// ── Suspense fallback — app-shell that shows the bg color instantly ──
+const AppShellFallback = () => (
+  <div
+    style={{
+      minHeight: "100vh",
+      background: "var(--page-bg)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    <div
+      style={{
+        width: "28px",
+        height: "28px",
+        border: "3px solid var(--color-border)",
+        borderTopColor: "var(--color-primary)",
+        borderRadius: "50%",
+        animation: "spin 0.7s linear infinite",
+      }}
+    />
+  </div>
+);
 
 // Helper component for role-based redirection from root
 const DashboardRedirect = () => {
@@ -168,8 +190,19 @@ function App() {
       window.location.href = "/login";
     };
 
+    // Throttle the activity updater so high-frequency events (scroll, mousemove)
+    // don't cause unnecessary work on the main thread.
+    let throttleTimer = null;
+    const throttledUpdate = () => {
+      if (throttleTimer) return;
+      throttleTimer = setTimeout(() => {
+        updateActivity();
+        throttleTimer = null;
+      }, 100);
+    };
+
     const events = ["mousemove", "keydown", "touchstart", "scroll", "click"];
-    events.forEach((e) => window.addEventListener(e, updateActivity));
+    events.forEach((e) => window.addEventListener(e, throttledUpdate));
 
     const checkIdleStatus = () => {
       const idleTime = Date.now() - lastActiveTime;
@@ -202,7 +235,8 @@ function App() {
 
     return () => {
       clearInterval(interval);
-      events.forEach((e) => window.removeEventListener(e, updateActivity));
+      if (throttleTimer) clearTimeout(throttleTimer);
+      events.forEach((e) => window.removeEventListener(e, throttledUpdate));
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [token]);
@@ -293,6 +327,7 @@ function App() {
         {/* Low Stock Popup — only shows for admin/inventory roles with critical stock */}
         {token && <LowStockPopup />}
 
+        <Suspense fallback={<AppShellFallback />}>
         <Routes>
           {/* Fully Public Routes — no auth required */}
           <Route path="/track" element={<TrackingPage />} />
@@ -584,6 +619,7 @@ function App() {
           <Route path="/" element={<DashboardRedirect />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+        </Suspense>
       </div>
     </Router>
   );

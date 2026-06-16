@@ -17,14 +17,11 @@ const ESCALATION_CONFIG = {
   1: { label: "Watch", bg: "#fffbeb", color: "#b45309", border: "#fde68a" },
 };
 
-const EscalationBadge = ({ c }) => {
+const EscalationBadge = ({ c, role, userName }) => {
   const level = c.escalation_level;
   if (!level) return null;
   const cfg = ESCALATION_CONFIG[level];
   if (!cfg) return null;
-
-  const role = (localStorage.getItem("role") || "").toLowerCase();
-  const userName = (localStorage.getItem("name") || "").toLowerCase();
 
   const currentStage = c.current_stage || c.currentStage;
   // Fallback map in case stageToRole is not yet evaluated
@@ -148,8 +145,7 @@ const stageToDeptLabel = {
   Completed: "Completed",
 };
 
-const canUpdateCase = (c) => {
-  const role = (localStorage.getItem("role") || "").toLowerCase();
+const canUpdateCase = (c, role) => {
   if (role === "admin") return true;
   const stage = c.current_stage || c.currentStage;
   return stageToRole[stage] === role;
@@ -157,8 +153,7 @@ const canUpdateCase = (c) => {
 
 // Returns department-relative status from THIS user's perspective
 // For admin: returns global status + current department/stage context
-const getDeptStatus = (c) => {
-  const role = (localStorage.getItem("role") || "").toLowerCase();
+const getDeptStatus = (c, role) => {
   const currentStage = c.current_stage || c.currentStage;
   const deptLabel = stageToDeptLabel[currentStage] || "Unknown";
 
@@ -307,6 +302,9 @@ const CopyButton = ({ text }) => {
 };
 
 const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotationId }) => {
+  const role = (localStorage.getItem("role") || "").toLowerCase();
+  const userName = (localStorage.getItem("name") || "").toLowerCase();
+
   if (cases.length === 0) {
     return (
       <div className="table-wrap">
@@ -403,7 +401,7 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                 const dayLabel = daysInStage(
                   c.stageStartTime || c.stage_start_time,
                 );
-                const canUpdate = canUpdateCase(c);
+                const canUpdate = canUpdateCase(c, role);
                 const isCompleted =
                   (c.current_stage || c.currentStage) === "Completed" ||
                   c.status === "Completed";
@@ -454,7 +452,7 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                             <CopyButton text={trackingId} />
                           )}
                         </div>
-                        <EscalationBadge c={c} />
+                        <EscalationBadge c={c} role={role} userName={userName} />
                       </div>
                     </td>
 
@@ -533,7 +531,7 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                     {/* Status */}
                     <td style={{ padding: "14px 20px" }}>
                       {(() => {
-                        const deptSt = getDeptStatus(c);
+                        const deptSt = getDeptStatus(c, role);
                         const icon =
                           deptSt?.icon === "check" ? (
                             <CheckCircle2
@@ -743,7 +741,7 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
             c.tracking_id || c.trackingId || c.caseId || c.case_id || "—";
           const customerId = c.customer_id || c.customerId || "—";
           const dayLabel = daysInStage(c.stageStartTime || c.stage_start_time);
-          const canUpdate = canUpdateCase(c);
+          const canUpdate = canUpdateCase(c, role);
           const isCompleted =
             (c.current_stage || c.currentStage) === "Completed" ||
             c.status === "Completed";
@@ -880,7 +878,7 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                 </div>
                 {/* Status badge - mobile */}
                 {(() => {
-                  const deptSt = getDeptStatus(c);
+                  const deptSt = getDeptStatus(c, role);
                   const label = deptSt?.label || c.status;
                   const bg =
                     deptSt?.bg ||
@@ -909,15 +907,19 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                       style={{
                         display: "flex",
                         flexDirection: "column",
-                        gap: "3px",
                         alignItems: "flex-end",
+                        gap: "6px",
                       }}
                     >
+                      <EscalationBadge c={c} role={role} userName={userName} />
                       <span
                         style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
                           fontSize: "11px",
-                          fontWeight: 600,
-                          padding: "3px 9px",
+                          fontWeight: 700,
+                          padding: "4px 8px",
                           borderRadius: "20px",
                           background: bg,
                           color,

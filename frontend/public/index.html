@@ -14,14 +14,84 @@
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/app-icon.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!-- Tabler Icons Webfont -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+
+    <!-- Preconnect: establish early TCP+TLS for critical third-party origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://rgipmrviqapxxilsiclm.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+
+    <!--
+      Tabler Icons — loaded NON-BLOCKING.
+      media="print" makes the browser deprioritise it; onload swaps to "all"
+      so icons appear without ever blocking the critical rendering path.
+    -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+      />
+    </noscript>
+
+    <!--
+      Inline critical CSS — sets the app shell background and base font
+      before ANY external stylesheet loads. Prevents flash of white/wrong-color
+      background and eliminates FOUC on slow connections.
+    -->
+    <style>
+      html { box-sizing: border-box; }
+      *, *::before, *::after { box-sizing: inherit; }
+      body {
+        margin: 0;
+        padding: 0;
+        background: hsl(210, 20%, 98%);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      /* Dark mode shell — mirrors [data-theme="dark"] --color-bg */
+      [data-theme="dark"] body {
+        background: hsl(0, 0%, 5%);
+      }
+      /* App shell spinner shown while React bundle loads */
+      #root:empty::after {
+        content: "";
+        display: block;
+        width: 28px;
+        height: 28px;
+        margin: 48vh auto 0;
+        border: 3px solid hsl(214, 32%, 91%);
+        border-top-color: hsl(221, 83%, 53%);
+        border-radius: 50%;
+        animation: _shell_spin 0.7s linear infinite;
+      }
+      @keyframes _shell_spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+
     <title>RBSC Solar CRM</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script>
+      // Restore dark mode before React hydrates to prevent flash
+      (function() {
+        try {
+          var theme = localStorage.getItem('theme');
+          if (theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch(e) {}
+      })();
+
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
           navigator.serviceWorker.register('%PUBLIC_URL%/sw.js').catch(function(err) {

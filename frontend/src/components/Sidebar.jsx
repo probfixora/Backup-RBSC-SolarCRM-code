@@ -454,6 +454,9 @@ const Sidebar = ({ onLogout }) => {
           <img
             src={APP_CONFIG.logoPath}
             alt={APP_CONFIG.companyName}
+            width="120"
+            height="30"
+            loading="lazy"
             style={{ height: "30px", width: "auto", objectFit: "contain" }}
           />
         </div>

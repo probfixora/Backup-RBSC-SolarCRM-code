@@ -12,6 +12,7 @@ import UserProfilePanel from "./UserSections/UserProfilePanel";
 import AddMemberModal from "./UserSections/AddMemberModal";
 import DeleteModal from "./UserSections/DeleteModal";
 import ResetPasswordModal from "./UserSections/ResetPasswordModal";
+import { SkeletonUsersPage } from "./SkeletonComponents";
 
 const Users = ({ onLogout }) => {
   const [users, setUsers] = useState([]);
@@ -138,14 +139,12 @@ const Users = ({ onLogout }) => {
 
   if (loading)
     return (
-      <div className="main-loading">
-        <div style={{ textAlign: "center" }}>
-          <div
-            className="animate-spin"
-            style={{ width: "32px", height: "32px", border: "2px solid var(--border)", borderTopColor: "var(--brand)", borderRadius: "50%", margin: "0 auto 12px" }}
-          />
-          <p style={{ fontSize: "13px", color: "var(--text-4)" }}>Loading team…</p>
-        </div>
+      <div style={{ display: "flex", minHeight: "100vh", background: "var(--page-bg)" }}>
+        <Sidebar onLogout={onLogout} />
+        <main style={{ flex: 1, marginLeft: "var(--main-offset)", padding: "28px 32px" }}>
+          <Header title="Team" subtitle="Manage user accounts and access permissions" onLogout={onLogout} />
+          <SkeletonUsersPage />
+        </main>
       </div>
     );
 

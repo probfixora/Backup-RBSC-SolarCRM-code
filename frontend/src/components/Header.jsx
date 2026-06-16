@@ -575,6 +575,9 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
             alt={APP_CONFIG.companyName}
             onClick={() => navigate("/")}
             className="admin-brand-logo"
+            width="140"
+            height="46"
+            fetchpriority="high"
             style={{
               height: "46px",
               width: "auto",

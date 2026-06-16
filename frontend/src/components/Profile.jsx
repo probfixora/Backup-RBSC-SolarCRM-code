@@ -18,6 +18,7 @@ import {
   Save,
   ArrowLeft
 } from "lucide-react";
+import { SkeletonProfilePage } from "./SkeletonComponents";
 
 const AVATAR_COLORS = ["#D97706", "#2563EB", "#7C3AED", "#059669", "#DC2626", "#0891B2", "#DB2777", "#9333ea"];
 const avatarColor = (name = "") => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
@@ -241,10 +242,30 @@ const Profile = ({ onLogout }) => {
 
   if (loadingProfile) {
     return (
-      <div style={{ display: "flex", minHeight: "100vh", background: "#f9fafb" }}>
+      <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-bg)" }}>
         <Sidebar onLogout={onLogout} />
-        <main style={{ flex: 1, marginLeft: "var(--main-offset)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div className="animate-spin" style={{ width: "30px", height: "30px", border: "3px solid #e5e7eb", borderTopColor: "#2563EB", borderRadius: "50%" }} />
+        <main
+          style={{
+            flex: 1,
+            marginLeft: "var(--main-offset)",
+            display: "flex",
+            flexDirection: "column",
+            height: "100vh",
+          }}
+        >
+          {/* Gradient header placeholder — same height as real header */}
+          <div
+            style={{
+              background: "linear-gradient(135deg, #1d3a6e 0%, #2563EB 100%)",
+              padding: "16px 32px",
+              display: "flex",
+              alignItems: "center",
+              flexShrink: 0,
+              gap: "16px",
+              height: "68px",
+            }}
+          />
+          <SkeletonProfilePage />
         </main>
       </div>
     );

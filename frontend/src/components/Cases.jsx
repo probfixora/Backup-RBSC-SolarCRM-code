@@ -21,6 +21,7 @@ import CaseTable from "./CaseTable";
 import CaseDrawer from "./CaseDrawer";
 import Breadcrumbs from "./Breadcrumbs";
 import Footer from "./Footer";
+import { SkeletonCasesPage } from "./SkeletonComponents";
 
 // Department → stages mapping (for admin filter)
 const DEPT_STAGES = {
@@ -571,23 +572,28 @@ const Cases = ({ onLogout }) => {
 
   if (loading)
     return (
-      <div className="main-loading">
-        <div style={{ textAlign: "center" }}>
-          <div
-            style={{
-              width: "36px",
-              height: "36px",
-              border: "3px solid var(--border)",
-              borderTopColor: "var(--brand)",
-              borderRadius: "50%",
-              animation: "spin 0.8s linear infinite",
-              margin: "0 auto 12px",
-            }}
+      <div
+        style={{
+          display: "flex",
+          minHeight: "100vh",
+          background: "var(--page-bg)",
+        }}
+      >
+        <Sidebar onLogout={onLogout} />
+        <main
+          style={{
+            flex: 1,
+            marginLeft: "var(--main-offset)",
+            padding: "28px 32px",
+          }}
+        >
+          <Header
+            title="Customers"
+            subtitle="Track and manage all solar installation customers"
+            onLogout={onLogout}
           />
-          <p style={{ fontSize: "13px", color: "var(--text-4)" }}>
-            Loading cases…
-          </p>
-        </div>
+          <SkeletonCasesPage />
+        </main>
       </div>
     );
 
