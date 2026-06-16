@@ -272,6 +272,10 @@ const EmployeeDetailsView = ({ user, onClose, onSaved }) => {
     panCard: user.panCard || "",
   });
 
+  const indianStates = State.getStatesOfCountry("IN");
+  const currentIsoCode = indianStates.find(s => s.name === form.state)?.isoCode;
+  const citiesOfState = currentIsoCode ? City.getCitiesOfState("IN", currentIsoCode) : [];
+
   const set = (k) => (e) => setForm((prev) => ({ ...prev, [k]: e.target.value }));
 
   const handleSave = async (e) => {
@@ -527,10 +531,10 @@ const EmployeeDetailsView = ({ user, onClose, onSaved }) => {
                   {/* State */}
                   <div>
                     <label style={labelStyle}>State</label>
-                    <select value={form.state} onChange={set("state")} style={{ ...inputStyle, cursor: "pointer" }}>
+                    <select value={form.state} onChange={(e) => setForm(prev => ({ ...prev, state: e.target.value, city: "" }))} style={{ ...inputStyle, cursor: "pointer" }}>
                       <option value="">Select State</option>
-                      {["Uttar Pradesh", "Delhi", "Maharashtra", "Karnataka", "Tamil Nadu", "Gujarat", "Rajasthan", "Madhya Pradesh", "Bihar", "West Bengal"].map((s) => (
-                        <option key={s}>{s}</option>
+                      {indianStates.map((s) => (
+                        <option key={s.isoCode} value={s.name}>{s.name}</option>
                       ))}
                     </select>
                   </div>
@@ -538,7 +542,12 @@ const EmployeeDetailsView = ({ user, onClose, onSaved }) => {
                   {/* City */}
                   <div>
                     <label style={labelStyle}>City</label>
-                    <input type="text" value={form.city} onChange={set("city")} style={inputStyle} />
+                    <select value={form.city} onChange={set("city")} style={{ ...inputStyle, cursor: "pointer" }} disabled={!form.state}>
+                      <option value="">Select City</option>
+                      {citiesOfState.map((c) => (
+                        <option key={c.name} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Emergency Name */}
