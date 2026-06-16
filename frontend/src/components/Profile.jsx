@@ -154,7 +154,20 @@ const Profile = ({ onLogout }) => {
 
       const { error } = await supabase.auth.updateUser({ password: newPw });
       if (error) throw error;
-      toast.success("Password changed successfully");
+
+      // ── GLOBAL SIGNOUT ──
+      // Instantly delete all other active sessions for this user.
+      // This forces the heartbeat in App.jsx on their other devices to log them out.
+      const deviceId = localStorage.getItem("deviceId");
+      if (deviceId) {
+        await supabase
+          .from("active_sessions")
+          .delete()
+          .eq("user_id", user.id)
+          .neq("device_id", deviceId);
+      }
+
+      toast.success("Password changed successfully. Other devices have been logged out.");
       setCurrentPw("");
       setNewPw("");
       setConfirmPw("");
@@ -486,7 +499,7 @@ const Profile = ({ onLogout }) => {
                   <div style={{ display: "flex", gap: "10px", padding: "14px 18px", borderRadius: "8px", background: "#fffbeb", border: "1px solid #fde68a", marginBottom: "24px" }}>
                     <Key style={{ width: "16px", height: "16px", color: "#b45309", flexShrink: 0, marginTop: "2px" }} />
                     <p style={{ fontSize: "13px", color: "#92400e", lineHeight: 1.5, margin: 0 }}>
-                      Changing your password will require you to sign in again on other devices. Ensure your new password is secure.
+                      For security, changing your password will sign you out of all devices.
                     </p>
                   </div>
 

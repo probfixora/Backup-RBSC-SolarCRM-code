@@ -32,10 +32,29 @@ const Login = ({ setToken }) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [lockoutTimer, setLockoutTimer] = useState(0);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const checkLockout = () => {
+      const lockout = parseInt(localStorage.getItem("lockoutUntil") || "0", 10);
+      const now = Date.now();
+      if (lockout > now) {
+        setLockoutTimer(Math.ceil((lockout - now) / 1000));
+      } else {
+        setLockoutTimer(0);
+      }
+    };
+    checkLockout();
+    const interval = setInterval(checkLockout, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (lockoutTimer > 0) {
+      return toast.error(`Too many attempts. Please wait ${lockoutTimer} seconds.`);
+    }
     if (!email || !password)
       return toast.error("Please enter your email and password");
     setLoading(true);
@@ -85,6 +104,42 @@ const Login = ({ setToken }) => {
 
       const { name, role, employee_id } = profile;
 
+      // ── DEVICE TRACKING LOGIC ──
+      let deviceId = localStorage.getItem("deviceId");
+      if (!deviceId) {
+        deviceId = crypto.randomUUID();
+        localStorage.setItem("deviceId", deviceId);
+      }
+
+      // Check how many active devices the user has (active within the last hour)
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { data: activeSessions, error: sessionErr } = await supabase
+        .from("active_sessions")
+        .select("device_id")
+        .eq("user_id", user.id)
+        .gte("last_active", oneHourAgo);
+
+      if (!sessionErr && activeSessions) {
+        // Exclude the current device from the "other" devices count
+        const otherDevices = activeSessions.filter(s => s.device_id !== deviceId);
+        if (otherDevices.length >= 3) {
+          // Immediately kill the session we just created
+          await supabase.auth.signOut();
+          throw new Error("Maximum of 3 devices are already logged in. Please log out from another device.");
+        }
+      }
+
+      // Upsert the current device session
+      await supabase.from("active_sessions").upsert({
+        user_id: user.id,
+        device_id: deviceId,
+        last_active: new Date().toISOString()
+      }, { onConflict: 'user_id, device_id' });
+
+      // Reset login attempts on success
+      localStorage.removeItem("failedAttempts");
+      localStorage.removeItem("lockoutUntil");
+
       localStorage.setItem("token", token);
       localStorage.setItem("userId", user.id);
       localStorage.setItem("role", role);
@@ -109,8 +164,22 @@ const Login = ({ setToken }) => {
       };
       navigate(routes[role] || "/admin-dashboard");
     } catch (err) {
-      const msg =
-        err.message || "Invalid credentials. Please verify your login details.";
+      // If it's a "Maximum devices" or profile error, don't trigger the rate limiter
+      const isDeviceErr = err.message.includes("Maximum of 3 devices");
+      const isProfileErr = err.message.includes("suspended") || err.message.includes("inactive") || err.message.includes("terminated") || err.message.includes("resigned");
+      
+      if (!isDeviceErr && !isProfileErr) {
+        const attempts = parseInt(localStorage.getItem("failedAttempts") || "0", 10) + 1;
+        localStorage.setItem("failedAttempts", attempts.toString());
+        if (attempts >= 5) {
+          localStorage.setItem("lockoutUntil", (Date.now() + 30000).toString());
+          localStorage.setItem("failedAttempts", "0");
+          toast.error("Too many failed attempts. You are locked out for 30 seconds.");
+          return;
+        }
+      }
+
+      const msg = err.message || "Invalid credentials. Please verify your login details.";
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -526,14 +595,14 @@ const Login = ({ setToken }) => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || lockoutTimer > 0}
               className="btn btn-primary btn-lg"
               style={{
                 width: "100%",
                 padding: "15px 24px",
                 borderRadius: "var(--radius-md)",
-                opacity: loading ? 0.7 : 1,
-                cursor: loading ? "not-allowed" : "pointer",
+                opacity: (loading || lockoutTimer > 0) ? 0.7 : 1,
+                cursor: (loading || lockoutTimer > 0) ? "not-allowed" : "pointer",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
@@ -551,6 +620,13 @@ const Login = ({ setToken }) => {
                     borderRadius: "50%",
                   }}
                 />
+              ) : lockoutTimer > 0 ? (
+                <>
+                  <Lock style={{ width: "16px", height: "16px" }} />
+                  <span style={{ fontSize: "14.5px", fontWeight: 700, letterSpacing: "0.01em" }}>
+                    Locked for {lockoutTimer}s
+                  </span>
+                </>
               ) : (
                 <>
                   <span

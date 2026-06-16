@@ -167,6 +167,50 @@ function App() {
     syncProfile();
   }, [token]); // re-runs whenever token changes (i.e., on login)
 
+  // ── Session Heartbeat & Global Logout ─────────────────────────────────────
+  useEffect(() => {
+    if (!token) return;
+    const deviceId = localStorage.getItem("deviceId");
+    if (!deviceId) return;
+
+    const performHeartbeat = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Verify if this device is still listed in active_sessions
+        const { data: activeSession, error } = await supabase
+          .from("active_sessions")
+          .select("device_id")
+          .eq("user_id", user.id)
+          .eq("device_id", deviceId)
+          .maybeSingle();
+        
+        // If the session was explicitly deleted (e.g. by password change)
+        if (!activeSession) {
+          await supabase.auth.signOut();
+          localStorage.clear();
+          window.location.href = "/login";
+          return;
+        }
+
+        // Update last_active timestamp
+        await supabase.from("active_sessions").upsert({
+          user_id: user.id,
+          device_id: deviceId,
+          last_active: new Date().toISOString()
+        }, { onConflict: 'user_id, device_id' });
+        
+      } catch (err) {
+        // Silent fail - network issues shouldn't force logout
+      }
+    };
+
+    performHeartbeat();
+    const interval = setInterval(performHeartbeat, 5 * 60 * 1000); // 5 minutes
+    return () => clearInterval(interval);
+  }, [token]);
+
   // ── Inactivity & Background Timers ──────────────────────────────────────
   useEffect(() => {
     if (!token) return;
