@@ -312,7 +312,7 @@ const Profile = ({ onLogout }) => {
         </div>
 
         {/* ── Body ── */}
-        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <div className="profile-layout" style={{ display: "flex", flex: 1, overflow: "hidden" }}>
           {/* Left sidebar */}
           <div style={{
             width: "260px", flexShrink: 0, borderRight: "1px solid #e5e7eb", background: "#fff",
@@ -396,7 +396,7 @@ const Profile = ({ onLogout }) => {
                     Employee Details
                   </h3>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div className="grid-responsive-2" style={{ display: "grid", gap: "16px" }}>
                     <div>
                       <label style={labelStyle}>Employee ID</label>
                       <input type="text" value={form.employeeId} readOnly style={{ ...inputStyle, background: "#f3f4f6", color: "#6b7280", cursor: "not-allowed" }} />
@@ -464,7 +464,7 @@ const Profile = ({ onLogout }) => {
                   <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#111827", margin: "0 0 20px", textAlign: "center" }}>
                     Bank Information
                   </h3>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div className="grid-responsive-2" style={{ display: "grid", gap: "16px" }}>
                     <div>
                       <label style={labelStyle}>Bank Name</label>
                       <input type="text" value={form.bankName} onChange={set("bankName")} style={inputStyle} />
@@ -512,7 +512,7 @@ const Profile = ({ onLogout }) => {
                       </div>
                     </div>
                     
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                    <div className="grid-responsive-2" style={{ display: "grid", gap: "16px" }}>
                       <div>
                         <label style={labelStyle}>New Password</label>
                         <div style={{ position: "relative" }}>

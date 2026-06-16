@@ -126,7 +126,7 @@ const AddMemberModal = ({ ctx }) => {
         <div style={{ padding: "24px 30px", background: "#fff" }}>
           <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "16px", margin: 0 }}>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div className="grid-responsive-2" style={{ display: "grid", gap: "16px" }}>
               <div>
                 <label style={labelStyle}>Employee ID</label>
                 <input type="text" value={form.employeeId} onChange={set("employeeId")} style={{ ...inputStyle, background: "#f8fafc" }} placeholder="Auto-generated" />
@@ -142,7 +142,7 @@ const AddMemberModal = ({ ctx }) => {
               <input type="email" value={form.email} onChange={set("email")} style={inputStyle} placeholder="Enter email" required />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div className="grid-responsive-2" style={{ display: "grid", gap: "16px" }}>
               <div>
                 <label style={labelStyle}>Select Department</label>
                 <select value={form.role} onChange={set("role")} style={{ ...inputStyle, cursor: "pointer" }} required>
@@ -163,7 +163,7 @@ const AddMemberModal = ({ ctx }) => {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div className="grid-responsive-2" style={{ display: "grid", gap: "16px" }}>
               <div>
                 <label style={labelStyle}>Date of Birth</label>
                 <input type="date" value={form.dob} onChange={set("dob")} style={inputStyle} />
@@ -174,7 +174,7 @@ const AddMemberModal = ({ ctx }) => {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div className="grid-responsive-2" style={{ display: "grid", gap: "16px" }}>
               <div>
                 <label style={labelStyle}>State</label>
                 <select value={form.stateIsoCode} onChange={handleStateChange} style={{ ...inputStyle, cursor: "pointer" }} required>

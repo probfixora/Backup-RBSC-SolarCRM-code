@@ -156,8 +156,8 @@ const Users = ({ onLogout }) => {
         <Header title="Team" subtitle="Manage user accounts and access permissions" onLogout={onLogout} />
 
         {/* Toolbar */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", gap: "12px" }}>
-          <div style={{ position: "relative", flex: 1, maxWidth: "360px" }}>
+        <div className="header-controls" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", gap: "12px" }}>
+          <div className="header-search" style={{ position: "relative", flex: 1, maxWidth: "360px" }}>
             <Search style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", width: "15px", height: "15px", color: "var(--text-4)", pointerEvents: "none" }} />
             <input
               type="text"

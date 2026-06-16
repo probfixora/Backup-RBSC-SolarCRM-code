@@ -2261,6 +2261,32 @@ select.input {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE UTILITIES
+═══════════════════════════════════════════════════════════════════════════ */
+.grid-responsive-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.users-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.users-layout.with-profile {
+  grid-template-columns: 1fr 300px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE — TABLET (768px – 1024px)
 ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 1024px) and (min-width: 769px) {
@@ -2296,7 +2322,11 @@ select.input {
   }
 
   .finance-metrics,
-  .finance-grid {
+  .finance-grid,
+  .grid-responsive-2,
+  .profile-layout,
+  .users-layout,
+  .users-layout.with-profile {
     grid-template-columns: 1fr !important;
   }
 
