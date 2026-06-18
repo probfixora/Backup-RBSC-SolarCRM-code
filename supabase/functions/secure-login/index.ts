@@ -178,10 +178,17 @@ serve(async (req: Request) => {
   // Deleting is more reliable than updating with null — the Supabase JS client
   // can silently drop null values in update/upsert payloads.
   // Semantics: no row = no failed attempts = fresh start. Clean and simple.
-  await supabase
+  const { error: deleteError } = await supabase
     .from("login_attempts")
     .delete()
-    .eq("email", email);
+    .eq("email", email.toLowerCase().trim());
+
+  if (deleteError) {
+    // Log so this shows up in Supabase Edge Function logs (Dashboard → Functions → Logs)
+    console.error("[secure-login] Failed to delete login_attempts row:", JSON.stringify(deleteError));
+  } else {
+    console.log("[secure-login] login_attempts reset for:", email);
+  }
 
   const { session, user } = authData;
 
