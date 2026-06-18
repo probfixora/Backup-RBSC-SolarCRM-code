@@ -175,15 +175,17 @@ serve(async (req: Request) => {
   }
 
   // ── STEP 3B: Login successful — reset the rate limiter ───────────────────
-  await supabase.from("login_attempts").upsert(
-    {
-      email,
+  // Use .update() not .upsert() here — upsert with lockout_until:null can
+  // fail silently on tables with GENERATED ALWAYS AS IDENTITY primary keys.
+  // If no row exists (user had no prior failures), this is a no-op — which is fine.
+  await supabase
+    .from("login_attempts")
+    .update({
       failed_count: 0,
       lockout_until: null,
       last_attempt_at: new Date().toISOString(),
-    },
-    { onConflict: "email" }
-  );
+    })
+    .eq("email", email);
 
   const { session, user } = authData;
 
