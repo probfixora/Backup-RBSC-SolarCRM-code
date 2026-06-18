@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -32,123 +32,101 @@ const Login = ({ setToken }) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  // lockoutTimer is populated by the server's response — not localStorage.
+  // It counts down locally only for display purposes after a backend rejection.
   const [lockoutTimer, setLockoutTimer] = useState(0);
+  const lockoutIntervalRef = useRef(null);
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    const checkLockout = () => {
-      const lockout = parseInt(localStorage.getItem("lockoutUntil") || "0", 10);
-      const now = Date.now();
-      if (lockout > now) {
-        setLockoutTimer(Math.ceil((lockout - now) / 1000));
-      } else {
-        setLockoutTimer(0);
-      }
+  // Start a client-side countdown when the server tells us we're locked out.
+  // This is purely cosmetic — the backend enforces the actual lockout.
+  const startLockoutCountdown = (seconds) => {
+    setLockoutTimer(seconds);
+    if (lockoutIntervalRef.current) clearInterval(lockoutIntervalRef.current);
+    lockoutIntervalRef.current = setInterval(() => {
+      setLockoutTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(lockoutIntervalRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (lockoutIntervalRef.current) clearInterval(lockoutIntervalRef.current);
     };
-    checkLockout();
-    const interval = setInterval(checkLockout, 1000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     if (lockoutTimer > 0) {
-      return toast.error(`Too many attempts. Please wait ${lockoutTimer} seconds.`);
+      return toast.error(`Account locked. Please wait ${lockoutTimer} seconds.`);
     }
     if (!email || !password)
       return toast.error("Please enter your email and password");
     setLoading(true);
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase().trim(),
-        password,
-      });
-
-      if (error) throw new Error(error.message);
-
-      const { session, user } = data;
-      const token = session.access_token;
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("name, role, status, status_date, status_duration, employee_id")
-        .eq("id", user.id)
-        .single();
-
-      if (profileError)
-        throw new Error(
-          `Profile error: ${profileError.message || JSON.stringify(profileError)}`,
-        );
-      if (!profile)
-        throw new Error(
-          "Could not load user profile metadata: profile is null",
-        );
-
-      const pStatus = profile.status || "active";
-      if (pStatus === "inactive") throw new Error("You are inactive. Please contact support.");
-      if (pStatus === "terminate") throw new Error("You are terminated. Please contact support.");
-      if (pStatus === "resign") throw new Error("You have resigned. Please contact support.");
-      
-      if (pStatus === "suspend") {
-        if (profile.status_date && profile.status_duration) {
-          const suspendStart = new Date(profile.status_date);
-          const diffDays = Math.floor((new Date() - suspendStart) / (1000 * 60 * 60 * 24));
-          if (diffDays <= profile.status_duration) {
-            throw new Error(`You are suspended for ${profile.status_duration} days. Please contact support.`);
-          }
-        } else {
-          // Fallback if no dates set but status is suspend
-          throw new Error("You are suspended. Please contact support.");
-        }
-      }
-
-      const { name, role, employee_id } = profile;
-
-      // ── DEVICE TRACKING LOGIC ──
+      // Ensure a stable device ID exists before calling the backend
       let deviceId = localStorage.getItem("deviceId");
       if (!deviceId) {
         deviceId = crypto.randomUUID();
         localStorage.setItem("deviceId", deviceId);
       }
 
-      // Check how many active devices the user has (active within the last hour)
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-      const { data: activeSessions, error: sessionErr } = await supabase
-        .from("active_sessions")
-        .select("device_id")
-        .eq("user_id", user.id)
-        .gte("last_active", oneHourAgo);
-
-      if (!sessionErr && activeSessions) {
-        // Exclude the current device from the "other" devices count
-        const otherDevices = activeSessions.filter(s => s.device_id !== deviceId);
-        if (otherDevices.length >= 3) {
-          // Immediately kill the session we just created
-          await supabase.auth.signOut();
-          throw new Error("Maximum of 3 devices are already logged in. Please log out from another device.");
+      // ── Call the secure backend Edge Function ──
+      // All rate limiting, profile checks, and device tracking happen here.
+      const { data: fnData, error: fnError } = await supabase.functions.invoke(
+        "secure-login",
+        {
+          body: {
+            email: email.toLowerCase().trim(),
+            password,
+            deviceId,
+          },
         }
+      );
+
+      if (fnError) {
+        // FunctionsHttpError carries a response we can inspect
+        const errBody = await fnError.context?.json().catch(() => null);
+        const msg = errBody?.message || fnError.message || "Login failed. Please try again.";
+
+        // If the server sent lockout info, start the client-side countdown
+        if (errBody?.locked && errBody?.remainingSeconds > 0) {
+          startLockoutCountdown(errBody.remainingSeconds);
+        }
+
+        toast.error(msg);
+        return;
       }
 
-      // Upsert the current device session
-      await supabase.from("active_sessions").upsert({
-        user_id: user.id,
-        device_id: deviceId,
-        last_active: new Date().toISOString()
-      }, { onConflict: 'user_id, device_id' });
+      if (!fnData?.accessToken) {
+        toast.error("Login failed. Please try again.");
+        return;
+      }
 
-      // Reset login attempts on success
-      localStorage.removeItem("failedAttempts");
-      localStorage.removeItem("lockoutUntil");
+      const { accessToken, refreshToken, user } = fnData;
 
-      localStorage.setItem("token", token);
+      // Set the session on the Supabase client so it works normally everywhere
+      await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+
+      localStorage.setItem("token", accessToken);
       localStorage.setItem("userId", user.id);
-      localStorage.setItem("role", role);
-      localStorage.setItem("name", name);
+      localStorage.setItem("role", user.role);
+      localStorage.setItem("name", user.name);
       localStorage.setItem("email", user.email);
-      localStorage.setItem("employeeId", employee_id || "N/A");
-      setToken(token);
+      localStorage.setItem("employeeId", user.employeeId || "N/A");
+      setToken(accessToken);
 
-      toast.success(`Welcome back, ${name}!`);
+      toast.success(`Welcome back, ${user.name}!`);
+
       const routes = {
         admin: "/admin-dashboard",
         sales: "/sales-dashboard",
@@ -162,25 +140,9 @@ const Login = ({ setToken }) => {
         accounts: "/accounts-dashboard",
         customer_service: "/customer-service-dashboard",
       };
-      navigate(routes[role] || "/admin-dashboard");
+      navigate(routes[user.role] || "/admin-dashboard");
     } catch (err) {
-      // If it's a "Maximum devices" or profile error, don't trigger the rate limiter
-      const isDeviceErr = err.message.includes("Maximum of 3 devices");
-      const isProfileErr = err.message.includes("suspended") || err.message.includes("inactive") || err.message.includes("terminated") || err.message.includes("resigned");
-      
-      if (!isDeviceErr && !isProfileErr) {
-        const attempts = parseInt(localStorage.getItem("failedAttempts") || "0", 10) + 1;
-        localStorage.setItem("failedAttempts", attempts.toString());
-        if (attempts >= 5) {
-          localStorage.setItem("lockoutUntil", (Date.now() + 30000).toString());
-          localStorage.setItem("failedAttempts", "0");
-          toast.error("Too many failed attempts. You are locked out for 30 seconds.");
-          return;
-        }
-      }
-
-      const msg = err.message || "Invalid credentials. Please verify your login details.";
-      toast.error(msg);
+      toast.error(err.message || "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
