@@ -83,9 +83,17 @@ serve(async (req: Request) => {
 
   // Admin client — uses service role, bypasses RLS
   // This is the ONLY client that has access to the login_attempts table.
-  const supabase = createClient(
+  const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    { auth: { persistSession: false } }
+  );
+
+  // Auth client — used ONLY for checking passwords
+  // This prevents the user's JWT from polluting the admin client's state.
+  const supabaseAuth = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
     { auth: { persistSession: false } }
   );
 
@@ -107,7 +115,7 @@ serve(async (req: Request) => {
   }
 
   // ── STEP 1: Check current lockout status ──────────────────────────────────
-  const { data: attemptRecord } = await supabase
+  const { data: attemptRecord } = await supabaseAdmin
     .from("login_attempts")
     .select("failed_count, lockout_until")
     .eq("email", email)
@@ -133,7 +141,7 @@ serve(async (req: Request) => {
 
   // ── STEP 2: Attempt login via Supabase Auth ───────────────────────────────
   const { data: authData, error: authError } =
-    await supabase.auth.signInWithPassword({ email, password });
+    await supabaseAuth.auth.signInWithPassword({ email, password });
 
   // ── STEP 3A: Handle failed login ──────────────────────────────────────────
   if (authError || !authData?.session) {
@@ -145,7 +153,7 @@ serve(async (req: Request) => {
         : null;
 
     // Upsert the failure record
-    await supabase.from("login_attempts").upsert(
+    await supabaseAdmin.from("login_attempts").upsert(
       {
         email,
         failed_count: currentFailed,
@@ -178,7 +186,7 @@ serve(async (req: Request) => {
   // Deleting is more reliable than updating with null — the Supabase JS client
   // can silently drop null values in update/upsert payloads.
   // Semantics: no row = no failed attempts = fresh start. Clean and simple.
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await supabaseAdmin
     .from("login_attempts")
     .delete()
     .eq("email", email.toLowerCase().trim());
@@ -193,7 +201,7 @@ serve(async (req: Request) => {
   const { session, user } = authData;
 
   // ── STEP 4: Load profile and check account status ─────────────────────────
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile, error: profileError } = await supabaseAdmin
     .from("profiles")
     .select("name, role, status, status_date, status_duration, employee_id")
     .eq("id", user.id)
@@ -201,7 +209,7 @@ serve(async (req: Request) => {
 
   if (profileError || !profile) {
     // Kill the session we just created — profile is corrupt/missing
-    await supabase.auth.admin.signOut(session.access_token);
+    await supabaseAdmin.auth.admin.signOut(session.access_token);
     return jsonResponse(
       { message: "Could not load your user profile. Please contact support." },
       500
@@ -211,15 +219,15 @@ serve(async (req: Request) => {
   const pStatus = profile.status || "active";
 
   if (pStatus === "inactive") {
-    await supabase.auth.admin.signOut(session.access_token);
+    await supabaseAdmin.auth.admin.signOut(session.access_token);
     return jsonResponse({ success: false, message: "Your account is inactive. Please contact support." });
   }
   if (pStatus === "terminate") {
-    await supabase.auth.admin.signOut(session.access_token);
+    await supabaseAdmin.auth.admin.signOut(session.access_token);
     return jsonResponse({ success: false, message: "Your account has been terminated. Please contact support." });
   }
   if (pStatus === "resign") {
-    await supabase.auth.admin.signOut(session.access_token);
+    await supabaseAdmin.auth.admin.signOut(session.access_token);
     return jsonResponse({ success: false, message: "Your account has been marked as resigned. Please contact support." });
   }
 
@@ -230,14 +238,14 @@ serve(async (req: Request) => {
         (Date.now() - suspendStart.getTime()) / (1000 * 60 * 60 * 24)
       );
       if (diffDays <= profile.status_duration) {
-        await supabase.auth.admin.signOut(session.access_token);
+        await supabaseAdmin.auth.admin.signOut(session.access_token);
         return jsonResponse({
           success: false,
           message: `Your account is suspended for ${profile.status_duration} days. Please contact support.`,
         });
       }
     } else {
-      await supabase.auth.admin.signOut(session.access_token);
+      await supabaseAdmin.auth.admin.signOut(session.access_token);
       return jsonResponse({ success: false, message: "Your account is suspended. Please contact support." });
     }
   }
@@ -246,7 +254,7 @@ serve(async (req: Request) => {
   // deviceId was already parsed from the request body above
   if (deviceId) {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const { data: activeSessions } = await supabase
+    const { data: activeSessions } = await supabaseAdmin
       .from("active_sessions")
       .select("device_id")
       .eq("user_id", user.id)
@@ -257,7 +265,7 @@ serve(async (req: Request) => {
         (s: { device_id: string }) => s.device_id !== deviceId
       );
       if (otherDevices.length >= 3) {
-        await supabase.auth.admin.signOut(session.access_token);
+        await supabaseAdmin.auth.admin.signOut(session.access_token);
         return jsonResponse({
           success: false,
           message: "Maximum of 3 devices are already logged in. Please log out from another device first.",
@@ -265,7 +273,7 @@ serve(async (req: Request) => {
       }
     }
 
-    await supabase.from("active_sessions").upsert(
+    await supabaseAdmin.from("active_sessions").upsert(
       {
         user_id: user.id,
         device_id: deviceId,
