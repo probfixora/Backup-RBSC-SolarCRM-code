@@ -79,6 +79,8 @@ const Login = ({ setToken }) => {
 
       // ── Call the secure backend Edge Function ──
       // All rate limiting, profile checks, and device tracking happen here.
+      // The Edge Function always returns HTTP 200 with success:true/false in the
+      // body — this ensures fnData is always populated and readable.
       const { data: fnData, error: fnError } = await supabase.functions.invoke(
         "secure-login",
         {
@@ -90,22 +92,22 @@ const Login = ({ setToken }) => {
         }
       );
 
+      // Network-level error (e.g. function not found, no internet)
       if (fnError) {
-        // FunctionsHttpError carries a response we can inspect
-        const errBody = await fnError.context?.json().catch(() => null);
-        const msg = errBody?.message || fnError.message || "Login failed. Please try again.";
-
-        // If the server sent lockout info, start the client-side countdown
-        if (errBody?.locked && errBody?.remainingSeconds > 0) {
-          startLockoutCountdown(errBody.remainingSeconds);
-        }
-
-        toast.error(msg);
+        toast.error(fnError.message || "Could not reach the server. Please try again.");
         return;
       }
 
-      if (!fnData?.accessToken) {
-        toast.error("Login failed. Please try again.");
+      // Application-level error returned by the Edge Function (success: false)
+      if (!fnData?.success) {
+        const msg = fnData?.message || "Login failed. Please try again.";
+
+        // If the server sent lockout info, start the client-side countdown
+        if (fnData?.locked && fnData?.remainingSeconds > 0) {
+          startLockoutCountdown(fnData.remainingSeconds);
+        }
+
+        toast.error(msg);
         return;
       }
 

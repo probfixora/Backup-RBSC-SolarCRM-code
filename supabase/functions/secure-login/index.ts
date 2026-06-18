@@ -60,7 +60,7 @@ serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders });
 
   if (req.method !== "POST")
-    return jsonResponse({ message: "Method not allowed" }, 405);
+    return jsonResponse({ success: false, message: "Method not allowed" });
 
   // Admin client — uses service role, bypasses RLS
   // This is the ONLY client that has access to the login_attempts table.
@@ -72,17 +72,19 @@ serve(async (req: Request) => {
 
   let email: string;
   let password: string;
+  let deviceId: string | null = null;
 
   try {
     const body = await req.json();
     email = (body.email || "").toLowerCase().trim();
     password = body.password || "";
+    deviceId = body.deviceId || null;
   } catch {
-    return jsonResponse({ message: "Invalid request body" }, 400);
+    return jsonResponse({ success: false, message: "Invalid request body" });
   }
 
   if (!email || !password) {
-    return jsonResponse({ message: "Email and password are required" }, 400);
+    return jsonResponse({ success: false, message: "Email and password are required" });
   }
 
   // ── STEP 1: Check current lockout status ──────────────────────────────────
@@ -99,15 +101,14 @@ serve(async (req: Request) => {
       const remainingSeconds = Math.ceil(
         (lockoutUntil.getTime() - now.getTime()) / 1000
       );
-      return jsonResponse(
-        {
-          message: `Too many failed attempts. Your account is locked for ${formatDuration(remainingSeconds)}. Please try again later.`,
-          locked: true,
-          lockoutUntil: attemptRecord.lockout_until,
-          remainingSeconds,
-        },
-        429
-      );
+      // Always return 200 so the JS client can reliably parse the body
+      return jsonResponse({
+        success: false,
+        message: `Too many failed attempts. Your account is locked for ${formatDuration(remainingSeconds)}. Please try again later.`,
+        locked: true,
+        lockoutUntil: attemptRecord.lockout_until,
+        remainingSeconds,
+      });
     }
   }
 
@@ -146,15 +147,14 @@ serve(async (req: Request) => {
       }
     }
 
-    return jsonResponse(
-      {
-        message,
-        locked: lockoutSeconds > 0,
-        lockoutUntil,
-        remainingSeconds: lockoutSeconds > 0 ? lockoutSeconds : 0,
-      },
-      401
-    );
+    // Always return 200 so the JS client can reliably parse the body
+    return jsonResponse({
+      success: false,
+      message,
+      locked: lockoutSeconds > 0,
+      lockoutUntil,
+      remainingSeconds: lockoutSeconds > 0 ? lockoutSeconds : 0,
+    });
   }
 
   // ── STEP 3B: Login successful — reset the rate limiter ───────────────────
@@ -190,24 +190,15 @@ serve(async (req: Request) => {
 
   if (pStatus === "inactive") {
     await supabase.auth.admin.signOut(session.access_token);
-    return jsonResponse(
-      { message: "Your account is inactive. Please contact support." },
-      403
-    );
+    return jsonResponse({ success: false, message: "Your account is inactive. Please contact support." });
   }
   if (pStatus === "terminate") {
     await supabase.auth.admin.signOut(session.access_token);
-    return jsonResponse(
-      { message: "Your account has been terminated. Please contact support." },
-      403
-    );
+    return jsonResponse({ success: false, message: "Your account has been terminated. Please contact support." });
   }
   if (pStatus === "resign") {
     await supabase.auth.admin.signOut(session.access_token);
-    return jsonResponse(
-      { message: "Your account has been marked as resigned. Please contact support." },
-      403
-    );
+    return jsonResponse({ success: false, message: "Your account has been marked as resigned. Please contact support." });
   }
 
   if (pStatus === "suspend") {
@@ -218,32 +209,19 @@ serve(async (req: Request) => {
       );
       if (diffDays <= profile.status_duration) {
         await supabase.auth.admin.signOut(session.access_token);
-        return jsonResponse(
-          {
-            message: `Your account is suspended for ${profile.status_duration} days. Please contact support.`,
-          },
-          403
-        );
+        return jsonResponse({
+          success: false,
+          message: `Your account is suspended for ${profile.status_duration} days. Please contact support.`,
+        });
       }
     } else {
       await supabase.auth.admin.signOut(session.access_token);
-      return jsonResponse(
-        { message: "Your account is suspended. Please contact support." },
-        403
-      );
+      return jsonResponse({ success: false, message: "Your account is suspended. Please contact support." });
     }
   }
 
   // ── STEP 5: Device tracking (max 3 concurrent devices) ───────────────────
-  // Device ID comes from the frontend's localStorage. If not sent, skip check.
-  let deviceId: string | null = null;
-  try {
-    const body = await req.clone().json();
-    deviceId = body.deviceId || null;
-  } catch {
-    // no deviceId provided
-  }
-
+  // deviceId was already parsed from the request body above
   if (deviceId) {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data: activeSessions } = await supabase
@@ -258,13 +236,10 @@ serve(async (req: Request) => {
       );
       if (otherDevices.length >= 3) {
         await supabase.auth.admin.signOut(session.access_token);
-        return jsonResponse(
-          {
-            message:
-              "Maximum of 3 devices are already logged in. Please log out from another device first.",
-          },
-          403
-        );
+        return jsonResponse({
+          success: false,
+          message: "Maximum of 3 devices are already logged in. Please log out from another device first.",
+        });
       }
     }
 
@@ -280,6 +255,7 @@ serve(async (req: Request) => {
 
   // ── STEP 6: Return session and profile data to the frontend ───────────────
   return jsonResponse({
+    success: true,
     accessToken: session.access_token,
     refreshToken: session.refresh_token,
     user: {
