@@ -19,18 +19,37 @@ const corsHeaders = {
 };
 
 // ── Progressive lockout schedule ──────────────────────────────────────────────
-// Returns lockout duration in seconds based on the current total failed count.
-// The schedule escalates with each tier (every 3 failures).
+// Lockout is only applied when failedCount reaches a multiple of 3.
+// Between lockouts, the user gets 3 fresh attempts.
+//
+// Tier chart (which multiple-of-3 we're at):
+//   failedCount=3  (tier 1) → 30 seconds
+//   failedCount=6  (tier 2) → 1 minute
+//   failedCount=9  (tier 3) → 10 minutes
+//   failedCount=12 (tier 4) → 1 hour
+//   failedCount=15 (tier 5) → 24 hours
+//   failedCount=18 (tier 6) → 48 hours
+//   failedCount=21 (tier 7) → 3 days
+//   failedCount=24+ (tier 8+) → 7 days
 function getLockoutSeconds(failedCount: number): number {
-  if (failedCount < 3)  return 0;       // No lockout yet
-  if (failedCount < 6)  return 30;      // 30 seconds
-  if (failedCount < 9)  return 60;      // 1 minute
-  if (failedCount < 12) return 600;     // 10 minutes
-  if (failedCount < 15) return 3600;    // 1 hour
-  if (failedCount < 18) return 86400;   // 24 hours
-  if (failedCount < 21) return 172800;  // 48 hours
-  if (failedCount < 24) return 259200;  // 3 days
-  return 604800;                         // 7 days (max — permanent-ish lockout)
+  // Only lock at multiples of 3
+  if (failedCount % 3 !== 0) return 0;
+
+  const tier = Math.floor(failedCount / 3);
+  if (tier === 1) return 30;       // 30 seconds
+  if (tier === 2) return 60;       // 1 minute
+  if (tier === 3) return 600;      // 10 minutes
+  if (tier === 4) return 3600;     // 1 hour
+  if (tier === 5) return 86400;    // 24 hours
+  if (tier === 6) return 172800;   // 48 hours
+  if (tier === 7) return 259200;   // 3 days
+  return 604800;                    // 7 days (tier 8+)
+}
+
+// How many attempts remain before the next lockout triggers
+function attemptsUntilNextLockout(failedCount: number): number {
+  const remainder = failedCount % 3;
+  return remainder === 0 ? 3 : 3 - remainder;
 }
 
 // Format seconds into a human-readable duration string
@@ -141,10 +160,8 @@ serve(async (req: Request) => {
     if (lockoutSeconds > 0) {
       message = `Invalid credentials. Too many failed attempts — you are now locked out for ${formatDuration(lockoutSeconds)}.`;
     } else {
-      const attemptsBeforeLockout = 3 - currentFailed;
-      if (attemptsBeforeLockout > 0) {
-        message = `Invalid email or password. ${attemptsBeforeLockout} attempt${attemptsBeforeLockout !== 1 ? "s" : ""} remaining before lockout.`;
-      }
+      const remaining = attemptsUntilNextLockout(currentFailed);
+      message = `Invalid email or password. ${remaining} attempt${remaining !== 1 ? "s" : ""} remaining before lockout.`;
     }
 
     // Always return 200 so the JS client can reliably parse the body
