@@ -174,17 +174,13 @@ serve(async (req: Request) => {
     });
   }
 
-  // ── STEP 3B: Login successful — reset the rate limiter ───────────────────
-  // Use .update() not .upsert() here — upsert with lockout_until:null can
-  // fail silently on tables with GENERATED ALWAYS AS IDENTITY primary keys.
-  // If no row exists (user had no prior failures), this is a no-op — which is fine.
+  // ── STEP 3B: Login successful — delete the rate limit record entirely ────
+  // Deleting is more reliable than updating with null — the Supabase JS client
+  // can silently drop null values in update/upsert payloads.
+  // Semantics: no row = no failed attempts = fresh start. Clean and simple.
   await supabase
     .from("login_attempts")
-    .update({
-      failed_count: 0,
-      lockout_until: null,
-      last_attempt_at: new Date().toISOString(),
-    })
+    .delete()
     .eq("email", email);
 
   const { session, user } = authData;
