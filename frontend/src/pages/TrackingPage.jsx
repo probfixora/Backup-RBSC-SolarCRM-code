@@ -9,7 +9,7 @@ import TrackingFooter from "./TrackingSections/TrackingFooter";
 
 import { STAGES, stageIndex } from "./TrackingSections/TrackingConstants";
 
-import { EDGE } from "../lib/supabaseClient";
+import { EDGE, SUPABASE_ANON_KEY } from "../lib/supabaseClient";
 
 export default function TrackingPage() {
   const [searchParams] = useSearchParams();
@@ -33,6 +33,8 @@ export default function TrackingPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "apikey": SUPABASE_ANON_KEY,
           },
           body: JSON.stringify({ action: "track_status", trackingId: id }),
         });

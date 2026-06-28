@@ -2,10 +2,11 @@
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = "https://rgipmrviqapxxilsiclm.supabase.co";
-const SUPABASE_ANON_KEY =
+export const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnaXBtcnZpcWFweHhpbHNpY2xtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMzEyNDYsImV4cCI6MjA5MzgwNzI0Nn0.8Dd5klNtsPGFCikUZYihVJTq-TLiS1Tn58pJ2vENHgM";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
 // ─── Edge Function base URLs ──────────────────────────────────────────────────
 export const EDGE = {
