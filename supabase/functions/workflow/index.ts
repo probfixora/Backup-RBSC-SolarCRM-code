@@ -381,6 +381,7 @@ serve(async (req: Request) => {
       error = byCaseId.error;
     }
 
+    // Only block if explicitly hidden (false). NULL or true = visible.
     if (!data || data.is_tracking_visible === false) {
       return new Response(
         JSON.stringify({
@@ -617,6 +618,7 @@ serve(async (req: Request) => {
           sales_person: body.salesPerson || user.name,
           system_specs: body.systemSpecs || {},
           documents: body.documents || {},
+          is_tracking_visible: true, // Visible immediately from Registration
         })
         .select()
         .single();

@@ -1139,7 +1139,20 @@ const EmployeeListPage = ({ onLogout }) => {
         />
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+          .grid-stack-mobile { grid-template-columns: 1fr !important; }
+          .employee-details-body { flex-direction: column !important; overflow-y: auto !important; }
+          .employee-details-sidebar { width: 100% !important; border-right: none !important; border-bottom: 1px solid #e5e7eb !important; padding: 20px !important; }
+          .employee-details-content { padding: 20px !important; overflow: visible !important; }
+          .header-controls { flex-direction: column !important; align-items: stretch !important; }
+          .header-controls > button { width: 100% !important; justify-content: center !important; }
+          .header-controls > select { width: 100% !important; max-width: none !important; flex: none !important; }
+          .header-search { width: 100% !important; }
+          .hide-on-mobile { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 };
