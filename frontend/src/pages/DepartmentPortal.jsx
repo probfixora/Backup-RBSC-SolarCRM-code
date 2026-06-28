@@ -268,7 +268,6 @@ const DeptCard = ({ dept, onMemberClick }) => {
 };
 
 const DepartmentPortal = ({ onLogout }) => {
-  const navigate = useNavigate();
   const [depts, setDepts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState(null); // eslint-disable-line no-unused-vars
