@@ -50,7 +50,7 @@ const ApprovedQuotations = ({ onLogout }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedQuotation, setSelected] = useState(null);
   const [profile, setProfile] = useState("Job/Service");
-  const [uploadingDoc, setUploadingDoc] = useState(null);
+  const [uploadingDocs, setUploadingDocs] = useState(new Set());
   const [sendingToReg, setSendingToReg] = useState(false);
   const [verifiedDocs, setVerifiedDocs] = useState({});
 
@@ -118,7 +118,7 @@ const ApprovedQuotations = ({ onLogout }) => {
   const handleFileUpload = async (e, docName) => {
     const file = e.target.files[0];
     if (!file) return;
-    setUploadingDoc(docName);
+    setUploadingDocs((prev) => new Set([...prev, docName]));
     try {
       const ext = file.name.split(".").pop();
       const safeDocName = docName.replace(/[^a-zA-Z0-9]/g, "_");
@@ -164,7 +164,11 @@ const ApprovedQuotations = ({ onLogout }) => {
         `Error uploading ${docName}: ${err.message || JSON.stringify(err)}`,
       );
     } finally {
-      setUploadingDoc(null);
+      setUploadingDocs((prev) => {
+        const next = new Set(prev);
+        next.delete(docName);
+        return next;
+      });
     }
   };
 
@@ -794,7 +798,7 @@ const ApprovedQuotations = ({ onLogout }) => {
                     idx={idx}
                     docName={doc}
                     isUploaded={!!selectedQuotation.documents?.[doc]}
-                    isUploading={uploadingDoc === doc}
+                    isUploading={uploadingDocs.has(doc)}
                     fileUrl={selectedQuotation.documents?.[doc]}
                     onUpload={handleFileUpload}
                     badge={null}
@@ -837,7 +841,7 @@ const ApprovedQuotations = ({ onLogout }) => {
                         idx={BASE_DOCS.length + idx}
                         docName={doc}
                         isUploaded={!!selectedQuotation.documents?.[doc]}
-                        isUploading={uploadingDoc === doc}
+                        isUploading={uploadingDocs.has(doc)}
                         fileUrl={selectedQuotation.documents?.[doc]}
                         onUpload={handleFileUpload}
                         badge={

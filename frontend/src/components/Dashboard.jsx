@@ -261,7 +261,7 @@ const Dashboard = ({
           setOverdue(
             rawOverdue.map((c) => ({
               ...c,
-              caseId: c.id ?? c.case_id ?? c.caseId,
+              caseId: c.tracking_id ?? c.trackingId ?? c.customer_id ?? c.case_id ?? c.id,
               customerName: c.customer_name ?? c.customerName,
               currentStage: c.current_stage ?? c.currentStage,
             })),

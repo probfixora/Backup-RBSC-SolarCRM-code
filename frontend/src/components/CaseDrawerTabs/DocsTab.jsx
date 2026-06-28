@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useRef } from "react";
-import { X, ArrowRight, MessageSquare, AlertTriangle, CheckCircle2, User, Phone, MapPin, Zap, FileText, ClipboardList, UserCheck, History, Package, Plus, Trash2, IndianRupee, FileCheck, AlertOctagon, Printer, Star, Clock, Navigation, Download, Edit2, Lock, RefreshCw, Microscope, Calculator, Headphones, Link as LinkIcon, Send } from "lucide-react";
+import { X, ArrowRight, MessageSquare, AlertTriangle, CheckCircle2, User, Phone, MapPin, Zap, FileText, ClipboardList, UserCheck, History, Package, Plus, Trash2, IndianRupee, FileCheck, AlertOctagon, Printer, Star, Clock, Navigation, Download, Edit2, Lock, RefreshCw, Microscope, Calculator, Headphones, Link as LinkIcon, Send, UploadCloud } from "lucide-react";
 import CaseTimeline from "../CaseTimeline";
 import PaymentTracker from "../PaymentTracker";
 import { edgeFetch, EDGE, supabase } from "../../lib/supabaseClient";
@@ -145,6 +145,64 @@ const DocsTab = ({ ctx }) => {
     unverifiedDocs,
     updateLoading
   } = ctx;
+
+  // Track which docs are being replaced (for loading state)
+  const [replacingDocs, setReplacingDocs] = useState(new Set());
+  const replaceInputRefs = useRef({});
+
+  const handleReplaceDoc = async (e, docName) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setReplacingDocs((prev) => new Set([...prev, docName]));
+    try {
+      const ext = file.name.split(".").pop();
+      const safeDocName = docName.replace(/[^a-zA-Z0-9]/g, "_");
+      const fileName = `${caseId}_${safeDocName}_${Date.now()}.${ext}`;
+      const filePath = `${caseId}/${fileName}`;
+
+      const { error } = await supabase.storage
+        .from("documents")
+        .upload(filePath, file, { upsert: true });
+      if (error && error.message?.includes("Bucket not found")) {
+        const retry = await supabase.storage
+          .from("Documents")
+          .upload(filePath, file, { upsert: true });
+        if (retry.error) throw retry.error;
+      } else if (error) {
+        throw error;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("documents")
+        .getPublicUrl(filePath);
+      const publicUrl = urlData?.publicUrl ||
+        supabase.storage.from("Documents").getPublicUrl(filePath).data.publicUrl;
+
+      // Update doc URL and reset status to Pending (Yellow)
+      const newDocs = { ...(normalized.documents || {}), [docName]: publicUrl };
+      const newStatuses = { ...docStatuses, [docName]: "Yellow" };
+      await edgeFetch(EDGE.workflow, {
+        action: "update_details",
+        caseId,
+        documents: newDocs,
+        documentStatuses: newStatuses,
+      });
+      toast.success(`${docName} replaced — status reset to Pending`);
+      onRefresh();
+    } catch (err) {
+      toast.error(`Replace failed: ${err.message || "Unknown error"}`);
+    } finally {
+      setReplacingDocs((prev) => {
+        const next = new Set(prev);
+        next.delete(docName);
+        return next;
+      });
+      // Reset the file input
+      if (replaceInputRefs.current[docName]) {
+        replaceInputRefs.current[docName].value = "";
+      }
+    }
+  };
 
   return (
     <div>
@@ -420,30 +478,91 @@ const DocsTab = ({ ctx }) => {
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: "12px",
+                              gap: "8px",
+                              flexWrap: "wrap",
                             }}
                           >
-                            <select
-                              value={status}
-                              onChange={(e) =>
-                                handleDocStatusChange(docName, e.target.value)
-                              }
-                              style={{
-                                padding: "4px 8px",
-                                fontSize: "12px",
-                                borderRadius: "6px",
-                                border: `1px solid ${statusColors[status].border}`,
-                                background: statusColors[status].bg,
-                                color: statusColors[status].text,
-                                fontWeight: 700,
-                                outline: "none",
-                                cursor: "pointer",
-                              }}
-                            >
-                              <option value="Yellow">Pending</option>
-                              <option value="Green">Verified</option>
-                              <option value="Red">Rejected</option>
-                            </select>
+                            {/* Status dropdown — only admin & registration can change */}
+                            {(role === "admin" || role === "registration") ? (
+                              <select
+                                value={status}
+                                onChange={(e) =>
+                                  handleDocStatusChange(docName, e.target.value)
+                                }
+                                style={{
+                                  padding: "4px 8px",
+                                  fontSize: "12px",
+                                  borderRadius: "6px",
+                                  border: `1px solid ${statusColors[status].border}`,
+                                  background: statusColors[status].bg,
+                                  color: statusColors[status].text,
+                                  fontWeight: 700,
+                                  outline: "none",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <option value="Yellow">Pending</option>
+                                <option value="Green">Verified</option>
+                                <option value="Red">Rejected</option>
+                              </select>
+                            ) : (
+                              <span
+                                style={{
+                                  padding: "4px 10px",
+                                  fontSize: "12px",
+                                  borderRadius: "6px",
+                                  border: `1px solid ${statusColors[status].border}`,
+                                  background: statusColors[status].bg,
+                                  color: statusColors[status].text,
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {status === "Green" ? "Verified" : status === "Red" ? "Rejected" : "Pending"}
+                              </span>
+                            )}
+
+                            {/* Replace button — only for registration role when doc is Rejected */}
+                            {role === "registration" && status === "Red" && (
+                              <>
+                                <input
+                                  type="file"
+                                  accept="image/*,application/pdf"
+                                  style={{ display: "none" }}
+                                  ref={(el) => (replaceInputRefs.current[docName] = el)}
+                                  onChange={(e) => handleReplaceDoc(e, docName)}
+                                />
+                                <button
+                                  onClick={() => replaceInputRefs.current[docName]?.click()}
+                                  disabled={replacingDocs.has(docName)}
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "5px",
+                                    padding: "4px 10px",
+                                    fontSize: "12px",
+                                    fontWeight: 700,
+                                    borderRadius: "6px",
+                                    border: "1px solid #fbbf24",
+                                    background: replacingDocs.has(docName) ? "#fef9c3" : "#fffbeb",
+                                    color: "#92400e",
+                                    cursor: replacingDocs.has(docName) ? "not-allowed" : "pointer",
+                                    opacity: replacingDocs.has(docName) ? 0.7 : 1,
+                                    transition: "all 0.15s",
+                                  }}
+                                  title="Upload a replacement document"
+                                >
+                                  {replacingDocs.has(docName) ? (
+                                    "Replacing…"
+                                  ) : (
+                                    <>
+                                      <UploadCloud style={{ width: "12px", height: "12px" }} />
+                                      Replace
+                                    </>
+                                  )}
+                                </button>
+                              </>
+                            )}
+
                             <a
                               href={docUrl}
                               target="_blank"

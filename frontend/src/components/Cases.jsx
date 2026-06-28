@@ -280,7 +280,7 @@ const Cases = ({ onLogout }) => {
   };
 
   /* ── CSV Export ── */
-  const handleExportCSV = (filteredCases) => {
+  const handleExportCSV = async (filteredCases) => {
     if (!filteredCases || filteredCases.length === 0) {
       toast.error("No data to export.");
       return;
@@ -304,7 +304,6 @@ const Cases = ({ onLogout }) => {
       "Subsidy Registration Completed": "Subsidy",
       Completed: "Completed",
     };
-    // Dept-relative status for CSV (same logic as filters)
     const getDeptRelativeStatus = (c) => {
       const stage = c.currentStage || c.current_stage || "";
       const bounds =
@@ -318,54 +317,113 @@ const Cases = ({ onLogout }) => {
     };
     const activeFilterLabel =
       deptFilter !== "all" ? DEPT_LABELS[deptFilter] : "All";
-    const headers = [
-      "Customer ID",
-      "Tracking ID",
-      "Customer Name",
-      "Phone",
-      "Current Stage",
-      "Department",
-      "Overall Status",
-      ...(deptFilter !== "all" ? [`${activeFilterLabel} Status`] : []),
-      "Assigned Employee",
-      "Time in Stage",
-      "Created At",
-    ];
-    const rows = filteredCases.map((c) => [
-      c.customerId || c.customer_id || "",
-      c.trackingId || c.tracking_id || "",
-      c.customerName || c.customer_name || "",
-      c.phone || "",
-      c.currentStage || c.current_stage || "",
-      stageToLabel[c.currentStage || c.current_stage] || "",
-      c.status || "",
-      ...(deptFilter !== "all" ? [getDeptRelativeStatus(c)] : []),
-      c.assignedTo || c.assigned_to || "",
-      daysInStage(c.stageStartTime || c.stage_start_time),
-      c.created_at ? new Date(c.created_at).toLocaleDateString("en-IN") : "",
-    ]);
-    const csvContent = [headers, ...rows]
-      .map((row) =>
-        row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","),
-      )
-      .join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    const today = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
-    const deptSuffix =
-      deptFilter !== "all"
-        ? `_${DEPT_LABELS[deptFilter].replace(/[^a-zA-Z0-9]/g, "_")}`
-        : "";
-    const statusSuffix = statusFilter !== "all" ? `_${statusFilter}` : "";
-    link.download = `Cases_Export_${today}${deptSuffix}${statusSuffix}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    toast.success(`Exported ${filteredCases.length} records to CSV`);
+
+    toast.loading("Preparing export…", { id: "csv-export" });
+    try {
+      // Fetch case_history for all visible cases in one query
+      const caseIds = filteredCases.map((c) => c.id || c.case_id).filter(Boolean);
+      let historyMap = {};
+      if (caseIds.length > 0) {
+        const { data: histRows } = await supabase
+          .from("case_history")
+          .select("case_id, stage, department, updated_by, action_type, remarks, created_at")
+          .in("case_id", caseIds)
+          .order("created_at", { ascending: true });
+        (histRows || []).forEach((h) => {
+          if (!historyMap[h.case_id]) historyMap[h.case_id] = [];
+          historyMap[h.case_id].push(h);
+        });
+      }
+
+      const headers = [
+        "Tracking ID",
+        "Customer ID",
+        "Customer Name",
+        "Phone",
+        "Current Stage",
+        "Department",
+        "Overall Status",
+        ...(deptFilter !== "all" ? [`${activeFilterLabel} Status`] : []),
+        "Assigned Employee",
+        "Time in Stage",
+        "Created At",
+        // History columns
+        "Update #",
+        "Update Dept",
+        "Updated By (Employee)",
+        "Action",
+        "Remarks",
+        "Update Date & Time",
+      ];
+
+      const rows = [];
+      for (const c of filteredCases) {
+        const cid = c.id || c.case_id;
+        const baseRow = [
+          c.trackingId || c.tracking_id || "",
+          c.customerId || c.customer_id || "",
+          c.customerName || c.customer_name || "",
+          c.phone || "",
+          c.currentStage || c.current_stage || "",
+          stageToLabel[c.currentStage || c.current_stage] || "",
+          c.status || "",
+          ...(deptFilter !== "all" ? [getDeptRelativeStatus(c)] : []),
+          c.assignedTo || c.assigned_to || "",
+          daysInStage(c.stageStartTime || c.stage_start_time),
+          c.created_at ? new Date(c.created_at).toLocaleDateString("en-IN") : "",
+        ];
+
+        const history = historyMap[cid] || [];
+        if (history.length === 0) {
+          rows.push([...baseRow, "", "", "", "", "", ""]);
+        } else {
+          history.forEach((h, idx) => {
+            const updateDate = h.created_at
+              ? new Date(h.created_at).toLocaleString("en-IN", {
+                  day: "2-digit", month: "short", year: "numeric",
+                  hour: "2-digit", minute: "2-digit", hour12: true,
+                })
+              : "";
+            rows.push([
+              ...baseRow,
+              idx + 1,
+              h.department || "",
+              h.updated_by || "",
+              h.action_type || h.stage || "",
+              h.remarks || "",
+              updateDate,
+            ]);
+          });
+        }
+      }
+
+      const csvContent = [headers, ...rows]
+        .map((row) =>
+          row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","),
+        )
+        .join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const today = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
+      const deptSuffix =
+        deptFilter !== "all"
+          ? `_${DEPT_LABELS[deptFilter].replace(/[^a-zA-Z0-9]/g, "_")}`
+          : "";
+      const statusSuffix = statusFilter !== "all" ? `_${statusFilter}` : "";
+      link.download = `Cases_Export_${today}${deptSuffix}${statusSuffix}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${filteredCases.length} cases with full history`, { id: "csv-export" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Export failed: " + (err.message || "Unknown error"), { id: "csv-export" });
+    }
   };
+
 
   /* ── Keyboard shortcuts ── */
   useEffect(() => {

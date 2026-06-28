@@ -718,7 +718,8 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         caseId,
         documentStatuses: newStatuses,
       });
-      toast.success(`Document marked as ${status}`);
+      const statusLabel = status === "Green" ? "Verified" : status === "Red" ? "Rejected" : "Pending";
+      toast.success(`Document marked as ${statusLabel}`);
     } catch (err) {
       toast.error("Failed to update status");
     }
