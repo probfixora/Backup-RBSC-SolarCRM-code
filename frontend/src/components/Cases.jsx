@@ -347,19 +347,38 @@ const Cases = ({ onLogout }) => {
         "Assigned Employee",
         "Time in Stage",
         "Created At",
-        // History columns
-        "Update #",
-        "Update Dept",
-        "Updated By (Employee)",
-        "Action",
-        "Remarks",
-        "Update Date & Time",
+        "Update History",
       ];
 
       const rows = [];
       for (const c of filteredCases) {
         const cid = c.id || c.case_id;
-        const baseRow = [
+        const history = historyMap[cid] || [];
+        
+        let historyStr = "";
+        if (history.length > 0) {
+          historyStr = history
+            .map((h) => {
+              const updateDate = h.created_at
+                ? new Date(h.created_at).toLocaleString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })
+                : "";
+              const dept = h.department || "System";
+              const emp = h.updated_by || "Unknown";
+              const action = h.action_type || h.stage || "";
+              const remark = h.remarks ? ` - ${h.remarks}` : "";
+              return `[${dept}] ${action} by ${emp} on ${updateDate}${remark}`;
+            })
+            .join("  |  ");
+        }
+
+        rows.push([
           c.trackingId || c.tracking_id || "",
           c.customerId || c.customer_id || "",
           c.customerName || c.customer_name || "",
@@ -371,30 +390,8 @@ const Cases = ({ onLogout }) => {
           c.assignedTo || c.assigned_to || "",
           daysInStage(c.stageStartTime || c.stage_start_time),
           c.created_at ? new Date(c.created_at).toLocaleDateString("en-IN") : "",
-        ];
-
-        const history = historyMap[cid] || [];
-        if (history.length === 0) {
-          rows.push([...baseRow, "", "", "", "", "", ""]);
-        } else {
-          history.forEach((h, idx) => {
-            const updateDate = h.created_at
-              ? new Date(h.created_at).toLocaleString("en-IN", {
-                  day: "2-digit", month: "short", year: "numeric",
-                  hour: "2-digit", minute: "2-digit", hour12: true,
-                })
-              : "";
-            rows.push([
-              ...baseRow,
-              idx + 1,
-              h.department || "",
-              h.updated_by || "",
-              h.action_type || h.stage || "",
-              h.remarks || "",
-              updateDate,
-            ]);
-          });
-        }
+          historyStr,
+        ]);
       }
 
       const csvContent = [headers, ...rows]
