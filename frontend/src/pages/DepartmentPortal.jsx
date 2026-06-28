@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { edgeFetch, EDGE } from "../lib/supabaseClient";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -7,7 +6,6 @@ import Footer from "../components/Footer";
 import toast from "react-hot-toast";
 import {
   Users,
-  ChevronRight,
   TrendingUp,
   Clock,
 } from "lucide-react";
@@ -47,27 +45,17 @@ const StatChip = ({ label, value, color }) => (
   </div>
 );
 
-const MemberRow = ({ member, deptColor, onClick }) => (
+const MemberRow = ({ member, deptColor }) => (
   <div
-    onClick={onClick}
     style={{
       display: "flex",
       alignItems: "center",
       gap: "12px",
       padding: "10px 14px",
       borderRadius: "10px",
-      cursor: "pointer",
+      cursor: "default",
       border: "1px solid var(--color-border)",
       background: "var(--color-surface)",
-      transition: "all 0.15s ease",
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.borderColor = deptColor;
-      e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.07)";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.borderColor = "var(--color-border)";
-      e.currentTarget.style.boxShadow = "none";
     }}
   >
     <div
@@ -136,14 +124,6 @@ const MemberRow = ({ member, deptColor, onClick }) => (
         </p>
       </div>
     </div>
-    <ChevronRight
-      style={{
-        width: "16px",
-        height: "16px",
-        color: "var(--text-4)",
-        flexShrink: 0,
-      }}
-    />
   </div>
 );
 
@@ -277,7 +257,6 @@ const DeptCard = ({ dept, onMemberClick }) => {
                   key={m.id}
                   member={m}
                   deptColor={colors.color}
-                  onClick={() => onMemberClick(m, dept)}
                 />
               ))}
             </div>
@@ -434,11 +413,6 @@ const DepartmentPortal = ({ onLogout }) => {
               <DeptCard
                 key={dept.dept}
                 dept={dept}
-                onMemberClick={(member, dept) =>
-                  navigate(`/department-portal/${member.id}`, {
-                    state: { member, dept },
-                  })
-                }
               />
             ))}
           </div>
