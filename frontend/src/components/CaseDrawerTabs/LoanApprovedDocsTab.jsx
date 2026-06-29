@@ -15,6 +15,34 @@ const LoanApprovedDocsTab = ({ ctx }) => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Compute initial docs from normalized
+  const allDocs = normalized?.documents || {};
+  let initialLoanDocs = [];
+  if (Array.isArray(allDocs)) {
+      initialLoanDocs = allDocs.filter(d => d.name && d.name.includes("Loan Approved Document"));
+  } else {
+      initialLoanDocs = Object.entries(allDocs)
+        .filter(([name]) => name.includes("Loan Approved Document"))
+        .map(([name, url]) => ({ name, url }));
+  }
+
+  const [localDocs, setLocalDocs] = useState(initialLoanDocs);
+
+  // Keep localDocs in sync if normalized changes (e.g. from polling/refresh)
+  useEffect(() => {
+      const docsObj = normalized?.documents || {};
+      let updated = [];
+      if (Array.isArray(docsObj)) {
+          updated = docsObj.filter(d => d.name && d.name.includes("Loan Approved Document"));
+      } else {
+          updated = Object.entries(docsObj)
+            .filter(([name]) => name.includes("Loan Approved Document"))
+            .map(([name, url]) => ({ name, url }));
+      }
+      // Only update if lengths differ to avoid unnecessary re-renders
+      setLocalDocs(prev => updated.length > prev.length ? updated : prev);
+  }, [normalized?.documents]);
+
   const handleUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -72,6 +100,9 @@ const LoanApprovedDocsTab = ({ ctx }) => {
 
       if (dbError) throw dbError;
 
+      // Optimistic UI Update
+      setLocalDocs(prev => [...prev, { name: docName, url: urlData.publicUrl }]);
+
       toast.success("Loan Approved Document uploaded successfully");
       if (onRefresh) onRefresh();
     } catch (err) {
@@ -82,18 +113,6 @@ const LoanApprovedDocsTab = ({ ctx }) => {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
-
-  // Find all loan approved documents
-  const allDocs = normalized?.documents || {};
-  let loanDocs = [];
-  
-  if (Array.isArray(allDocs)) {
-      loanDocs = allDocs.filter(d => d.name && d.name.includes("Loan Approved Document"));
-  } else {
-      loanDocs = Object.entries(allDocs)
-        .filter(([name]) => name.includes("Loan Approved Document"))
-        .map(([name, url]) => ({ name, url }));
-  }
 
   return (
     <div>
@@ -139,12 +158,12 @@ const LoanApprovedDocsTab = ({ ctx }) => {
       </div>
 
       <div style={{ display: "grid", gap: "12px" }}>
-        {loanDocs.length === 0 ? (
+        {localDocs.length === 0 ? (
           <div style={{ textAlign: "center", padding: "30px 20px", color: "#94a3b8", fontSize: "13px" }}>
             No approved loan documents uploaded yet.
           </div>
         ) : (
-          loanDocs.map((doc, idx) => (
+          localDocs.map((doc, idx) => (
             <div
               key={idx}
               style={{
