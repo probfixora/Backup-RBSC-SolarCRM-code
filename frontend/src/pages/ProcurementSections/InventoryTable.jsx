@@ -87,10 +87,9 @@ const InventoryTable = ({ ctx }) => {
                   <th>Product</th>
                   <th>Category / Brand</th>
                   <th>SKU / Model</th>
-                  <th>Capacity</th>
                   <th>Available</th>
                   <th>Reserved</th>
-                  <th>Safety / WH</th>
+                  <th>Safety</th>
                   <th>Status</th>
                   <th style={{ textAlign: "right" }}>Actions</th>
                 </tr>
@@ -134,9 +133,6 @@ const InventoryTable = ({ ctx }) => {
                           {item.model_number || "N/A"}
                         </div>
                       </td>
-                      <td style={{ fontSize: 12, color: "var(--text-3)" }}>
-                        {item.capacity || "—"}
-                      </td>
                       <td
                         style={{
                           fontWeight: 700,
@@ -155,9 +151,6 @@ const InventoryTable = ({ ctx }) => {
                       <td>
                         <div style={{ fontSize: 11, color: "var(--text-4)" }}>
                           Min: {item.low_stock_threshold || 0}
-                        </div>
-                        <div style={{ fontSize: 11, color: "var(--text-4)" }}>
-                          WH: {item.warehouse_location || "—"}
                         </div>
                       </td>
                       <td>
@@ -221,7 +214,7 @@ const InventoryTable = ({ ctx }) => {
                 {filtered.length === 0 && (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={8}
                       style={{ textAlign: "center", padding: 40, color: "var(--text-4)" }}
                     >
                       No matching inventory items found
@@ -284,20 +277,12 @@ const InventoryTable = ({ ctx }) => {
                       borderRadius: "var(--radius-md)",
                     }}
                   >
-                    <div>
+                    <div style={{ gridColumn: "1 / -1" }}>
                       <div style={{ fontSize: 11, color: "var(--text-4)", textTransform: "uppercase", fontWeight: 600 }}>
                         SKU / Model
                       </div>
                       <div style={{ fontSize: 13, color: "var(--text-1)", fontWeight: 500, fontFamily: "monospace" }}>
                         {item.sku || "N/A"}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 11, color: "var(--text-4)", textTransform: "uppercase", fontWeight: 600 }}>
-                        Capacity
-                      </div>
-                      <div style={{ fontSize: 13, color: "var(--text-1)", fontWeight: 500 }}>
-                        {item.capacity || "—"}
                       </div>
                     </div>
                     <div>
