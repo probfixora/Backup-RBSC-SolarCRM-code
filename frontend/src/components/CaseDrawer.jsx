@@ -155,9 +155,11 @@ const stageToDeptLabel = {
 
 const getTabs = (role, currentStage) => {
   const tabs = [
-    { id: "update", icon: Zap, label: "Update" },
-    { id: "docs", icon: FileText, label: role === "banking" ? "Loan Required Documents" : "Documents" },
+    { id: "update", icon: Zap, label: "Update" }
   ];
+  if (role !== "inventory") {
+    tabs.push({ id: "docs", icon: FileText, label: role === "banking" ? "Loan Required Documents" : "Documents" });
+  }
   if (role === "banking" || role === "admin" || (role === "registration" && currentStage === "Phone Verification Done")) {
     tabs.push({ id: "loan_approved_docs", icon: FileCheck, label: "Loan Approved Document" });
   }
