@@ -1450,10 +1450,17 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         <div className="no-print" style={{ display: "flex", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none", borderBottom: "1px solid #e2e8f0", backgroundColor: "#ffffff", padding: "0 16px", flexShrink: 0 }}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
+            const isTabDisabled = !canUpdate && tab.id !== "update";
+            
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  if (isTabDisabled) return;
+                  setActiveTab(tab.id);
+                }}
+                disabled={isTabDisabled}
+                title={isTabDisabled ? "View-Only Access: Tab disabled" : ""}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -1464,16 +1471,17 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                   border: "none",
                   borderBottom: isActive ? "3px solid #f59e0b" : "3px solid transparent",
                   backgroundColor: "transparent",
-                  color: isActive ? "#f59e0b" : "#64748b",
-                  cursor: "pointer",
+                  color: isActive ? "#f59e0b" : (isTabDisabled ? "#cbd5e1" : "#64748b"),
+                  cursor: isTabDisabled ? "not-allowed" : "pointer",
                   whiteSpace: "nowrap",
                   outline: "none",
-                  transition: "all 0.2s"
+                  transition: "all 0.2s",
+                  opacity: isTabDisabled ? 0.6 : 1
                 }}
               >
                 <tab.icon
                   size={16}
-                  style={{ color: isActive ? "#f59e0b" : "#cbd5e1" }}
+                  style={{ color: isActive ? "#f59e0b" : (isTabDisabled ? "#cbd5e1" : "#cbd5e1") }}
                 />
                 {tab.label}
               </button>
