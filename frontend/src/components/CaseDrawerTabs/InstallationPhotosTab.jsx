@@ -61,7 +61,7 @@ const InstallationPhotosTab = ({ ctx }) => {
     let addressLine2 = "Address not available";
     
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+      const res = await fetch(`https://us1.locationiq.com/v1/reverse?key=pk.dbe75ca4c4cd6a9244918349e28e1524&lat=${lat}&lon=${lng}&format=json`);
       const data = await res.json();
       if (data && data.address) {
         const addr = data.address;
