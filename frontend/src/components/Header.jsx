@@ -236,14 +236,16 @@ const Header = ({ title, subtitle, roleBadge, onLogout }) => {
     return `${Math.floor(diff / 86400)}d ago`;
   };
 
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 480;
   const popoverJSX = showNotif && (
     <div
       style={{
-        position: "absolute",
-        top: "calc(100% + 10px)",
-        right: 0,
-        width: "360px",
-        maxWidth: "calc(100vw - 32px)",
+        position: isMobile ? "fixed" : "absolute",
+        top: isMobile ? "64px" : "calc(100% + 10px)",
+        right: isMobile ? "8px" : 0,
+        left: isMobile ? "8px" : "auto",
+        width: isMobile ? "auto" : "360px",
+        maxWidth: isMobile ? "unset" : "calc(100vw - 16px)",
         background: "var(--surface)",
         borderRadius: "var(--radius-xl)",
         border: "1px solid var(--border)",
