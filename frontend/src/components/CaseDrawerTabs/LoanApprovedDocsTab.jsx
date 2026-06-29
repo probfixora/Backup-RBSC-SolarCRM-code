@@ -9,10 +9,12 @@ const LoanApprovedDocsTab = ({ ctx }) => {
     normalized,
     onRefresh,
     role,
-    ownerDept
+    ownerDept,
+    caseData
   } = ctx;
 
   const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(null); // Track which doc is being deleted
   const fileInputRef = useRef(null);
 
   // Compute initial docs from normalized
@@ -40,7 +42,7 @@ const LoanApprovedDocsTab = ({ ctx }) => {
             .map(([name, url]) => ({ name, url }));
       }
       // Only update if lengths differ to avoid unnecessary re-renders
-      setLocalDocs(prev => updated.length > prev.length ? updated : prev);
+      setLocalDocs(prev => updated.length !== prev.length ? updated : prev);
   }, [normalized?.documents]);
 
   const handleUpload = async (e) => {
@@ -100,6 +102,11 @@ const LoanApprovedDocsTab = ({ ctx }) => {
 
       if (dbError) throw dbError;
 
+      // Mutate caseData directly so it survives tab switches without waiting for refresh cache
+      if (caseData) {
+        caseData.documents = newDocs;
+      }
+
       // Optimistic UI Update
       setLocalDocs(prev => [...prev, { name: docName, url: urlData.publicUrl }]);
 
@@ -111,6 +118,46 @@ const LoanApprovedDocsTab = ({ ctx }) => {
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDelete = async (docNameToDelete) => {
+    if (!window.confirm(`Are you sure you want to delete ${docNameToDelete}?`)) return;
+    
+    setDeleting(docNameToDelete);
+    try {
+      const currentDocs = normalized?.documents || {};
+      let newDocs;
+      
+      if (Array.isArray(currentDocs)) {
+        newDocs = currentDocs.filter(d => d.name !== docNameToDelete);
+      } else {
+        newDocs = { ...currentDocs };
+        delete newDocs[docNameToDelete];
+      }
+
+      const { error: dbError } = await supabase
+        .from("cases")
+        .update({ documents: newDocs })
+        .eq("id", caseId);
+
+      if (dbError) throw dbError;
+
+      // Mutate caseData directly
+      if (caseData) {
+        caseData.documents = newDocs;
+      }
+
+      // Optimistic UI Update
+      setLocalDocs(prev => prev.filter(d => d.name !== docNameToDelete));
+
+      toast.success("Document deleted successfully");
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error("Delete error", err);
+      toast.error("Failed to delete document.");
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -181,22 +228,41 @@ const LoanApprovedDocsTab = ({ ctx }) => {
                 <FileText style={{ width: "16px", height: "16px", color: "#3b82f6" }} />
                 <span style={{ fontSize: "13px", fontWeight: 600, color: "#1e293b" }}>{doc.name}</span>
               </div>
-              <a
-                href={doc.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  padding: "6px 12px",
-                  background: "#f1f5f9",
-                  color: "#334155",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  borderRadius: "6px",
-                  textDecoration: "none",
-                }}
-              >
-                View
-              </a>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    padding: "6px 12px",
+                    background: "#f1f5f9",
+                    color: "#334155",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    borderRadius: "6px",
+                    textDecoration: "none",
+                  }}
+                >
+                  View
+                </a>
+                <button
+                  onClick={() => handleDelete(doc.name)}
+                  disabled={deleting === doc.name}
+                  style={{
+                    padding: "6px 12px",
+                    background: "#fee2e2",
+                    color: "#dc2626",
+                    border: "none",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    borderRadius: "6px",
+                    cursor: deleting === doc.name ? "not-allowed" : "pointer",
+                    opacity: deleting === doc.name ? 0.7 : 1,
+                  }}
+                >
+                  {deleting === doc.name ? "Deleting..." : "Delete"}
+                </button>
+              </div>
             </div>
           ))
         )}
