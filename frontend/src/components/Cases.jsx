@@ -505,26 +505,26 @@ const Cases = ({ onLogout }) => {
   };
 
   // ── Advanced Admin Filters (applied after tab) ───────────────────────────
+  // Helper: apply only the department filter (used for tab counts too)
+  const applyDeptFilter = (list) => {
+    if (userRole !== "admin" || deptFilter === "all") return list;
+    const bounds = DEPT_STAGE_BOUNDS[deptFilter];
+    if (bounds) {
+      // Show cases currently AT this dept's stage (active) OR that have moved PAST it
+      const allRelevantStages = [...(bounds.active || []), ...(bounds.past || [])];
+      return list.filter((c) => {
+        const stage = c.currentStage || c.current_stage;
+        return allRelevantStages.includes(stage);
+      });
+    }
+    // Fallback: match by active stages only
+    const stages = DEPT_STAGES[deptFilter] || [];
+    return list.filter((c) => stages.includes(c.currentStage || c.current_stage));
+  };
+
   const applyAdvancedFilters = (list) => {
     if (userRole !== "admin") return list;
-    let result = list;
-
-    // Department filter — narrows to cases currently at these stages
-    if (deptFilter !== "all") {
-      if (deptFilter === "banking") {
-        // Banking filter: show all loan-type cases that are at or past "Bank & Finance" stage,
-        // plus any loan cases currently waiting at banking stage
-        result = result.filter((c) => {
-          const pt = (c.paymentType || c.payment_type || "").toLowerCase();
-          return pt === "loan";
-        });
-      } else {
-        const stages = DEPT_STAGES[deptFilter] || [];
-        result = result.filter((c) =>
-          stages.includes(c.currentStage || c.current_stage),
-        );
-      }
-    }
+    let result = applyDeptFilter(list);
 
     // Status filter — dept-relative when a dept filter is active, global otherwise
     if (statusFilter !== "all") {
@@ -547,10 +547,8 @@ const Cases = ({ onLogout }) => {
             return bounds.active.includes(stage) && c.status === "Delayed";
           });
         } else if (statusFilter === "completed") {
-          // Dept=Registration + Status=Completed means cases that have MOVED PAST registration.
-          // We filter from the full searched list (to preserve text search) but ignore the
-          // dept active-stage restriction — we want all cases past this dept.
-          result = searched.filter((c) => {
+          // Cases that have MOVED PAST this dept's stage
+          result = result.filter((c) => {
             const stage = c.currentStage || c.current_stage;
             return bounds.past.includes(stage) || stage === "Completed";
           });
@@ -605,32 +603,34 @@ const Cases = ({ onLogout }) => {
     setToDate("");
   };
 
-  // Clean 4 tabs: All, In Progress (role-aware), Delayed, Completed (role-aware)
+  // Tab counts must reflect the active dept filter so they match actual results
+  const deptFiltered = applyDeptFilter(searched);
+
   const tabs = [
-    { id: "all", label: "All Customers", icon: Layers, count: searched.length },
+    { id: "all", label: "All Customers", icon: Layers, count: deptFiltered.length },
     {
       id: "assigned",
       label: "Assigned Tasks",
       icon: ClipboardCheck,
-      count: searched.filter((c) => c.assignedTo === localStorage.getItem("name")).length,
+      count: deptFiltered.filter((c) => c.assignedTo === localStorage.getItem("name")).length,
     },
     {
       id: "active",
       label: "In Progress",
       icon: Clock,
-      count: searched.filter(isInProgress).length,
+      count: deptFiltered.filter(isInProgress).length,
     },
     {
       id: "delayed",
       label: "Delayed",
       icon: AlertOctagon,
-      count: searched.filter((c) => c.status === "Delayed").length,
+      count: deptFiltered.filter((c) => c.status === "Delayed").length,
     },
     {
       id: "completed",
       label: "Completed",
       icon: CheckCircle2,
-      count: searched.filter(isPastMyStage).length,
+      count: deptFiltered.filter(isPastMyStage).length,
     },
   ];
 
