@@ -615,7 +615,8 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   // Use fData (current form state) first, fallback to normalized (DB) — so UI changes are respected immediately
   const pType = ((fData.paymentType || normalized.paymentType || "")).toLowerCase();
 
-  const allDocsObj = { ...(normalized.documents || {}) };
+  const docs = normalized.documents || {};
+  const allDocsObj = { ...docs };
   (customerDocs || []).forEach((d) => {
     allDocsObj[d.doc_name] = d.doc_url;
   });
