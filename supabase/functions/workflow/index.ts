@@ -1298,6 +1298,7 @@ serve(async (req: Request) => {
         subsidyRefNumber: "subsidy_ref_number",
         subsidyNote: "subsidy_note",
         documentStatuses: "document_statuses",
+        documents: "documents",
         // ── Verification fields ──────────────────────────────────────────────
         quotationVerified: "quotation_verified",
         quotationAmount: "quotation_amount",
