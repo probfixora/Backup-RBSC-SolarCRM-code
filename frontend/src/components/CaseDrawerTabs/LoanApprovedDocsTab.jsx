@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { UploadCloud, FileText, Download } from "lucide-react";
 import { edgeFetch, EDGE, supabase } from "../../lib/supabaseClient";
 import toast from "react-hot-toast";
