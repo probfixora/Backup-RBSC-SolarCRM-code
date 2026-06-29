@@ -111,7 +111,6 @@ const LoanApprovedDocsTab = ({ ctx }) => {
       setLocalDocs(prev => [...prev, { name: docName, url: urlData.publicUrl }]);
 
       toast.success("Loan Approved Document uploaded successfully");
-      if (onRefresh) onRefresh();
     } catch (err) {
       console.error("Upload error", err);
       toast.error("Failed to upload document.");
@@ -152,7 +151,6 @@ const LoanApprovedDocsTab = ({ ctx }) => {
       setLocalDocs(prev => prev.filter(d => d.name !== docNameToDelete));
 
       toast.success("Document deleted successfully");
-      if (onRefresh) onRefresh();
     } catch (err) {
       console.error("Delete error", err);
       toast.error("Failed to delete document.");
