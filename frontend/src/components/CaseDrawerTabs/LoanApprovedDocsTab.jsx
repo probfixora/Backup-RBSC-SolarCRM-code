@@ -9,8 +9,7 @@ const LoanApprovedDocsTab = ({ ctx }) => {
     normalized,
     onRefresh,
     role,
-    ownerDept,
-    caseData
+    ownerDept
   } = ctx;
 
   const [uploading, setUploading] = useState(false);
@@ -58,10 +57,10 @@ const LoanApprovedDocsTab = ({ ctx }) => {
         urlData = supabase.storage.from("Documents").getPublicUrl(filePath).data;
       }
       
-      const docName = `Loan Approved Document - ${new Date().toLocaleDateString()}`;
+      const docName = `Loan Approved Document - ${new Date().toLocaleDateString()} - ${Date.now()}`;
 
       // Update case documents in db
-      const currentDocs = caseData?.documents || {};
+      const currentDocs = normalized?.documents || {};
       const newDocs = Array.isArray(currentDocs) 
         ? [...currentDocs, { name: docName, url: urlData.publicUrl, status: "Uploaded", uploaded_at: new Date().toISOString() }]
         : { ...currentDocs, [docName]: urlData.publicUrl };
@@ -85,7 +84,7 @@ const LoanApprovedDocsTab = ({ ctx }) => {
   };
 
   // Find all loan approved documents
-  const allDocs = caseData?.documents || {};
+  const allDocs = normalized?.documents || {};
   let loanDocs = [];
   
   if (Array.isArray(allDocs)) {
