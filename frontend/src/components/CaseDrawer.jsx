@@ -617,14 +617,15 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   const hasQuotationError = (isRegStage || isPhoneVerificationStage) && !normalized.quotationVerified;
 
   const isBankingStage = normalized.currentStage === "Bank & Finance";
-  const pType = (normalized.paymentType || "").toLowerCase();
+  // Use fData (current form state) first, fallback to normalized (DB) — so UI changes are respected immediately
+  const pType = ((fData.paymentType || normalized.paymentType || "")).toLowerCase();
   
   const hasPaymentModeError = isPhoneVerificationStage && (
     // Payment type must always be selected
-    !normalized.paymentType ||
+    !pType ||
     // For Cash: paymentMode is also required
     // For Loan: paymentMode is NOT required (banking team handles it)
-    (pType === "cash" && (!normalized.paymentMode || normalized.paymentMode.trim() === ""))
+    (pType === "cash" && (!normalized.paymentMode || normalized.paymentMode.trim() === "") && (!fData.paymentMode || fData.paymentMode.trim() === ""))
   );
 
   const isFinanceApproved =
@@ -633,8 +634,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         normalized.finance_form_status === "Approved" ||
         normalized.finance_final_status === "Approved"
       : pType === "cash" &&
-        normalized.paymentMode &&
-        normalized.paymentMode.trim() !== "";
+        (normalized.paymentMode?.trim() || fData.paymentMode?.trim());
         
   const hasFinanceError = isBankingStage && !isFinanceApproved;
 
