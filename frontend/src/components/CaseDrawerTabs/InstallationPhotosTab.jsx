@@ -53,9 +53,29 @@ const InstallationPhotosTab = ({ ctx }) => {
     );
   };
 
-  const processAndUploadImage = (file, lat, lng) => {
-    setGeoLoading(false);
+  const processAndUploadImage = async (file, lat, lng) => {
+    setGeoLoading(true);
     setUploading(true);
+
+    let addressLine1 = "Location";
+    let addressLine2 = "Address not available";
+    
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+      const data = await res.json();
+      if (data && data.address) {
+        const addr = data.address;
+        const city = addr.city || addr.town || addr.village || addr.suburb || addr.county || "Unknown City";
+        const state = addr.state || "Unknown State";
+        const country = addr.country || "India";
+        addressLine1 = `${city}, ${state}, ${country}`;
+        addressLine2 = data.display_name || addressLine2;
+      }
+    } catch (err) {
+      console.error("Reverse geocoding error:", err);
+    }
+    
+    setGeoLoading(false);
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -70,44 +90,120 @@ const InstallationPhotosTab = ({ ctx }) => {
         ctxCanvas.drawImage(img, 0, 0, img.width, img.height);
 
         // Calculate watermark sizes relative to image size
-        const padding = Math.max(20, img.width * 0.02);
-        const fontSize = Math.max(14, img.width * 0.03);
+        const padding = Math.max(30, img.width * 0.03);
+        const titleFontSize = Math.max(28, img.width * 0.04);
+        const textFontSize = Math.max(20, img.width * 0.028);
+        const mapSize = titleFontSize * 4.5;
         
-        ctxCanvas.font = `bold ${fontSize}px sans-serif`;
-        ctxCanvas.fillStyle = "rgba(0, 0, 0, 0.5)"; // semi-transparent background
-
         // Prepare text lines
-        const dateStr = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
-        const textLines = [
-          `Lat: ${lat}, Lng: ${lng}`,
-          `Time: ${dateStr}`
-        ];
+        const dateObj = new Date();
+        const dateOptions = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute:'2-digit', timeZoneName: 'short' };
+        const dateStr = dateObj.toLocaleDateString("en-IN", dateOptions).replace(/\//g, '/');
 
-        // Measure text for background box
-        let maxTextWidth = 0;
-        textLines.forEach(line => {
-          const metrics = ctxCanvas.measureText(line);
-          if (metrics.width > maxTextWidth) maxTextWidth = metrics.width;
-        });
+        const line1 = addressLine1;
+        const line2 = addressLine2;
+        const line3 = `Lat ${lat}° Long ${lng}°`;
+        const line4 = dateStr;
 
-        const boxHeight = (fontSize * 1.5 * textLines.length) + padding;
-        const boxWidth = maxTextWidth + padding * 2;
-        const startY = img.height - boxHeight - padding;
+        // Draw a dark semi-transparent box at the bottom
+        const boxHeight = mapSize + (padding * 2);
+        const boxWidth = img.width - (padding * 2);
         const startX = padding;
+        const startY = img.height - boxHeight - padding;
 
-        // Draw background box
-        ctxCanvas.fillRect(startX, startY, boxWidth, boxHeight);
+        ctxCanvas.fillStyle = "rgba(0, 0, 0, 0.7)"; 
+        
+        // roundRect polyfill logic just in case
+        if (ctxCanvas.roundRect) {
+          ctxCanvas.beginPath();
+          ctxCanvas.roundRect(startX, startY, boxWidth, boxHeight, 15);
+          ctxCanvas.fill();
+        } else {
+          ctxCanvas.fillRect(startX, startY, boxWidth, boxHeight);
+        }
 
-        // Draw text
+        // Draw Map Square placeholder (Left side)
+        const mapX = startX + padding;
+        const mapY = startY + padding;
+        
+        ctxCanvas.fillStyle = "#e5e3df";
+        if (ctxCanvas.roundRect) {
+          ctxCanvas.beginPath();
+          ctxCanvas.roundRect(mapX, mapY, mapSize, mapSize, 8);
+          ctxCanvas.fill();
+        } else {
+          ctxCanvas.fillRect(mapX, mapY, mapSize, mapSize);
+        }
+        
+        // Draw some "roads" (white lines) on the map placeholder
+        ctxCanvas.strokeStyle = "#ffffff";
+        ctxCanvas.lineWidth = 4;
+        ctxCanvas.beginPath();
+        ctxCanvas.moveTo(mapX + mapSize * 0.3, mapY);
+        ctxCanvas.lineTo(mapX + mapSize * 0.3, mapY + mapSize);
+        ctxCanvas.moveTo(mapX, mapY + mapSize * 0.6);
+        ctxCanvas.lineTo(mapX + mapSize, mapY + mapSize * 0.6);
+        ctxCanvas.stroke();
+        
+        // Draw a red pin
+        ctxCanvas.fillStyle = "#ea4335";
+        const pinX = mapX + mapSize / 2;
+        const pinY = mapY + mapSize / 2;
+        ctxCanvas.beginPath();
+        ctxCanvas.arc(pinX, pinY - 10, 8, 0, Math.PI * 2);
+        ctxCanvas.fill();
+        ctxCanvas.beginPath();
+        ctxCanvas.moveTo(pinX - 8, pinY - 10);
+        ctxCanvas.lineTo(pinX + 8, pinY - 10);
+        ctxCanvas.lineTo(pinX, pinY + 8);
+        ctxCanvas.fill();
+
+        // Draw "GPS Map" text at bottom of map placeholder
+        ctxCanvas.fillStyle = "#000000";
+        ctxCanvas.font = `bold ${textFontSize * 0.7}px sans-serif`;
+        ctxCanvas.fillText("GPS Map", mapX + 8, mapY + mapSize - 12);
+
+        // Draw Texts
+        const textStartX = mapX + mapSize + padding;
+        
         ctxCanvas.fillStyle = "#ffffff";
         ctxCanvas.shadowColor = "rgba(0,0,0,0.8)";
         ctxCanvas.shadowBlur = 4;
-        ctxCanvas.shadowOffsetX = 2;
-        ctxCanvas.shadowOffsetY = 2;
         
-        textLines.forEach((line, index) => {
-          ctxCanvas.fillText(line, startX + padding, startY + padding + (fontSize * 1.2) + (index * fontSize * 1.5));
-        });
+        // Title (Line 1)
+        ctxCanvas.font = `bold ${titleFontSize}px sans-serif`;
+        ctxCanvas.fillText(line1, textStartX, mapY + titleFontSize - 4);
+        
+        // Subtexts
+        ctxCanvas.font = `normal ${textFontSize}px sans-serif`;
+        const lineSpacing = textFontSize * 1.4;
+        let currentY = mapY + titleFontSize + lineSpacing - 2;
+        
+        // Wrap line2 if it's too long
+        const maxTextWidth = boxWidth - mapSize - (padding * 3);
+        const drawWrappedText = (text, x, y, maxWidth, lineHeight) => {
+          const words = text.split(' ');
+          let line = '';
+          for(let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = ctxCanvas.measureText(testLine);
+            if (metrics.width > maxWidth && n > 0) {
+              ctxCanvas.fillText(line, x, y);
+              line = words[n] + ' ';
+              y += lineHeight;
+            } else {
+              line = testLine;
+            }
+          }
+          ctxCanvas.fillText(line, x, y);
+          return y;
+        };
+        
+        currentY = drawWrappedText(line2, textStartX, currentY, maxTextWidth, lineSpacing);
+        currentY += lineSpacing * 1.2;
+        ctxCanvas.fillText(line3, textStartX, currentY);
+        currentY += lineSpacing;
+        ctxCanvas.fillText(line4, textStartX, currentY);
 
         // Convert to Blob and Upload
         canvas.toBlob(async (blob) => {
