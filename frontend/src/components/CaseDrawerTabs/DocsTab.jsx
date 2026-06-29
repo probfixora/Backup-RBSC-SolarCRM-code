@@ -482,8 +482,8 @@ const DocsTab = ({ ctx }) => {
                               flexWrap: "wrap",
                             }}
                           >
-                            {/* Status dropdown — only admin & registration can change */}
-                            {(role === "admin" || role === "registration") ? (
+                            {/* Status dropdown — admin, registration & banking can change */}
+                            {(role === "admin" || role === "registration" || role === "banking") ? (
                               <select
                                 value={status}
                                 onChange={(e) =>
