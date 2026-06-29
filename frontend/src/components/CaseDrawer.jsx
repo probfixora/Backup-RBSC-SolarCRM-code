@@ -57,6 +57,7 @@ import TechnicalQaTab from "./CaseDrawerTabs/TechnicalQaTab";
 import AccountsTab from "./CaseDrawerTabs/AccountsTab";
 import CustomerServiceTab from "./CaseDrawerTabs/CustomerServiceTab";
 import CustomerPortalTab from "./CaseDrawerTabs/CustomerPortalTab";
+import LoanApprovedDocsTab from "./CaseDrawerTabs/LoanApprovedDocsTab";
 
 const normalizeCase = (c) => ({
   ...c,
@@ -157,6 +158,9 @@ const getTabs = (role, currentStage) => {
     { id: "update", icon: Zap, label: "Update" },
     { id: "docs", icon: FileText, label: role === "banking" ? "Loan Required Documents" : "Documents" },
   ];
+  if (role === "banking" || role === "admin" || (role === "registration" && currentStage === "Phone Verification Done")) {
+    tabs.push({ id: "loan_approved_docs", icon: FileCheck, label: "Loan Approved Document" });
+  }
   if (role === "admin") {
     tabs.push({ id: "history", icon: History, label: "History" });
   }
@@ -1436,6 +1440,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         <div className="print-visible-content" style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
           {activeTab === "update" && <UpdateTab ctx={ctx} />}
           {activeTab === "docs" && <DocsTab ctx={ctx} />}
+          {activeTab === "loan_approved_docs" && <LoanApprovedDocsTab ctx={ctx} />}
           {activeTab === "history" && <HistoryTab ctx={ctx} />}
           {activeTab === "finance" && <FinanceTab ctx={ctx} />}
           {activeTab === "dispatch" && <DispatchTab ctx={ctx} />}

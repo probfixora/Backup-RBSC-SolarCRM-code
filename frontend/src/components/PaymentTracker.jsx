@@ -11,7 +11,7 @@ export default function PaymentTracker({ caseId, userRole, onRefresh }) {
   const [paymentData, setPaymentData] = useState({
     amount: "",
     paymentDate: new Date().toISOString().split("T")[0],
-    paymentType: "installment",
+    paymentType: "first_installment",
     notes: "",
   });
   const [saving, setSaving] = useState(false);
@@ -54,7 +54,7 @@ export default function PaymentTracker({ caseId, userRole, onRefresh }) {
       setPaymentData({
         amount: "",
         paymentDate: new Date().toISOString().split("T")[0],
-        paymentType: "installment",
+        paymentType: "first_installment",
         notes: "",
       });
       setShowAdd(false);
@@ -232,10 +232,8 @@ export default function PaymentTracker({ caseId, userRole, onRefresh }) {
                 }
                 className="input"
               >
-                <option value="down_payment">Down Payment</option>
-                <option value="installment">Installment</option>
-                <option value="final">Final Settlement</option>
-                <option value="other">Other</option>
+                <option value="first_installment">First Installment</option>
+                <option value="final_installment">Final Installment</option>
               </select>
             </div>
             <div>
