@@ -695,7 +695,11 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                           Update
                         </button>
                       ) : (
-                        <div
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onUpdateClick(c);
+                          }}
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
@@ -703,13 +707,17 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                             color: "var(--color-accent)",
                             fontSize: "12px",
                             fontWeight: 600,
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: 0
                           }}
                         >
                           <CheckCircle2
                             style={{ width: "14px", height: "14px" }}
                           />
                           Done
-                        </div>
+                        </button>
                       )}
                     </td>
                   </tr>
@@ -1020,7 +1028,11 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                 )}
 
                 {isCompleted ? (
-                  <div
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onUpdateClick(c);
+                    }}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -1028,11 +1040,15 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                       color: "var(--color-accent)",
                       fontSize: "12.5px",
                       fontWeight: 600,
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0
                     }}
                   >
                     <CheckCircle2 style={{ width: "14px", height: "14px" }} />
                     Done
-                  </div>
+                  </button>
                 ) : canUpdate ? (
                   <button
                     onClick={(e) => {
@@ -1058,7 +1074,11 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                     Update
                   </button>
                 ) : (
-                  <div
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onUpdateClick(c);
+                    }}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -1066,11 +1086,15 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                       color: "var(--color-accent)",
                       fontSize: "12.5px",
                       fontWeight: 600,
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0
                     }}
                   >
                     <CheckCircle2 style={{ width: "14px", height: "14px" }} />
                     Done
-                  </div>
+                  </button>
                 )}
               </div>
             </div>
