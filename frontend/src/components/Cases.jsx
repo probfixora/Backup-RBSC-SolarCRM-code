@@ -511,10 +511,19 @@ const Cases = ({ onLogout }) => {
 
     // Department filter — narrows to cases currently at these stages
     if (deptFilter !== "all") {
-      const stages = DEPT_STAGES[deptFilter] || [];
-      result = result.filter((c) =>
-        stages.includes(c.currentStage || c.current_stage),
-      );
+      if (deptFilter === "banking") {
+        // Banking filter: show all loan-type cases that are at or past "Bank & Finance" stage,
+        // plus any loan cases currently waiting at banking stage
+        result = result.filter((c) => {
+          const pt = (c.paymentType || c.payment_type || "").toLowerCase();
+          return pt === "loan";
+        });
+      } else {
+        const stages = DEPT_STAGES[deptFilter] || [];
+        result = result.filter((c) =>
+          stages.includes(c.currentStage || c.current_stage),
+        );
+      }
     }
 
     // Status filter — dept-relative when a dept filter is active, global otherwise
