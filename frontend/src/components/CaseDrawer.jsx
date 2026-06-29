@@ -610,19 +610,36 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
   const isRegStage = normalized.currentStage === "Registration Done";
   const isPhoneVerificationStage = normalized.currentStage === "Phone Verification Done";
+  const isBankingStage = normalized.currentStage === "Bank & Finance";
 
-  const docs = normalized.documents || {};
-  const unverifiedDocs = Object.keys(docs).filter(
-    (d) => (docStatuses[d] || "Yellow") !== "Green",
-  );
-  const hasDocError = isRegStage && unverifiedDocs.length > 0;
+  // Use fData (current form state) first, fallback to normalized (DB) — so UI changes are respected immediately
+  const pType = ((fData.paymentType || normalized.paymentType || "")).toLowerCase();
+
+  const allDocsObj = { ...(normalized.documents || {}) };
+  (customerDocs || []).forEach((d) => {
+    allDocsObj[d.doc_name] = d.doc_url;
+  });
+
+  const unverifiedDocs = Object.keys(allDocsObj).filter((d) => {
+    if (isBankingStage && pType === "loan") {
+      // In banking stage (loan), require FINANCE_DOCs to be verified
+      if (d.startsWith("FINANCE_DOC::")) {
+        return (docStatuses[d] || "Yellow") !== "Green";
+      }
+      return false;
+    }
+    if (isRegStage) {
+      // In registration stage, require normal docs to be verified (skip finance/loan docs)
+      if (d.startsWith("FINANCE_DOC::") || d.includes("Loan Approved Document")) return false;
+      return (docStatuses[d] || "Yellow") !== "Green";
+    }
+    return false;
+  });
+
+  const hasDocError = (isRegStage || isBankingStage) && unverifiedDocs.length > 0;
   
   // Quotation must be verified before proceeding from registration stages
   const hasQuotationError = (isRegStage || isPhoneVerificationStage) && !normalized.quotationVerified;
-
-  const isBankingStage = normalized.currentStage === "Bank & Finance";
-  // Use fData (current form state) first, fallback to normalized (DB) — so UI changes are respected immediately
-  const pType = ((fData.paymentType || normalized.paymentType || "")).toLowerCase();
   
   const hasPaymentModeError = isPhoneVerificationStage && (
     // Payment type must always be selected
@@ -632,15 +649,29 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     (pType === "cash" && (!normalized.paymentMode || normalized.paymentMode.trim() === "") && (!fData.paymentMode || fData.paymentMode.trim() === ""))
   );
 
+  const hasLoanApprovedDoc = Array.isArray(normalized.documents)
+    ? normalized.documents.some((d) => d?.name?.includes("Loan Approved Document"))
+    : Object.keys(normalized.documents || {}).some((k) => k.includes("Loan Approved Document"));
+
+  const hasFinanceDetails = pType === "cash"
+    ? Boolean(normalized.paymentMode?.trim() || fData.paymentMode?.trim())
+    : Boolean(
+        String(normalized.loan_amount || fData.loanAmount || "").trim() !== "" &&
+        String(normalized.loan_approved_amount || fData.loanApprovedAmount || "").trim() !== "" &&
+        String(normalized.bank_name || fData.bankName || "").trim() !== ""
+      );
+
   const isFinanceApproved =
     pType === "loan"
       ? normalized.finance_form_status === "Loan Approved" ||
         normalized.finance_form_status === "Approved" ||
         normalized.finance_final_status === "Approved"
-      : pType === "cash" &&
-        (normalized.paymentMode?.trim() || fData.paymentMode?.trim());
+      : true;
         
-  const hasFinanceError = isBankingStage && !isFinanceApproved;
+  const hasFinanceError = isBankingStage && (
+    (pType === "loan" && (!hasLoanApprovedDoc || !isFinanceApproved)) ||
+    !hasFinanceDetails
+  );
 
   /* ── Handlers ── */
   const handleUpdateSubmit = async (e) => {
@@ -652,7 +683,11 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
     // ── Client-side Gates ────────────────────────────────────────────────
     if (hasDocError) {
-      toast.error("Please ensure all documents are verified before proceeding.");
+      if (isBankingStage) {
+        toast.error("Please ensure all Loan Required Documents are verified before proceeding.");
+      } else {
+        toast.error("Please ensure all documents are verified before proceeding.");
+      }
       return;
     }
     if (hasQuotationError) {
@@ -668,7 +703,15 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       return;
     }
     if (hasFinanceError) {
-      toast.error("Please ensure loan is approved or payment details are complete before proceeding.");
+      if (pType === "loan" && !hasLoanApprovedDoc) {
+        toast.error("Please upload the Loan Approved Document in its tab.");
+      } else if (pType === "loan" && !hasFinanceDetails) {
+        toast.error("Please fill in Loan Amount, Approved Amount, and Bank Name in Finance tab.");
+      } else if (pType === "loan" && !isFinanceApproved) {
+        toast.error("Please ensure the loan is marked as Approved.");
+      } else {
+        toast.error("Please ensure payment details are complete before proceeding.");
+      }
       return;
     }
     // ─────────────────────────────────────────────────────────────────────
