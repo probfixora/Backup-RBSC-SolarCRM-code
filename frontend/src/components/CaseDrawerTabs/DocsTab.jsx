@@ -482,44 +482,28 @@ const DocsTab = ({ ctx }) => {
                               flexWrap: "wrap",
                             }}
                           >
-                            {/* Status dropdown — admin, registration & banking can change */}
-                            {(role === "admin" || role === "registration" || role === "banking") ? (
-                              <select
-                                value={status}
-                                onChange={(e) =>
-                                  handleDocStatusChange(docName, e.target.value)
-                                }
-                                style={{
-                                  padding: "4px 8px",
-                                  fontSize: "12px",
-                                  borderRadius: "6px",
-                                  border: `1px solid ${statusColors[status].border}`,
-                                  background: statusColors[status].bg,
-                                  color: statusColors[status].text,
-                                  fontWeight: 700,
-                                  outline: "none",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                <option value="Yellow">Pending</option>
-                                <option value="Green">Verified</option>
-                                <option value="Red">Rejected</option>
-                              </select>
-                            ) : (
-                              <span
-                                style={{
-                                  padding: "4px 10px",
-                                  fontSize: "12px",
-                                  borderRadius: "6px",
-                                  border: `1px solid ${statusColors[status].border}`,
-                                  background: statusColors[status].bg,
-                                  color: statusColors[status].text,
-                                  fontWeight: 700,
-                                }}
-                              >
-                                {status === "Green" ? "Verified" : status === "Red" ? "Rejected" : "Pending"}
-                              </span>
-                            )}
+                            {/* Status dropdown — accessible to anyone who can view the tab */}
+                            <select
+                              value={status}
+                              onChange={(e) =>
+                                handleDocStatusChange(docName, e.target.value)
+                              }
+                              style={{
+                                padding: "4px 8px",
+                                fontSize: "12px",
+                                borderRadius: "6px",
+                                border: `1px solid ${statusColors[status].border}`,
+                                background: statusColors[status].bg,
+                                color: statusColors[status].text,
+                                fontWeight: 700,
+                                outline: "none",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <option value="Yellow">Pending</option>
+                              <option value="Green">Verified</option>
+                              <option value="Red">Rejected</option>
+                            </select>
 
                             {/* Replace button — only for registration role when doc is Rejected */}
                             {role === "registration" && status === "Red" && (

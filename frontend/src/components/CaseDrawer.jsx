@@ -48,6 +48,7 @@ import PaymentTracker from "./PaymentTracker";
 import UpdateTab from "./CaseDrawerTabs/UpdateTab";
 import DocsTab from "./CaseDrawerTabs/DocsTab";
 import HistoryTab from "./CaseDrawerTabs/HistoryTab";
+import InstallationPhotosTab from "./CaseDrawerTabs/InstallationPhotosTab";
 import FinanceTab from "./CaseDrawerTabs/FinanceTab";
 import DispatchTab from "./CaseDrawerTabs/DispatchTab";
 import SubsidyTab from "./CaseDrawerTabs/SubsidyTab";
@@ -157,7 +158,7 @@ const getTabs = (role, currentStage) => {
   const tabs = [
     { id: "update", icon: Zap, label: "Update" }
   ];
-  if (role !== "inventory") {
+  if (role !== "inventory" && role !== "field_installation") {
     tabs.push({ id: "docs", icon: FileText, label: role === "banking" ? "Loan Required Documents" : "Documents" });
   }
   if (role === "banking" || role === "admin" || (role === "registration" && currentStage === "Phone Verification Done")) {
@@ -183,6 +184,7 @@ const getTabs = (role, currentStage) => {
   // Work Order / Job Sheet — field installation team + admin
   if (role === "field_installation" || role === "admin") {
     tabs.push({ id: "work_order", icon: Printer, label: "Job Sheet" });
+    tabs.push({ id: "installation_photos", icon: MapPin, label: "Installation Photos" });
   }
   // Customer Feedback — admin only, shown on all cases (reads existing feedback)
   if (role === "admin") {
@@ -1489,6 +1491,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         <div className="print-visible-content" style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
           {activeTab === "update" && <UpdateTab ctx={ctx} />}
           {activeTab === "docs" && <DocsTab ctx={ctx} />}
+          {activeTab === "installation_photos" && <InstallationPhotosTab ctx={ctx} />}
           {activeTab === "loan_approved_docs" && <LoanApprovedDocsTab ctx={ctx} />}
           {activeTab === "history" && <HistoryTab ctx={ctx} />}
           {activeTab === "finance" && <FinanceTab ctx={ctx} />}
