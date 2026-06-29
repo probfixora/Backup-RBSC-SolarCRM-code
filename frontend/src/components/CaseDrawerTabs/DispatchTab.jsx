@@ -534,8 +534,8 @@ const DispatchTab = ({ ctx }) => {
                     }}
                   >
                     {dispatchLoading
-                      ? "Dispatching..."
-                      : "Confirm Dispatch & Deduct Inventory"}
+                      ? "Saving..."
+                      : "Save Dispatch Details"}
                   </button>
                 </div>
               </form>

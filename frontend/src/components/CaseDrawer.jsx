@@ -674,7 +674,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     !hasFinanceDetails
   );
 
-  /* ── Handlers ── */
+  /* ✨ Handlers ✨ */
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     if (!remarks.trim()) {
@@ -682,7 +682,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       return;
     }
 
-    // ── Client-side Gates ────────────────────────────────────────────────
+    // 🚧 Client-side Gates 🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧
     if (hasDocError) {
       if (isBankingStage) {
         toast.error("Please ensure all Loan Required Documents are verified before proceeding.");
@@ -719,6 +719,30 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
     setUpdateLoading(true);
     try {
+      if (normalized.currentStage === "Sent to Store") {
+        if (dispatchItems.length === 0) {
+          toast.error("Please add dispatch items in the Dispatch tab before proceeding.");
+          setUpdateLoading(false);
+          return;
+        }
+        for (const item of dispatchItems) {
+          if (!item.id || item.quantity <= 0) {
+            toast.error("Ensure all selected dispatch items have a valid quantity.");
+            setUpdateLoading(false);
+            return;
+          }
+        }
+        await edgeFetch(EDGE.workflow, {
+          action: "dispatch_materials",
+          caseId,
+          items: dispatchItems,
+          vehicleNumber: dispatchDetails.vehicleNumber,
+          driverName: dispatchDetails.driverName,
+          notes: dispatchDetails.notes,
+        });
+        toast.success("Materials dispatched and inventory deducted!");
+      }
+
       await edgeFetch(EDGE.workflow, {
         action: "update_stage",
         caseId,
@@ -1009,36 +1033,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       }
     }
 
-    setDispatchLoading(true);
-    try {
-      await edgeFetch(EDGE.workflow, {
-        action: "dispatch_materials",
-        caseId,
-        items: dispatchItems,
-        vehicleNumber: dispatchDetails.vehicleNumber,
-        driverName: dispatchDetails.driverName,
-        notes: dispatchDetails.notes,
-      });
-      toast.success(
-        "Materials dispatched and inventory deducted successfully!",
-      );
-
-      // Auto-update stage if currently in Sent to Store
-      if (normalized.currentStage === "Sent to Store") {
-        await edgeFetch(EDGE.workflow, {
-          action: "update_stage",
-          caseId,
-          newStage: "Installation Done",
-          remarks: "Materials dispatched, moved to Installation",
-        });
-      }
-
-      onRefresh();
-    } catch (err) {
-      toast.error(err.message || "Dispatch failed.");
-    } finally {
-      setDispatchLoading(false);
-    }
+    toast.success("Dispatch details saved! Please go to the 'Update' tab to confirm and deduct inventory.");
   };
 
   // ── PDF Download ─────────────────────────────────────────────────────────────
