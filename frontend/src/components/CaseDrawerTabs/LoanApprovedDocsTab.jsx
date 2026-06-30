@@ -110,6 +110,10 @@ const LoanApprovedDocsTab = ({ ctx }) => {
       // Optimistic UI Update
       setLocalDocs(prev => [...prev, { name: docName, url: urlData.publicUrl }]);
 
+      if (onRefresh) {
+        onRefresh();
+      }
+
       toast.success("Loan Approved Document uploaded successfully");
     } catch (err) {
       console.error("Upload error", err);
@@ -149,6 +153,10 @@ const LoanApprovedDocsTab = ({ ctx }) => {
 
       // Optimistic UI Update
       setLocalDocs(prev => prev.filter(d => d.name !== docNameToDelete));
+
+      if (onRefresh) {
+        onRefresh();
+      }
 
       toast.success("Document deleted successfully");
     } catch (err) {

@@ -421,7 +421,7 @@ const FinanceTab = ({ ctx }) => {
                           (normalized.totalAmount || 0) -
                             (fData.downPayment || 0) -
                             (fData.paymentType === "Loan"
-                              ? fData.loanApprovedAmount || 0
+                              ? (Number(fData.loanApprovedAmount) || 0) + (Number(fData.finalPaymentAmount) || 0)
                               : 0),
                         ).toLocaleString()}
                       </p>
