@@ -637,23 +637,40 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     allDocsObj[d.doc_name] = d.doc_url;
   });
 
-  const unverifiedDocs = Object.keys(allDocsObj).filter((d) => {
-    if (isBankingStage && pType === "loan") {
-      // In banking stage (loan), require FINANCE_DOCs to be verified
-      if (d.startsWith("FINANCE_DOC::")) {
-        return (docStatuses[d] || "Yellow") !== "Green";
+  const unverifiedDocs = Object.keys(allDocsObj).filter((docName) => {
+    if (role === "admin") return false;
+
+    let isVisible = false;
+    if (role === "banking") {
+      if (pType === "loan") isVisible = docName.startsWith("FINANCE_DOC::");
+      else isVisible = false;
+    } else if (docName.startsWith("FINANCE_DOC::")) {
+      isVisible = false;
+    } else if (role === "registration") {
+      if (docName.includes("Loan Approved Document")) isVisible = false;
+      else isVisible = true;
+    } else {
+      const name = docName.toLowerCase();
+      if (role === "field_installation") {
+        isVisible = name.includes("photo") || name.includes("gps") || name.includes("site") || name.includes("layout") || name.includes("structure") || name.includes("electricity") || name.includes("bill");
+      } else if (role === "subsidy") {
+        isVisible = name.includes("pan") || name.includes("aadhar") || name.includes("electricity") || name.includes("subsidy") || name.includes("photo") || name.includes("gps") || name.includes("bill") || name.includes("bank") || name.includes("cheque");
+      } else if (role === "inventory") {
+        isVisible = name.includes("dispatch") || name.includes("challan") || name.includes("invoice") || name.includes("po") || name.includes("bill");
+      } else if (role === "electrical") {
+        isVisible = name.includes("pan") || name.includes("aadhar") || name.includes("electricity") || name.includes("bill") || name.includes("electrical") || name.includes("photo") || name.includes("gps") || name.includes("site") || name.includes("layout") || name.includes("structure");
+      } else if (role === "technical") {
+        isVisible = name.startsWith("installation_photo::") || name.startsWith("tqa_doc::");
       }
-      return false;
     }
-    if (isRegStage) {
-      // In registration stage, require normal docs to be verified (skip finance/loan docs)
-      if (d.startsWith("FINANCE_DOC::") || d.includes("Loan Approved Document")) return false;
-      return (docStatuses[d] || "Yellow") !== "Green";
+
+    if (isVisible) {
+      return (docStatuses[docName] || "Yellow") !== "Green";
     }
     return false;
   });
 
-  const hasDocError = (isRegStage || isBankingStage) && unverifiedDocs.length > 0;
+  const hasDocError = unverifiedDocs.length > 0;
   
   // Quotation must be verified before proceeding from registration stages
   const hasQuotationError = (isRegStage || isPhoneVerificationStage) && !normalized.quotationVerified;

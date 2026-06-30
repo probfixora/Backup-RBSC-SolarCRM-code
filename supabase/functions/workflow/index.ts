@@ -898,6 +898,13 @@ serve(async (req: Request) => {
           stage_entered_at: new Date().toISOString(),
           escalation_level: 0,
           // ────────────────────────────────────────────────────────────────────
+          // ── Document Verification Reset ─────────────────────────────────────
+          // If the case is moving to a new department, reset all document
+          // verification statuses so the new team has to manually verify them.
+          ...(finalTeam !== caseObj.assigned_team
+            ? { document_statuses: {} }
+            : {}),
+          // ────────────────────────────────────────────────────────────────────
           ...(finalStage === "Phone Verification Done"
             ? { is_tracking_visible: true }
             : {}),
