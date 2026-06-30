@@ -283,6 +283,19 @@ const DocsTab = ({ ctx }) => {
                       name.includes("po") ||
                       name.includes("bill")
                     );
+                  if (role === "electrical")
+                    return (
+                      name.includes("pan") ||
+                      name.includes("aadhar") ||
+                      name.includes("electricity") ||
+                      name.includes("bill") ||
+                      name.includes("electrical") ||
+                      name.includes("photo") ||
+                      name.includes("gps") ||
+                      name.includes("site") ||
+                      name.includes("layout") ||
+                      name.includes("structure")
+                    );
                   return false;
                 });
 
