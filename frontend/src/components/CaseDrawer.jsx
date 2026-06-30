@@ -39,6 +39,7 @@ import {
   Link as LinkIcon,
   Send,
   Copy,
+  UploadCloud,
 } from "lucide-react";
 import CaseTimeline from "./CaseTimeline";
 import PaymentTracker from "./PaymentTracker";
@@ -59,6 +60,7 @@ import AccountsTab from "./CaseDrawerTabs/AccountsTab";
 import CustomerServiceTab from "./CaseDrawerTabs/CustomerServiceTab";
 import CustomerPortalTab from "./CaseDrawerTabs/CustomerPortalTab";
 import LoanApprovedDocsTab from "./CaseDrawerTabs/LoanApprovedDocsTab";
+import UploadDocumentTab from "./CaseDrawerTabs/UploadDocumentTab";
 
 const normalizeCase = (c) => ({
   ...c,
@@ -160,6 +162,9 @@ const getTabs = (role, currentStage) => {
   ];
   if (role !== "inventory" && role !== "field_installation") {
     tabs.push({ id: "docs", icon: FileText, label: role === "banking" ? "Loan Required Documents" : "Documents" });
+  }
+  if (role === "electrical" || role === "admin") {
+    tabs.push({ id: "upload_document", icon: UploadCloud, label: "Upload Document" });
   }
   if (role === "banking" || role === "admin" || (role === "registration" && currentStage === "Phone Verification Done")) {
     tabs.push({ id: "loan_approved_docs", icon: FileCheck, label: "Loan Approved Document" });
@@ -1491,6 +1496,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
         <div className="print-visible-content" style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
           {activeTab === "update" && <UpdateTab ctx={ctx} />}
           {activeTab === "docs" && <DocsTab ctx={ctx} />}
+          {activeTab === "upload_document" && <UploadDocumentTab ctx={ctx} />}
           {activeTab === "installation_photos" && <InstallationPhotosTab ctx={ctx} />}
           {activeTab === "loan_approved_docs" && <LoanApprovedDocsTab ctx={ctx} />}
           {activeTab === "history" && <HistoryTab ctx={ctx} />}
