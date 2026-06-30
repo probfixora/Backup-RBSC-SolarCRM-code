@@ -28,7 +28,7 @@ import { SkeletonCasesPage } from "./SkeletonComponents";
 const DEPT_STAGES = {
   all: [],
   registration: ["Registration Done", "Phone Verification Done"],
-  banking: ["Bank & Finance"],
+  banking: ["Bank & Finance", "Final Payment Collection"],
   inventory: ["Sent to Store"],
   installation: ["Installation Done", "Plant Activated"],
   electrical: ["Electrical Verification Done"],
@@ -72,14 +72,13 @@ const DEPT_STAGE_BOUNDS = {
     ],
   },
   banking: {
-    active: ["Bank & Finance"],
+    active: ["Bank & Finance", "Final Payment Collection"],
     past: [
       "Sent to Store",
       "Installation Done",
       "Electrical Verification Done",
       "Plant Activated",
       "TQA Verified",
-      "Final Payment Collection",
       "Accounts Verified",
       "Sent to Subsidy",
       "Subsidy Registration Completed",
@@ -155,7 +154,7 @@ const roleStageMap = {
   admin: [],
   sales: [],
   registration: ["Registration Done", "Phone Verification Done"],
-  banking: ["Bank & Finance"],
+  banking: ["Bank & Finance", "Final Payment Collection"],
   inventory: ["Sent to Store"],
   field_installation: ["Installation Done", "Plant Activated"],
   electrical: ["Electrical Verification Done"],
@@ -501,7 +500,14 @@ const Cases = ({ onLogout }) => {
       ? Math.max(...myStages.map((s) => STAGE_ORDER.indexOf(s)))
       : -1;
 
-  const isAtMyStage = (c) => myStages.includes(c.currentStage);
+  const isAtMyStage = (c) => {
+    if (!myStages.includes(c.currentStage)) return false;
+    if (userRole === "banking" && c.currentStage === "Final Payment Collection") {
+      const userName = localStorage.getItem("name");
+      return c.assignedTo === userName || c.assigned_to === userName;
+    }
+    return true;
+  };
   const isPastMyStage = (c) => {
     if (userRole === "admin") return c.status === "Completed";
     if (myLastStageIdx < 0) return false;

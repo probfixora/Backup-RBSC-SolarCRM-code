@@ -888,33 +888,49 @@ serve(async (req: Request) => {
       const finalStage = isSubsidyComplete ? "Completed" : expectedNextStage;
       const finalTeam = stageToTeam[finalStage] || "Admin";
 
+      let overrideAssignedTo = undefined;
+      if (finalStage === "Final Payment Collection") {
+        // Find the employee who previously completed the Bank & Finance stage for this case
+        const { data: bankHistory } = await supabase
+          .from("case_history")
+          .select("updated_by")
+          .eq("case_id", caseObj.id)
+          .eq("stage", "Bank & Finance")
+          .eq("action_type", "stage_update")
+          .order("timestamp", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (bankHistory && bankHistory.updated_by) {
+          overrideAssignedTo = bankHistory.updated_by;
+        }
+      }
+
+      const updatePayload: any = {
+        current_stage: finalStage,
+        assigned_team: finalTeam,
+        stage_start_time: new Date().toISOString(),
+        status: newStatus,
+        // ── Escalation timer reset ───────────────────────────────────────────
+        stage_entered_at: new Date().toISOString(),
+        escalation_level: 0,
+        // ────────────────────────────────────────────────────────────────────
+        ...(finalTeam !== caseObj.assigned_team
+          ? { document_statuses: {} }
+          : {}),
+        ...(finalStage === "Phone Verification Done"
+          ? { is_tracking_visible: true }
+          : {}),
+        ...(body.is_special_case === true ? { is_special_case: true } : {}),
+      };
+
+      if (overrideAssignedTo) {
+        updatePayload.assigned_to = overrideAssignedTo;
+      }
+
       const { data: updated, error: updateError } = await supabase
         .from("cases")
-        .update({
-          current_stage: finalStage,
-          assigned_team: finalTeam,
-          stage_start_time: new Date().toISOString(),
-          status: newStatus,
-          // ── Escalation timer reset ───────────────────────────────────────────
-          // Reset stage_entered_at so the pg_cron escalation job calculates
-          // staleness from when the case arrived at this new stage, not creation.
-          // Also reset escalation_level to 0 (clean slate for new department).
-          stage_entered_at: new Date().toISOString(),
-          escalation_level: 0,
-          // ────────────────────────────────────────────────────────────────────
-          // ── Document Verification Reset ─────────────────────────────────────
-          // If the case is moving to a new department, reset all document
-          // verification statuses so the new team has to manually verify them.
-          ...(finalTeam !== caseObj.assigned_team
-            ? { document_statuses: {} }
-            : {}),
-          // ────────────────────────────────────────────────────────────────────
-          ...(finalStage === "Phone Verification Done"
-            ? { is_tracking_visible: true }
-            : {}),
-          // ── Special Case flag ────────────────────────────────────────────────
-          ...(body.is_special_case === true ? { is_special_case: true } : {}),
-        })
+        .update(updatePayload)
         .eq("id", body.caseId)
         .select()
         .single();
