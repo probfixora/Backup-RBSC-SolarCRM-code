@@ -241,7 +241,19 @@ const DocsTab = ({ ctx }) => {
                   }
 
                   if (role === "banking") {
-                    return docName.startsWith("FINANCE_DOC::") || docName.includes("Loan Approved Document");
+                    if (docName.includes("Loan Approved Document")) return false;
+                    const name = docName.toLowerCase();
+                    return (
+                      name.includes("pan") ||
+                      name.includes("aadhar") ||
+                      name.includes("bank") ||
+                      name.includes("cheque") ||
+                      name.includes("electricity") ||
+                      name.includes("finance") ||
+                      name.includes("loan") ||
+                      name.includes("receipt") ||
+                      name.includes("bill")
+                    );
                   }
 
                   const name = docName.toLowerCase();
