@@ -548,7 +548,7 @@ const DocsTab = ({ ctx }) => {
                             )}
 
                             <a
-                              href={docUrl}
+                              href={`/viewer?url=${encodeURIComponent(docUrl)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{

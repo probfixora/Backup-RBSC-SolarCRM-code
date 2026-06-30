@@ -228,7 +228,7 @@ const LoanApprovedDocsTab = ({ ctx }) => {
               </div>
               <div style={{ display: "flex", gap: "8px" }}>
                 <a
-                  href={doc.url}
+                  href={`/viewer?url=${encodeURIComponent(doc.url)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

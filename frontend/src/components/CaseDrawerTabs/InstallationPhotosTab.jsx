@@ -375,7 +375,7 @@ const InstallationPhotosTab = ({ ctx }) => {
               </div>
               <div style={{ display: "flex", gap: "8px" }}>
                 <a
-                  href={docUrl}
+                  href={`/viewer?url=${encodeURIComponent(docUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ padding: "6px 12px", background: "#f1f5f9", color: "#334155", fontSize: "12px", fontWeight: 600, borderRadius: "6px", textDecoration: "none" }}

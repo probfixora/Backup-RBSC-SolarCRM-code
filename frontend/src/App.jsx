@@ -58,6 +58,7 @@ const TechnicalDashboard = lazy(() => import("./pages/TechnicalDashboard"));
 const AccountsDashboard = lazy(() => import("./pages/AccountsDashboard"));
 const CustomerServiceDashboard = lazy(() => import("./pages/CustomerServiceDashboard"));
 const EmployeeListPage = lazy(() => import("./pages/EmployeeListPage"));
+const DocumentViewer = lazy(() => import("./pages/DocumentViewer"));
 
 // ── Public pages ──
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
@@ -601,6 +602,14 @@ function App() {
             element={
               <ProtectedRoute role="admin">
                 <EmployeeDrillDown onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/viewer"
+            element={
+              <ProtectedRoute>
+                <DocumentViewer />
               </ProtectedRoute>
             }
           />
