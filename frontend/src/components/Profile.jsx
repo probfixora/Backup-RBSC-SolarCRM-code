@@ -326,7 +326,7 @@ const Profile = ({ onLogout }) => {
         </div>
 
         {/* ── Body ── */}
-        <div className="profile-layout" style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <div className="profile-layout" style={{ display: "flex", flex: 1, overflow: "hidden", minHeight: 0 }}>
           {/* Left sidebar */}
           <div className="profile-sidebar" style={{
             width: "260px", flexShrink: 0, borderRight: "1px solid #e5e7eb", background: "#fff",
@@ -402,7 +402,7 @@ const Profile = ({ onLogout }) => {
           </div>
 
           {/* Right content */}
-          <div className="profile-content" style={{ flex: 1, overflow: "auto", padding: "40px", background: "#f9fafb" }}>
+          <div className="profile-content" style={{ flex: 1, overflowY: "auto", padding: "40px", background: "#f9fafb", minWidth: 0 }}>
             <div style={{ maxWidth: "800px", margin: "0 auto", background: "#fff", padding: "32px", borderRadius: "12px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e5e7eb" }}>
               
               {activeTab === "profile" && (

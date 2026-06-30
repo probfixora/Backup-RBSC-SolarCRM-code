@@ -50,7 +50,11 @@ export async function edgeFetch(url, body) {
           "[edgeFetch] JWT expired — clearing session and redirecting to login.",
         );
         supabase.auth.signOut().catch(() => {});
+        const savedDeviceId = localStorage.getItem("deviceId");
+        const savedTheme = localStorage.getItem("theme");
         localStorage.clear();
+        if (savedDeviceId) localStorage.setItem("deviceId", savedDeviceId);
+        if (savedTheme) localStorage.setItem("theme", savedTheme);
         // Throw BEFORE redirect so calling code can catch it cleanly
         const sessionError = new Error("Session expired. Please log in again.");
         sessionError.isSessionExpired = true;

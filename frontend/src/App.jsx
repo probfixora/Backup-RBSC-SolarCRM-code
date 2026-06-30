@@ -135,7 +135,11 @@ function App() {
     try {
       await supabase.auth.signOut();
     } catch (_) {}
+    const deviceId = localStorage.getItem("deviceId");
+    const theme = localStorage.getItem("theme");
     localStorage.clear();
+    if (deviceId) localStorage.setItem("deviceId", deviceId);
+    if (theme) localStorage.setItem("theme", theme);
     window.location.href = "/login";
   };
 
@@ -187,10 +191,13 @@ function App() {
           .eq("device_id", deviceId)
           .maybeSingle();
         
-        // If the session was explicitly deleted (e.g. by password change)
         if (!activeSession) {
           await supabase.auth.signOut();
+          const savedDeviceId = localStorage.getItem("deviceId");
+          const savedTheme = localStorage.getItem("theme");
           localStorage.clear();
+          if (savedDeviceId) localStorage.setItem("deviceId", savedDeviceId);
+          if (savedTheme) localStorage.setItem("theme", savedTheme);
           window.location.href = "/login";
           return;
         }
@@ -231,7 +238,11 @@ function App() {
       try {
         supabase.auth.signOut();
       } catch (_) {}
+      const savedDeviceId = localStorage.getItem("deviceId");
+      const savedTheme = localStorage.getItem("theme");
       localStorage.clear();
+      if (savedDeviceId) localStorage.setItem("deviceId", savedDeviceId);
+      if (savedTheme) localStorage.setItem("theme", savedTheme);
       window.location.href = "/login";
     };
 
