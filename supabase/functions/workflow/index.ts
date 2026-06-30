@@ -851,12 +851,23 @@ serve(async (req: Request) => {
       if (
         expectedNextStage.toLowerCase() !== body.newStage?.trim().toLowerCase()
       ) {
-        return jsonResponse(
-          {
-            message: `Invalid transition. From ${normalizedStage}, you can only move to ${expectedNextStage}`,
-          },
-          400,
-        );
+        // ── SPECIAL CASE BYPASS: Admin can jump to "Sent to Subsidy" ─────────
+        // This is used when bank payment settlement is delayed but the plant is
+        // ready for subsidy filing. Banking & Accounts retain edit access.
+        const isSpecialCaseBypass =
+          body.is_special_case === true &&
+          user.role === "admin" &&
+          body.newStage?.trim() === "Sent to Subsidy";
+
+        if (!isSpecialCaseBypass) {
+          return jsonResponse(
+            {
+              message: `Invalid transition. From ${normalizedStage}, you can only move to ${expectedNextStage}`,
+            },
+            400,
+          );
+        }
+        // ─────────────────────────────────────────────────────────────────────
       }
 
       // ── SPECIAL: "Subsidy Registration Completed" auto-completes the case ──
@@ -890,6 +901,8 @@ serve(async (req: Request) => {
           ...(finalStage === "Phone Verification Done"
             ? { is_tracking_visible: true }
             : {}),
+          // ── Special Case flag ────────────────────────────────────────────────
+          ...(body.is_special_case === true ? { is_special_case: true } : {}),
         })
         .eq("id", body.caseId)
         .select()

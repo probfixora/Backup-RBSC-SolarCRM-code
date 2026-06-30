@@ -148,6 +148,9 @@ const stageToDeptLabel = {
 const canUpdateCase = (c, role) => {
   if (role === "admin") return true;
   const stage = c.current_stage || c.currentStage;
+  if (c.is_special_case) {
+    if (role === "banking" || role === "accounts" || role === "subsidy") return true;
+  }
   return stageToRole[stage] === role;
 };
 
@@ -453,6 +456,27 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                           )}
                         </div>
                         <EscalationBadge c={c} role={role} userName={userName} />
+                        {c.is_special_case && (
+                          <span
+                            title="Bypassed to Subsidy"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "3px",
+                              fontSize: "10px",
+                              fontWeight: 700,
+                              padding: "2px 7px",
+                              borderRadius: "20px",
+                              background: "#fdf4ff",
+                              color: "#a21caf",
+                              border: "1px solid #f0abfc",
+                              whiteSpace: "nowrap",
+                              flexShrink: 0,
+                            }}
+                          >
+                            ⭐ Special Case
+                          </span>
+                        )}
                       </div>
                     </td>
 
@@ -801,6 +825,7 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                       display: "flex",
                       alignItems: "center",
                       gap: "4px",
+                      flexWrap: "wrap",
                     }}
                   >
                     <span
@@ -824,6 +849,28 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                       {trackingId}
                     </span>
                     {trackingId !== "—" && <CopyButton text={trackingId} />}
+                    <EscalationBadge c={c} role={role} userName={userName} />
+                    {c.is_special_case && (
+                      <span
+                        title="Bypassed to Subsidy"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "3px",
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          padding: "2px 7px",
+                          borderRadius: "20px",
+                          background: "#fdf4ff",
+                          color: "#a21caf",
+                          border: "1px solid #f0abfc",
+                          whiteSpace: "nowrap",
+                          flexShrink: 0,
+                        }}
+                      >
+                        ⭐ Special Case
+                      </span>
+                    )}
                   </div>
                   {!hideCustomerId && (
                     <div

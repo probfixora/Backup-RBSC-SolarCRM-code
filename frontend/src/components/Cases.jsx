@@ -188,6 +188,7 @@ const Cases = ({ onLogout }) => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [showAdvFilters, setShowAdvFilters] = useState(false);
+  const [showSpecialCases, setShowSpecialCases] = useState(false);
   const [totalCases, setTotalCases] = useState(0);
 
   const navigate = useNavigate();
@@ -234,6 +235,7 @@ const Cases = ({ onLogout }) => {
     employeeId: c.employee_id || c.employeeId,
     gstin: c.gstin,
     system_specs: c.system_specs,
+    is_special_case: c.is_special_case,
   });
 
   /* ── Fetch cases (server-side pagination: 100 per page) ── */
@@ -579,6 +581,10 @@ const Cases = ({ onLogout }) => {
       );
     }
 
+    if (showSpecialCases) {
+      result = result.filter(c => c.is_special_case);
+    }
+
     return result;
   };
 
@@ -867,6 +873,40 @@ const Cases = ({ onLogout }) => {
                   >
                     <Download style={{ width: "13px", height: "13px" }} />
                     Export CSV
+                  </button>
+                  <button
+                    onClick={() => setShowSpecialCases(prev => !prev)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "8px 14px",
+                      borderRadius: "8px",
+                      border: `1px solid ${showSpecialCases ? "#f0abfc" : "var(--border)"}`,
+                      background: showSpecialCases ? "#fdf4ff" : "var(--surface)",
+                      color: showSpecialCases ? "#a21caf" : "var(--text-3)",
+                      fontSize: "12.5px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.15s",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!showSpecialCases) {
+                        e.currentTarget.style.background = "#fdf4ff";
+                        e.currentTarget.style.color = "#a21caf";
+                        e.currentTarget.style.borderColor = "#f0abfc";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!showSpecialCases) {
+                        e.currentTarget.style.background = "var(--surface)";
+                        e.currentTarget.style.color = "var(--text-3)";
+                        e.currentTarget.style.borderColor = "var(--border)";
+                      }
+                    }}
+                  >
+                    <Star style={{ width: "13px", height: "13px" }} />
+                    Special Cases
                   </button>
                 </>
               )}

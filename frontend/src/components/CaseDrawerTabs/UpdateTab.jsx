@@ -9,6 +9,208 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { APP_CONFIG } from "../../config";
 
+// ── Special Case Bypass Component (Admin only) ────────────────────────────────
+const SpecialCaseBypassSection = ({ normalized, caseId, onClose, onRefresh }) => {
+  const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const handleBypass = async () => {
+    setLoading(true);
+    try {
+      await edgeFetch(EDGE.workflow, {
+        action: "update_stage",
+        caseId,
+        newStage: "Sent to Subsidy",
+        remarks: "Special Case: Bypassed to Subsidy by Admin (bank payment pending). Banking and Accounts departments retain edit access.",
+        is_special_case: true,
+      });
+      toast.success("Case transferred to Subsidy as a Special Case!");
+      onClose();
+      onRefresh();
+    } catch (err) {
+      toast.error(err.message || "Transfer failed.");
+    } finally {
+      setLoading(false);
+      setConfirmOpen(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        marginTop: "18px",
+        borderTop: "1px dashed #e9d5ff",
+        paddingTop: "16px",
+      }}
+    >
+      <p
+        style={{
+          fontSize: "11.5px",
+          fontWeight: 700,
+          color: "#7c3aed",
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+          marginBottom: "10px",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+        }}
+      >
+        ⭐ Admin — Special Case Override
+      </p>
+
+      {!confirmOpen ? (
+        <div
+          style={{
+            padding: "14px 16px",
+            borderRadius: "12px",
+            background: "linear-gradient(135deg, #fdf4ff, #fae8ff)",
+            border: "1px solid #e9d5ff",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "14px",
+          }}
+        >
+          <div
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              flexShrink: 0,
+              background: "#7c3aed",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Star style={{ width: "16px", height: "16px", color: "#fff" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p
+              style={{
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "#581c87",
+                marginBottom: "4px",
+              }}
+            >
+              Transfer to Subsidy (Special Case)
+            </p>
+            <p
+              style={{
+                fontSize: "12px",
+                color: "#6b21a8",
+                lineHeight: 1.5,
+                marginBottom: "12px",
+              }}
+            >
+              Use this if the bank payment settlement is delayed but the plant is ready for subsidy filing.
+              Banking &amp; Accounts departments will retain edit access.
+            </p>
+            <button
+              type="button"
+              onClick={() => setConfirmOpen(true)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "7px",
+                padding: "8px 16px",
+                borderRadius: "8px",
+                border: "none",
+                background: "#7c3aed",
+                color: "#fff",
+                fontSize: "12.5px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#6d28d9";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#7c3aed";
+                e.currentTarget.style.transform = "";
+              }}
+            >
+              <Star style={{ width: "13px", height: "13px" }} />
+              Mark as Special Case &amp; Send to Subsidy
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div
+          style={{
+            padding: "16px",
+            borderRadius: "12px",
+            background: "#fdf4ff",
+            border: "2px solid #c084fc",
+          }}
+        >
+          <p
+            style={{
+              fontSize: "13.5px",
+              fontWeight: 700,
+              color: "#581c87",
+              marginBottom: "6px",
+            }}
+          >
+            ⚠ Confirm Special Case Transfer
+          </p>
+          <p
+            style={{
+              fontSize: "12.5px",
+              color: "#6b21a8",
+              marginBottom: "14px",
+              lineHeight: 1.5,
+            }}
+          >
+            This will immediately move <strong>{normalized.customerName}</strong> ({normalized.trackingId}) to the
+            Subsidy stage and flag it as a Special Case. Banking &amp; Accounts will retain access. Proceed?
+          </p>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              type="button"
+              onClick={handleBypass}
+              disabled={loading}
+              style={{
+                flex: 1,
+                padding: "9px 14px",
+                borderRadius: "8px",
+                border: "none",
+                background: loading ? "#c4b5fd" : "#7c3aed",
+                color: "#fff",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: loading ? "wait" : "pointer",
+              }}
+            >
+              {loading ? "Transferring…" : "✓ Confirm Transfer"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmOpen(false)}
+              disabled={loading}
+              style={{
+                padding: "9px 14px",
+                borderRadius: "8px",
+                border: "1px solid #e9d5ff",
+                background: "#fff",
+                color: "#6b21a8",
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const UpdateTab = ({ ctx }) => {
   const {
     STAGES,
@@ -1223,6 +1425,18 @@ const UpdateTab = ({ ctx }) => {
                         </div>
                       )}
                   </form>
+
+                  {/* ── ADMIN: Special Case — Transfer directly to Subsidy ── */}
+                  {role === "admin" && !isCompleted && (
+                    ["TQA Verified", "Accounts Verified", "Plant Activated"].includes(normalized.currentStage)
+                  ) && (
+                    <SpecialCaseBypassSection
+                      normalized={normalized}
+                      caseId={caseId}
+                      onClose={onClose}
+                      onRefresh={onRefresh}
+                    />
+                  )}
 
                   {/* Delay section */}
                   <div

@@ -110,6 +110,7 @@ const normalizeCase = (c) => ({
   quotationVerified: c.quotation_verified ?? c.quotationVerified ?? false,
   financeVerified: c.finance_verified ?? c.financeVerified ?? false,
   accountsVerified: c.accounts_verified ?? c.accountsVerified ?? false,
+  isSpecialCase: c.is_special_case ?? c.isSpecialCase ?? false,
 });
 
 const STAGES = [
@@ -156,12 +157,17 @@ const stageToDeptLabel = {
   admin: "Administration",
 };
 
-const getTabs = (role, currentStage) => {
+const getTabs = (role, currentStage, isSpecialCase) => {
   const tabs = [
     { id: "update", icon: Zap, label: "Update" }
   ];
+  // For special cases, banking and accounts always get Finance and Doc tabs
+  const isSpecialBankingOrAccounts = isSpecialCase && (role === "banking" || role === "accounts");
   if (role !== "inventory" && role !== "field_installation") {
     tabs.push({ id: "docs", icon: FileText, label: role === "banking" ? "Loan Required Documents" : "Documents" });
+  }
+  if (isSpecialBankingOrAccounts && !tabs.find(t => t.id === "docs")) {
+    tabs.push({ id: "docs", icon: FileText, label: "Documents" });
   }
   if (role === "electrical" || role === "admin") {
     tabs.push({ id: "upload_document", icon: UploadCloud, label: "Upload Document" });
@@ -176,6 +182,7 @@ const getTabs = (role, currentStage) => {
     role === "banking" ||
     role === "admin" ||
     role === "accounts" ||
+    isSpecialBankingOrAccounts ||
     (role === "registration" && currentStage === "Phone Verification Done")
   ) {
     tabs.push({ id: "finance", icon: ClipboardList, label: "Finance" });
@@ -231,7 +238,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   const normalized = normalizeCase(caseData || {});
 
   const role = localStorage.getItem("role") || "";
-  const TABS = getTabs(role, normalized.currentStage);
+  const TABS = getTabs(role, normalized.currentStage, normalized.isSpecialCase);
 
   // Compute whether this user's role owns the current stage (write access)
   const ownerRole = stageToRole[normalized.currentStage] || "";
@@ -1438,6 +1445,11 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
             {normalized.assignedTo && normalized.assignedTo === localStorage.getItem("name") && (
               <span style={{ backgroundColor: "rgba(139, 92, 246, 0.15)", color: "#c084fc", border: "1px solid rgba(168, 85, 247, 0.3)", padding: "4px 10px", borderRadius: "9999px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
                 <UserCheck size={12} /> Assigned to You
+              </span>
+            )}
+            {normalized.isSpecialCase && (
+              <span style={{ backgroundColor: "rgba(168, 85, 247, 0.15)", color: "#e879f9", border: "1px solid rgba(217, 70, 239, 0.4)", padding: "4px 10px", borderRadius: "9999px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                ⭐ Special Case
               </span>
             )}
             <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
