@@ -308,7 +308,6 @@ const UpdateTab = ({ ctx }) => {
     setDispatchItems,
     setDispatchLoading,
     setDocStatuses,
-    setDocStatuses,
     setDownloadZipLoading,
     setFData,
     setFeedbackList,
