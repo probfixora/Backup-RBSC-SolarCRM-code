@@ -264,6 +264,8 @@ const UpdateTab = ({ ctx }) => {
     handleUpdateSubmit,
     hasDocError,
     hasFinanceError,
+    hasFinanceDetails,
+    hasLoanApprovedDoc,
     hasInstallationPhotoError,
     hasQuotationError,
     history,
@@ -1272,8 +1274,11 @@ const UpdateTab = ({ ctx }) => {
                             flexShrink: 0,
                           }}
                         />
-                        Finance not approved! Update and approve the Loan or
-                        Cash details to proceed.
+                        {(!hasFinanceDetails) 
+                          ? "Please enter and save Financial Details (Loan Amount, Bank Name, etc.) to proceed."
+                          : (pType === "loan" && !hasLoanApprovedDoc)
+                          ? "Please upload the Loan Approved Document in its tab."
+                          : "Finance not approved! Update and approve the Loan or Cash details to proceed."}
                       </div>
                     )}
                     {hasDocError && (
