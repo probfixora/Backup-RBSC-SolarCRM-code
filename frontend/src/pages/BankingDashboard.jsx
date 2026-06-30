@@ -724,8 +724,12 @@ const BankingDashboard = ({ onLogout }) => {
     "Bank & Finance",
     "Sent to Store",
     "Installation Done",
+    "Electrical Verification Done",
     "Plant Activated",
+    "TQA Verified",
     "Final Payment Collection",
+    "Accounts Verified",
+    "Sent to Subsidy",
     "Subsidy Registration Completed",
     "Completed",
   ];
