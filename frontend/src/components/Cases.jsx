@@ -14,6 +14,7 @@ import {
   Download,
   X,
   ClipboardCheck,
+  Star,
 } from "lucide-react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
