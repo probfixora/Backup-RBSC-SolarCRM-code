@@ -25,12 +25,6 @@ export default function PaymentTracker({ caseId, userRole, onRefresh }) {
         caseId,
       });
       setPayments(data || []);
-      if (data && data.length > 0) {
-        setPaymentData(prev => ({
-          ...prev,
-          paymentType: "final_installment"
-        }));
-      }
     } catch (err) {
       console.error("Failed to load payments:", err);
     } finally {

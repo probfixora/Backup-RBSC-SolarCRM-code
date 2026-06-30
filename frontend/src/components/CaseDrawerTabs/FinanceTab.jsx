@@ -719,7 +719,7 @@ const FinanceTab = ({ ctx }) => {
                               </div>
                             </div>
 
-                            {normalized.currentStage === "Final Payment Collection" && (
+                            {stageIdx >= 8 && (
                               <div style={{ display: "flex", gap: "12px", marginTop: "12px", padding: "12px", background: "#f0fdf4", border: "1px dashed #bbf7d0", borderRadius: "8px" }}>
                                 <div style={{ flex: 1 }}>
                                   <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#166534", marginBottom: "6px" }}>
