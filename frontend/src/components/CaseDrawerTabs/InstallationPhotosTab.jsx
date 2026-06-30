@@ -61,23 +61,31 @@ const InstallationPhotosTab = ({ ctx }) => {
     let addressLine2 = "Address not available";
     
     try {
-      // Zoom 14-16 gives village/suburb/town level instead of building/street level
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1&accept-language=en-US,en;q=0.9`);
+      const apiKey = "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao";
+      const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=en`);
       const data = await res.json();
       
-      if (data && data.address) {
-        const addr = data.address;
+      if (data && data.results && data.results.length > 0) {
+        // Google Maps returns multiple results from most specific to least specific.
+        // We look for sublocality or neighborhood to get the broader area (e.g. Gomti Nagar)
+        let targetResult = data.results.find(r => r.types.includes("sublocality_level_1") || r.types.includes("sublocality") || r.types.includes("neighborhood"));
         
-        // Prioritize area names (suburb, village, etc) over specific roads
-        const area = addr.suburb || addr.village || addr.town || addr.neighbourhood || addr.residential || addr.city || "Unknown Area";
-        const cityOrDistrict = addr.city || addr.state_district || addr.county || "Unknown City";
-        const state = addr.state || "Unknown State";
-        const postcode = addr.postcode || "";
-        const country = addr.country || "India";
+        if (!targetResult) {
+           targetResult = data.results.find(r => r.types.includes("locality"));
+        }
+        if (!targetResult) {
+           targetResult = data.results[0]; // fallback
+        }
+
+        const components = targetResult.address_components;
+        const getComponent = (type) => components.find(c => c.types.includes(type))?.long_name;
         
-        addressLine1 = `${area}, ${cityOrDistrict}, ${state}`;
-        // Construct line2 manually to enforce English and avoid raw display_name which might have local language strings
-        addressLine2 = [area, cityOrDistrict, state, postcode, country].filter(Boolean).join(", ");
+        const area = getComponent("sublocality_level_1") || getComponent("sublocality") || getComponent("neighborhood") || getComponent("locality") || getComponent("route") || "Unknown Area";
+        const city = getComponent("locality") || getComponent("administrative_area_level_2") || "Unknown City";
+        const state = getComponent("administrative_area_level_1") || "Unknown State";
+        
+        addressLine1 = `${area}, ${city}, ${state}`;
+        addressLine2 = targetResult.formatted_address || "Address not available";
       }
 
     } catch (err) {
