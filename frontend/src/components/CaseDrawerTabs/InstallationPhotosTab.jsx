@@ -61,19 +61,23 @@ const InstallationPhotosTab = ({ ctx }) => {
     let addressLine2 = "Address not available";
     
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`);
+      // Zoom 14-16 gives village/suburb/town level instead of building/street level
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1&accept-language=en-US,en;q=0.9`);
       const data = await res.json();
       
       if (data && data.address) {
         const addr = data.address;
         
-        // Find the most specific location name (road, suburb, village, etc)
-        const specificLocation = addr.road || addr.neighbourhood || addr.suburb || addr.residential || addr.village || addr.town || addr.city || "Unknown Location";
-        const cityOrDistrict = addr.city || addr.town || addr.county || addr.state_district || "Unknown City";
+        // Prioritize area names (suburb, village, etc) over specific roads
+        const area = addr.suburb || addr.village || addr.town || addr.neighbourhood || addr.residential || addr.city || "Unknown Area";
+        const cityOrDistrict = addr.city || addr.state_district || addr.county || "Unknown City";
         const state = addr.state || "Unknown State";
+        const postcode = addr.postcode || "";
+        const country = addr.country || "India";
         
-        addressLine1 = `${specificLocation}, ${cityOrDistrict}, ${state}`;
-        addressLine2 = data.display_name || "Address not available";
+        addressLine1 = `${area}, ${cityOrDistrict}, ${state}`;
+        // Construct line2 manually to enforce English and avoid raw display_name which might have local language strings
+        addressLine2 = [area, cityOrDistrict, state, postcode, country].filter(Boolean).join(", ");
       }
 
     } catch (err) {
@@ -110,11 +114,15 @@ const InstallationPhotosTab = ({ ctx }) => {
         const line3 = `Lat ${lat}° Long ${lng}°`;
         const line4 = dateStr;
 
-        // Draw a dark semi-transparent box at the bottom
+        // Draw a dark semi-transparent box, positioned slightly above the bottom
         const boxHeight = mapSize + (padding * 2);
         const boxWidth = img.width - (padding * 2);
         const startX = padding;
-        const startY = img.height - boxHeight - padding;
+        
+        // User requested: "bottom se thoda sa upar, center se niche"
+        // Move up by 15% of the image height instead of just `padding`
+        const bottomOffset = Math.max(padding, img.height * 0.15);
+        const startY = img.height - boxHeight - bottomOffset;
 
         ctxCanvas.fillStyle = "rgba(0, 0, 0, 0.7)"; 
         
