@@ -83,6 +83,7 @@ const normalizeCase = (c) => ({
   paymentMode: c.payment_mode ?? c.paymentMode,
   loanAmount: c.loan_amount ?? c.loanAmount,
   loanApprovedAmount: c.loan_approved_amount ?? c.loanApprovedAmount,
+  finalPaymentAmount: c.final_payment_amount ?? c.finalPaymentAmount,
   emiAmount: c.emi_amount ?? c.emiAmount,
   bankName: c.bank_name ?? c.bankName,
   subsidyRefNumber: c.subsidy_ref_number ?? c.subsidyRefNumber,
@@ -255,6 +256,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     paymentMode: "",
     loanAmount: "",
     loanApprovedAmount: "",
+    finalPaymentAmount: "",
     emiAmount: "",
     bankName: "",
   });
@@ -360,6 +362,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       paymentMode: normalized.paymentMode || "",
       loanAmount: normalized.loanAmount || "",
       loanApprovedAmount: normalized.loanApprovedAmount || "",
+      finalPaymentAmount: normalized.finalPaymentAmount || "",
       emiAmount: normalized.emiAmount || "",
       bankName: normalized.bankName || "",
     });
@@ -867,7 +870,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     try {
       // Sanitize: convert empty strings to null for numeric DB columns
       const numericFields = [
-        "downPayment", "loanAmount", "loanApprovedAmount",
+        "downPayment", "loanAmount", "loanApprovedAmount", "finalPaymentAmount",
         "cashAmount", "quotation_amount", "quotationAmount", "totalAmount"
       ];
       const sanitized = { ...fData };

@@ -1412,6 +1412,7 @@ serve(async (req: Request) => {
         paymentMode: "payment_mode",
         loanAmount: "loan_amount",
         loanApprovedAmount: "loan_approved_amount",
+        finalPaymentAmount: "final_payment_amount",
         emiAmount: "emi_amount",
         bankName: "bank_name",
         bankVisitedDate: "bank_visited_date",
@@ -1432,6 +1433,8 @@ serve(async (req: Request) => {
                 "down_payment",
                 "cash_amount",
                 "loan_amount",
+                "loan_approved_amount",
+                "final_payment_amount",
                 "emi_amount",
               ].includes(dbKey)
                 ? 0
@@ -1444,6 +1447,8 @@ serve(async (req: Request) => {
               "down_payment",
               "cash_amount",
               "loan_amount",
+              "loan_approved_amount",
+              "final_payment_amount",
               "emi_amount",
             ].includes(dbKey)
               ? Number(body[jsKey])

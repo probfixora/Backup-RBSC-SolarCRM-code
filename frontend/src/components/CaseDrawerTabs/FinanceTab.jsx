@@ -713,12 +713,24 @@ const FinanceTab = ({ ctx }) => {
                               </div>
                               <div style={{ flex: 1 }}>
                                 <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#1e3a8a", marginBottom: "6px" }}>
-                                  Loan Approved Amount (₹)
+                                  First Installment Amount (70%)
                                 </label>
-                                <input type="number" value={fData.loanApprovedAmount} onChange={(e) => setFData({ ...fData, loanApprovedAmount: e.target.value })} placeholder="Approved amount" className="input" />
+                                <input type="number" value={fData.loanApprovedAmount} onChange={(e) => setFData({ ...fData, loanApprovedAmount: e.target.value })} placeholder="e.g. 133000" className="input" />
                               </div>
                             </div>
-                            <div>
+
+                            {normalized.currentStage === "Final Payment Collection" && (
+                              <div style={{ display: "flex", gap: "12px", marginTop: "12px", padding: "12px", background: "#f0fdf4", border: "1px dashed #bbf7d0", borderRadius: "8px" }}>
+                                <div style={{ flex: 1 }}>
+                                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#166534", marginBottom: "6px" }}>
+                                    Final Payment Amount (30%)
+                                  </label>
+                                  <input type="number" value={fData.finalPaymentAmount} onChange={(e) => setFData({ ...fData, finalPaymentAmount: e.target.value })} placeholder="e.g. 57000" className="input" />
+                                </div>
+                              </div>
+                            )}
+
+                            <div style={{ marginTop: "12px" }}>
                               <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#1e3a8a", marginBottom: "6px" }}>
                                 Approved Bank Name
                               </label>
@@ -726,6 +738,7 @@ const FinanceTab = ({ ctx }) => {
                             </div>
                             <div
                               style={{
+                                marginTop: "12px",
                                 padding: "10px",
                                 background: "#dbeafe",
                                 borderRadius: "6px",
@@ -735,13 +748,14 @@ const FinanceTab = ({ ctx }) => {
                               }}
                             >
                               <span style={{ fontSize: "12px", fontWeight: 600, color: "#1e3a8a" }}>
-                                Remaining Balance (After Down Payment &amp; Loan):
+                                Remaining Balance (After Down Payment &amp; Installments):
                               </span>
                               <span style={{ fontSize: "13px", fontWeight: 700, color: "#1e3a8a" }}>
                                 ₹{Number(
                                   (normalized.totalAmount || 0) -
                                     (fData.downPayment || 0) -
-                                    (fData.loanApprovedAmount || 0),
+                                    (fData.loanApprovedAmount || 0) -
+                                    (fData.finalPaymentAmount || 0),
                                 ).toLocaleString()}
                               </span>
                             </div>

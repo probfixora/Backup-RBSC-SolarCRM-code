@@ -1,0 +1,1 @@
+ALTER TABLE public.cases ADD COLUMN IF NOT EXISTS final_payment_amount NUMERIC DEFAULT 0;

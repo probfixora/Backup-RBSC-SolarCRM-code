@@ -25,6 +25,12 @@ export default function PaymentTracker({ caseId, userRole, onRefresh }) {
         caseId,
       });
       setPayments(data || []);
+      if (data && data.length > 0) {
+        setPaymentData(prev => ({
+          ...prev,
+          paymentType: "final_installment"
+        }));
+      }
     } catch (err) {
       console.error("Failed to load payments:", err);
     } finally {
@@ -51,12 +57,6 @@ export default function PaymentTracker({ caseId, userRole, onRefresh }) {
         ...paymentData,
       });
       toast.success("Payment recorded successfully");
-      setPaymentData({
-        amount: "",
-        paymentDate: new Date().toISOString().split("T")[0],
-        paymentType: "first_installment",
-        notes: "",
-      });
       setShowAdd(false);
       fetchPayments();
       if (onRefresh) onRefresh();
