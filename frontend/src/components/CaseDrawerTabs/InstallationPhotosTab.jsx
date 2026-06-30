@@ -32,7 +32,7 @@ const InstallationPhotosTab = ({ ctx }) => {
     }
   };
 
-  const handleCapture = (e) => {
+  const handleCameraCapture = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -58,6 +58,43 @@ const InstallationPhotosTab = ({ ctx }) => {
       },
       { timeout: 15000, enableHighAccuracy: true }
     );
+  };
+
+  const handleGalleryUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    setUploading(true);
+    try {
+      const fileName = `${caseId}_InstallationPhoto_${Date.now()}`;
+      const filePath = `${caseId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("documents")
+        .upload(filePath, file, { contentType: file.type || "image/png" });
+      
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from("documents").getPublicUrl(filePath);
+      const publicUrl = urlData.publicUrl;
+
+      const newDocName = `INSTALLATION_PHOTO::Photo_${Date.now()}`;
+      const newDocs = { ...(normalized.documents || {}), [newDocName]: publicUrl };
+      
+      await edgeFetch(EDGE.workflow, {
+        action: "update_details",
+        caseId,
+        documents: newDocs
+      });
+
+      toast.success("Gallery photo uploaded successfully!");
+      onRefresh();
+    } catch (err) {
+      toast.error("Failed to upload gallery photo: " + err.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const processAndUploadImage = async (file, lat, lng) => {
@@ -326,14 +363,14 @@ const InstallationPhotosTab = ({ ctx }) => {
             accept="image/*" 
             capture="environment" 
             ref={fileInputCameraRef} 
-            onChange={handleCapture} 
+            onChange={handleCameraCapture} 
             style={{ display: "none" }} 
           />
           <input 
             type="file" 
             accept="image/*" 
             ref={fileInputGalleryRef} 
-            onChange={handleCapture} 
+            onChange={handleGalleryUpload} 
             style={{ display: "none" }} 
           />
           
