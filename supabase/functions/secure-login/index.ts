@@ -253,30 +253,7 @@ serve(async (req: Request) => {
   // ── STEP 5: Device tracking (max 3 concurrent devices) ───────────────────
   // deviceId was already parsed from the request body above
   if (deviceId) {
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const { data: activeSessions } = await supabaseAdmin
-      .from("active_sessions")
-      .select("device_id, last_active")
-      .eq("user_id", user.id)
-      .gte("last_active", oneHourAgo);
-
-    if (activeSessions) {
-      const otherDevices = activeSessions.filter(
-        (s: { device_id: string }) => s.device_id !== deviceId
-      );
-      
-      // If limit is reached, evict the oldest session instead of blocking login
-      if (otherDevices.length >= 3) {
-        otherDevices.sort((a: any, b: any) => new Date(a.last_active).getTime() - new Date(b.last_active).getTime());
-        const oldestDeviceId = otherDevices[0].device_id;
-        
-        await supabaseAdmin
-          .from("active_sessions")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("device_id", oldestDeviceId);
-      }
-    }
+    // Limit removed as per user request. We only track active sessions now.
 
     await supabaseAdmin.from("active_sessions").upsert(
       {

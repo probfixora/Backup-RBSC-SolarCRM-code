@@ -562,7 +562,7 @@ const Profile = ({ onLogout }) => {
                   <div style={{ display: "flex", gap: "10px", padding: "14px 18px", borderRadius: "8px", background: "#f0f9ff", border: "1px solid #bae6fd", marginBottom: "24px" }}>
                     <MonitorSmartphone style={{ width: "16px", height: "16px", color: "#0369a1", flexShrink: 0, marginTop: "2px" }} />
                     <p style={{ fontSize: "13px", color: "#075985", lineHeight: 1.5, margin: 0 }}>
-                      This shows the devices currently logged into your account. Up to 3 devices can be active at a time. The system will automatically log out your oldest device if you exceed this limit.
+                      This shows the devices currently logged into your account. You can log out of any unrecognized devices.
                     </p>
                   </div>
 
