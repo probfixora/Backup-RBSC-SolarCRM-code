@@ -500,14 +500,7 @@ const Cases = ({ onLogout }) => {
       ? Math.max(...myStages.map((s) => STAGE_ORDER.indexOf(s)))
       : -1;
 
-  const isAtMyStage = (c) => {
-    if (!myStages.includes(c.currentStage)) return false;
-    if (userRole === "banking" && c.currentStage === "Final Payment Collection") {
-      const userName = localStorage.getItem("name");
-      return c.assignedTo === userName || c.assigned_to === userName;
-    }
-    return true;
-  };
+  const isAtMyStage = (c) => myStages.includes(c.currentStage);
   const isPastMyStage = (c) => {
     if (userRole === "admin") return c.status === "Completed";
     if (myLastStageIdx < 0) return false;

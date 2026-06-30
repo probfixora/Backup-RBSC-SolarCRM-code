@@ -172,14 +172,9 @@ const Dashboard = ({
               const myLastIdx = Math.max(
                 ...myStages.map((s) => fullPipeline.indexOf(s)),
               );
-              const active = rawCases.filter((c) => {
-                const stage = c.current_stage ?? c.currentStage;
-                if (!myStages.includes(stage)) return false;
-                if (userRole === "banking" && stage === "Final Payment Collection") {
-                  return (c.assigned_to ?? c.assignedTo) === userName;
-                }
-                return true;
-              });
+              const active = rawCases.filter((c) =>
+                myStages.includes(c.current_stage ?? c.currentStage),
+              );
               const completed = rawCases.filter((c) => {
                 const idx = fullPipeline.indexOf(
                   c.current_stage ?? c.currentStage,
