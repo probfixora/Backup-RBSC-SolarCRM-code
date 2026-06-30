@@ -427,6 +427,44 @@ const FinanceTab = ({ ctx }) => {
                       </p>
                     </div>
                   </div>
+
+                  {fData.paymentType === "Loan" && (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "12px",
+                        marginTop: "16px",
+                        paddingTop: "16px",
+                        borderTop: "1px dashed #bbf7d0",
+                      }}
+                    >
+                      <div>
+                        <span style={{ fontSize: "11px", color: "#166534" }}>Loan Amount (₹)</span>
+                        <p style={{ fontSize: "14px", fontWeight: 700, color: "#14532d" }}>
+                          {fData.loanAmount ? `₹${Number(fData.loanAmount).toLocaleString()}` : "Not Set"}
+                        </p>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: "11px", color: "#166534" }}>First Installment (70%)</span>
+                        <p style={{ fontSize: "14px", fontWeight: 700, color: "#14532d" }}>
+                          {fData.loanApprovedAmount ? `₹${Number(fData.loanApprovedAmount).toLocaleString()}` : "Not Set"}
+                        </p>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: "11px", color: "#166534" }}>Approved Bank Name</span>
+                        <p style={{ fontSize: "14px", fontWeight: 700, color: "#14532d" }}>
+                          {fData.bankName || "Not Set"}
+                        </p>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: "11px", color: "#166534" }}>Final Payment (30%)</span>
+                        <p style={{ fontSize: "14px", fontWeight: 700, color: "#14532d" }}>
+                          {fData.finalPaymentAmount ? `₹${Number(fData.finalPaymentAmount).toLocaleString()}` : "Not Set"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>

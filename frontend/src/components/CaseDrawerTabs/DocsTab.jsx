@@ -243,15 +243,7 @@ const DocsTab = ({ ctx }) => {
                   if (role === "banking") {
                     if (docName.includes("Loan Approved Document")) return false;
                     const name = docName.toLowerCase();
-                    return (
-                      name.includes("pan") ||
-                      name.includes("aadhar") ||
-                      name.includes("bank") ||
-                      name.includes("cheque") ||
-                      name.includes("electricity") ||
-                      name.includes("receipt") ||
-                      name.includes("bill")
-                    );
+                    return name.includes("loan") || name.includes("finance");
                   }
 
                   const name = docName.toLowerCase();
