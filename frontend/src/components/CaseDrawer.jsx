@@ -663,9 +663,9 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       } else if (role === "inventory") {
         isVisible = name.includes("dispatch") || name.includes("challan") || name.includes("invoice") || name.includes("po") || name.includes("bill");
       } else if (role === "electrical") {
-        isVisible = name.includes("pan") || name.includes("aadhar") || name.includes("electricity") || name.includes("bill") || name.includes("electrical") || name.includes("photo") || name.includes("gps") || name.includes("site") || name.includes("layout") || name.includes("structure");
+        isVisible = !name.startsWith("electrical_doc::") && (name.includes("pan") || name.includes("aadhar") || name.includes("electricity") || name.includes("bill") || name.includes("electrical") || name.includes("photo") || name.includes("gps") || name.includes("site") || name.includes("layout") || name.includes("structure"));
       } else if (role === "technical") {
-        isVisible = name.startsWith("installation_photo::") || name.startsWith("tqa_doc::");
+        isVisible = name.startsWith("installation_photo::");
       }
     }
 

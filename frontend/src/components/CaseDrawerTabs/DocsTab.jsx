@@ -285,7 +285,8 @@ const DocsTab = ({ ctx }) => {
                     );
                   if (role === "electrical")
                     return (
-                      name.includes("pan") ||
+                      !name.startsWith("electrical_doc::") &&
+                      (name.includes("pan") ||
                       name.includes("aadhar") ||
                       name.includes("electricity") ||
                       name.includes("bill") ||
@@ -294,13 +295,10 @@ const DocsTab = ({ ctx }) => {
                       name.includes("gps") ||
                       name.includes("site") ||
                       name.includes("layout") ||
-                      name.includes("structure")
+                      name.includes("structure"))
                     );
                   if (role === "technical")
-                    return (
-                      name.startsWith("installation_photo::") ||
-                      name.startsWith("tqa_doc::")
-                    );
+                    return name.startsWith("installation_photo::");
                   return false;
                 });
 
