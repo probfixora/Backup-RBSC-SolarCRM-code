@@ -249,8 +249,6 @@ const DocsTab = ({ ctx }) => {
                       name.includes("bank") ||
                       name.includes("cheque") ||
                       name.includes("electricity") ||
-                      name.includes("finance") ||
-                      name.includes("loan") ||
                       name.includes("receipt") ||
                       name.includes("bill")
                     );
