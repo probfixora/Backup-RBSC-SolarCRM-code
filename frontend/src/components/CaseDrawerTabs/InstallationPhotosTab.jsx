@@ -61,7 +61,7 @@ const InstallationPhotosTab = ({ ctx }) => {
     let addressLine2 = "Address not available";
     
     try {
-      const res = await fetch(`https://us1.locationiq.com/v1/reverse?key=pk.dbe75ca4c4cd6a9244918349e28e1524&lat=${lat}&lon=${lng}&format=json`);
+      const res = await fetch(`https://us1.locationiq.com/v1/reverse?key=pk.dbe75ca4c4cd6a9244918349e28e1524&lat=${lat}&lon=${lng}&format=json&accept-language=en`);
       const data = await res.json();
       
       let city = "Unknown City";
@@ -78,7 +78,7 @@ const InstallationPhotosTab = ({ ctx }) => {
       
       // Try to get the nearest specific landmark to provide exact precision
       try {
-        const nearbyRes = await fetch(`https://us1.locationiq.com/v1/nearby?key=pk.dbe75ca4c4cd6a9244918349e28e1524&lat=${lat}&lon=${lng}&tag=amenity,building,landmark,office,shop,tourism,historic,leisure&radius=200&format=json`);
+        const nearbyRes = await fetch(`https://us1.locationiq.com/v1/nearby?key=pk.dbe75ca4c4cd6a9244918349e28e1524&lat=${lat}&lon=${lng}&tag=amenity,building,landmark,office,shop,tourism,historic,leisure&radius=200&format=json&accept-language=en`);
         const nearbyData = await nearbyRes.json();
         
         if (Array.isArray(nearbyData) && nearbyData.length > 0) {
