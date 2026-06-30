@@ -61,35 +61,19 @@ const InstallationPhotosTab = ({ ctx }) => {
     let addressLine2 = "Address not available";
     
     try {
-      const res = await fetch(`https://us1.locationiq.com/v1/reverse?key=pk.dbe75ca4c4cd6a9244918349e28e1524&lat=${lat}&lon=${lng}&format=json&accept-language=en`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`);
       const data = await res.json();
-      
-      let city = "Unknown City";
-      let state = "Unknown State";
       
       if (data && data.address) {
         const addr = data.address;
-        city = addr.city || addr.town || addr.village || addr.suburb || addr.county || "Unknown City";
-        state = addr.state || "Unknown State";
-        const country = addr.country || "India";
-        addressLine1 = `${city}, ${state}, ${country}`;
-        addressLine2 = data.display_name || addressLine2;
-      }
-      
-      // Try to get the nearest specific landmark to provide exact precision
-      try {
-        const nearbyRes = await fetch(`https://us1.locationiq.com/v1/nearby?key=pk.dbe75ca4c4cd6a9244918349e28e1524&lat=${lat}&lon=${lng}&tag=amenity,building,landmark,office,shop,tourism,historic,leisure&radius=200&format=json&accept-language=en`);
-        const nearbyData = await nearbyRes.json();
         
-        if (Array.isArray(nearbyData) && nearbyData.length > 0) {
-          const nearest = nearbyData[0];
-          if (nearest.name) {
-            addressLine1 = `${nearest.name}, ${city}, ${state}`;
-            addressLine2 = `${nearest.name}, ${addressLine2}`;
-          }
-        }
-      } catch (err) {
-        console.error("Nearby POI fetch error:", err);
+        // Find the most specific location name (road, suburb, village, etc)
+        const specificLocation = addr.road || addr.neighbourhood || addr.suburb || addr.residential || addr.village || addr.town || addr.city || "Unknown Location";
+        const cityOrDistrict = addr.city || addr.town || addr.county || addr.state_district || "Unknown City";
+        const state = addr.state || "Unknown State";
+        
+        addressLine1 = `${specificLocation}, ${cityOrDistrict}, ${state}`;
+        addressLine2 = data.display_name || "Address not available";
       }
 
     } catch (err) {
