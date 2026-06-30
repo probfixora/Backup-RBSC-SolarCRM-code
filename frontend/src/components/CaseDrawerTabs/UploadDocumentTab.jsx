@@ -8,15 +8,18 @@ const UploadDocumentTab = ({ ctx }) => {
     caseId,
     normalized,
     onRefresh,
-    canUpdate
+    canUpdate,
+    role
   } = ctx;
+
+  const docPrefix = role === "technical" ? "TQA_DOC::" : "ELECTRICAL_DOC::";
 
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Parse existing electrical documents from normalized.documents
+  // Parse existing documents based on role
   const allDocs = Object.entries(normalized.documents || {});
-  const uploadedDocs = allDocs.filter(([name]) => name.startsWith("ELECTRICAL_DOC::"));
+  const uploadedDocs = allDocs.filter(([name]) => name.startsWith(docPrefix));
 
   const triggerUpload = () => {
     if (fileInputRef.current) {
@@ -45,7 +48,7 @@ const UploadDocumentTab = ({ ctx }) => {
       const { data: urlData } = supabase.storage.from("documents").getPublicUrl(filePath);
       const publicUrl = urlData.publicUrl;
 
-      const newDocName = `ELECTRICAL_DOC::${file.name}`;
+      const newDocName = `${docPrefix}${file.name}`;
       const newDocs = { ...(normalized.documents || {}), [newDocName]: publicUrl };
       
       await edgeFetch(EDGE.workflow, {
@@ -100,7 +103,7 @@ const UploadDocumentTab = ({ ctx }) => {
           <div>
             <h4 style={{ margin: "0 0 6px 0", color: "#1e293b", fontSize: "14px" }}>Document Upload</h4>
             <p style={{ margin: 0, color: "#64748b", fontSize: "12px", maxWidth: "280px" }}>
-              Upload any required documents for net metering or electrical verification.
+              Upload any required documents for {role === "technical" ? "Technical QA inspection" : "net metering or electrical verification"}.
             </p>
           </div>
           
@@ -158,7 +161,7 @@ const UploadDocumentTab = ({ ctx }) => {
                   <FileText size={20} style={{ color: "#64748b" }} />
                 </div>
                 <span style={{ fontSize: "13px", fontWeight: 600, color: "#334155" }}>
-                  {docName.replace("ELECTRICAL_DOC::", "")}
+                  {docName.replace(docPrefix, "")}
                 </span>
               </div>
               <div style={{ display: "flex", gap: "8px" }}>

@@ -296,6 +296,11 @@ const DocsTab = ({ ctx }) => {
                       name.includes("layout") ||
                       name.includes("structure")
                     );
+                  if (role === "technical")
+                    return (
+                      name.startsWith("installation_photo::") ||
+                      name.startsWith("tqa_doc::")
+                    );
                   return false;
                 });
 

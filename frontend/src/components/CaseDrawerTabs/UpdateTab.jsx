@@ -308,6 +308,7 @@ const UpdateTab = ({ ctx }) => {
     setDispatchItems,
     setDispatchLoading,
     setDocStatuses,
+    setDocStatuses,
     setDownloadZipLoading,
     setFData,
     setFeedbackList,
@@ -347,6 +348,11 @@ const UpdateTab = ({ ctx }) => {
     unverifiedDocs,
     updateLoading
   } = ctx;
+
+  const hasTqaUploadError =
+    role === "technical" &&
+    normalized.currentStage === "Plant Activated" &&
+    !Object.keys(normalized.documents || {}).some(k => k.startsWith("TQA_DOC::"));
 
   const [photoUploading, setPhotoUploading] = useState(false);
   const photoInputRef = useRef(null);

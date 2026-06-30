@@ -169,7 +169,7 @@ const getTabs = (role, currentStage, isSpecialCase) => {
   if (isSpecialBankingOrAccounts && !tabs.find(t => t.id === "docs")) {
     tabs.push({ id: "docs", icon: FileText, label: "Documents" });
   }
-  if (role === "electrical" || role === "admin") {
+  if (role === "electrical" || role === "admin" || role === "technical") {
     tabs.push({ id: "upload_document", icon: UploadCloud, label: "Upload Document" });
   }
   if (role === "banking" || role === "admin" || (role === "registration" && currentStage === "Phone Verification Done")) {
