@@ -235,8 +235,27 @@ const DocsTab = ({ ctx }) => {
                 });
                 const docs = Object.entries(allDocsObj);
                 const visibleDocs = docs.filter(([docName]) => {
+                  if (role === "admin" || role === "registration") return true;
+                  if (role === "accounts") {
+                    // Accounts needs to see Loan Approved Documents, FINANCE_DOCs, and probably basic KYC
+                    if (docName.includes("Loan Approved Document")) return true;
+                    if (docName.startsWith("FINANCE_DOC::")) return true;
+                    const name = docName.toLowerCase();
+                    return (
+                      name.includes("pan") ||
+                      name.includes("aadhar") ||
+                      name.includes("bank") ||
+                      name.includes("cheque") ||
+                      name.includes("electricity") ||
+                      name.includes("receipt") ||
+                      name.includes("bill") ||
+                      name.includes("invoice") ||
+                      name.includes("po")
+                    );
+                  }
+
                   if (docName.startsWith("FINANCE_DOC::")) {
-                    return role === "banking" || role === "accounts" || role === "admin";
+                    return role === "banking";
                   }
 
                   const name = docName.toLowerCase();
@@ -250,7 +269,8 @@ const DocsTab = ({ ctx }) => {
                       name.includes("finance") ||
                       name.includes("loan") ||
                       name.includes("receipt") ||
-                      name.includes("bill")
+                      name.includes("bill") ||
+                      docName.includes("Loan Approved Document")
                     );
                   if (role === "field_installation")
                     return (
