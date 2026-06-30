@@ -302,7 +302,7 @@ const Profile = ({ onLogout }) => {
     <div style={{ display: "flex", minHeight: "100vh", background: "#f9fafb" }}>
       <Sidebar onLogout={onLogout} />
 
-      <main style={{ flex: 1, marginLeft: "var(--main-offset)", display: "flex", flexDirection: "column", height: "100vh" }}>
+      <main style={{ flex: 1, marginLeft: "var(--main-offset)", display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
         {/* ── Header ── */}
         <div style={{
           background: "linear-gradient(135deg, #1d3a6e 0%, #2563EB 100%)",
@@ -402,7 +402,7 @@ const Profile = ({ onLogout }) => {
           </div>
 
           {/* Right content */}
-          <div className="profile-content" style={{ flex: 1, overflowY: "auto", padding: "40px", background: "#f9fafb", minWidth: 0 }}>
+          <div className="profile-content" style={{ flex: 1, overflowY: "auto", padding: "40px", background: "#f9fafb", minWidth: 0, height: "100%" }}>
             <div style={{ maxWidth: "800px", margin: "0 auto", background: "#fff", padding: "32px", borderRadius: "12px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e5e7eb" }}>
               
               {activeTab === "profile" && (
