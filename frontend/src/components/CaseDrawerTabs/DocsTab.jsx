@@ -237,21 +237,7 @@ const DocsTab = ({ ctx }) => {
                 const visibleDocs = docs.filter(([docName]) => {
                   if (role === "admin" || role === "registration") return true;
                   if (role === "accounts") {
-                    // Accounts needs to see Loan Approved Documents, FINANCE_DOCs, and probably basic KYC
-                    if (docName.includes("Loan Approved Document")) return true;
-                    if (docName.startsWith("FINANCE_DOC::")) return true;
-                    const name = docName.toLowerCase();
-                    return (
-                      name.includes("pan") ||
-                      name.includes("aadhar") ||
-                      name.includes("bank") ||
-                      name.includes("cheque") ||
-                      name.includes("electricity") ||
-                      name.includes("receipt") ||
-                      name.includes("bill") ||
-                      name.includes("invoice") ||
-                      name.includes("po")
-                    );
+                    return docName.includes("Loan Approved Document");
                   }
 
                   if (docName.startsWith("FINANCE_DOC::")) {
