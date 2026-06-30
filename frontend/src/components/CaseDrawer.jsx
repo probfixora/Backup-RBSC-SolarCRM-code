@@ -1334,6 +1334,8 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     handleUpdateSubmit,
     hasDocError,
     hasFinanceError,
+    hasFinanceDetails,
+    hasLoanApprovedDoc,
     hasQuotationError,
     hasInstallationPhotoError,
     history,
