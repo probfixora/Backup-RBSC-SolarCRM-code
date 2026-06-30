@@ -699,10 +699,10 @@ const BankingDashboard = ({ onLogout }) => {
       // Only consider Loan cases for the Banking Dashboard
       const loanCases = data.filter((c) => (c.payment_type || "").toLowerCase() === "loan");
       setAllCases(loanCases);
-      // Show active cases currently in Bank & Finance stage
+      // Show active cases currently in Bank & Finance or Final Payment Collection stage
       const triageCases = loanCases.filter((c) => {
         const stage = c.current_stage || "";
-        return stage === "Bank & Finance";
+        return stage === "Bank & Finance" || stage === "Final Payment Collection";
       });
       setCases(triageCases);
     } catch {
@@ -723,20 +723,24 @@ const BankingDashboard = ({ onLogout }) => {
     "Sent to Store",
     "Installation Done",
     "Plant Activated",
+    "Final Payment Collection",
     "Subsidy Registration Completed",
     "Completed",
   ];
-  const bankIdx = STAGE_ORDER.indexOf("Bank & Finance");
+  const activeStages = ["Bank & Finance", "Final Payment Collection"];
 
   const totalProjects = allCases.length;
   const inProcess = allCases.filter(
-    (c) => STAGE_ORDER.indexOf(c.current_stage || "") === bankIdx,
+    (c) => activeStages.includes(c.current_stage || ""),
   ).length;
-  const completed = allCases.filter(
-    (c) =>
-      STAGE_ORDER.indexOf(c.current_stage || "") > bankIdx ||
-      c.status === "Completed",
-  ).length;
+  const completed = allCases.filter((c) => {
+    const stage = c.current_stage || "";
+    // If it's past Final Payment Collection or completed
+    return (
+      (STAGE_ORDER.indexOf(stage) > STAGE_ORDER.indexOf("Final Payment Collection")) ||
+      c.status === "Completed"
+    );
+  }).length;
   const redFlag = allCases.filter((c) => c.status === "Delayed").length;
 
   const overviewStats = {
