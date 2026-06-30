@@ -764,7 +764,6 @@ const FinanceTab = ({ ctx }) => {
                       </>
                     )}
 
-                    {fData.paymentType !== "Loan" && (
                       <div
                         style={{
                           display: "flex",
@@ -782,7 +781,6 @@ const FinanceTab = ({ ctx }) => {
                             : "Save Financial Details"}
                         </button>
                       </div>
-                    )}
                   </form>
 
                   {/* ── Loan Documents Upload Section ── */}
