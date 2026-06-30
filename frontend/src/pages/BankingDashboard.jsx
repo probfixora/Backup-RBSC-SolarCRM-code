@@ -611,13 +611,15 @@ const FinanceTableRow = ({ caseObj, onSave, mobileMode }) => {
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             {!isEditing ? (
               <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="btn btn-secondary btn-sm"
-                  style={{ padding: "6px 14px", fontSize: "12.5px" }}
-                >
-                  <Edit3 size={14} /> Edit
-                </button>
+                {formData.financeFormStatus !== "Loan Approved" && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="btn btn-secondary btn-sm"
+                    style={{ padding: "6px 14px", fontSize: "12.5px" }}
+                  >
+                    <Edit3 size={14} /> Edit
+                  </button>
+                )}
               </>
             ) : (
               <div style={{ display: "flex", gap: "6px" }}>
