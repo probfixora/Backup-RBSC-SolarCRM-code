@@ -63,14 +63,35 @@ const InstallationPhotosTab = ({ ctx }) => {
     try {
       const res = await fetch(`https://us1.locationiq.com/v1/reverse?key=pk.dbe75ca4c4cd6a9244918349e28e1524&lat=${lat}&lon=${lng}&format=json`);
       const data = await res.json();
+      
+      let city = "Unknown City";
+      let state = "Unknown State";
+      
       if (data && data.address) {
         const addr = data.address;
-        const city = addr.city || addr.town || addr.village || addr.suburb || addr.county || "Unknown City";
-        const state = addr.state || "Unknown State";
+        city = addr.city || addr.town || addr.village || addr.suburb || addr.county || "Unknown City";
+        state = addr.state || "Unknown State";
         const country = addr.country || "India";
         addressLine1 = `${city}, ${state}, ${country}`;
         addressLine2 = data.display_name || addressLine2;
       }
+      
+      // Try to get the nearest specific landmark to provide exact precision
+      try {
+        const nearbyRes = await fetch(`https://us1.locationiq.com/v1/nearby?key=pk.dbe75ca4c4cd6a9244918349e28e1524&lat=${lat}&lon=${lng}&tag=amenity,building,landmark,office,shop,tourism,historic,leisure&radius=200&format=json`);
+        const nearbyData = await nearbyRes.json();
+        
+        if (Array.isArray(nearbyData) && nearbyData.length > 0) {
+          const nearest = nearbyData[0];
+          if (nearest.name) {
+            addressLine1 = `${nearest.name}, ${city}, ${state}`;
+            addressLine2 = `${nearest.name}, ${addressLine2}`;
+          }
+        }
+      } catch (err) {
+        console.error("Nearby POI fetch error:", err);
+      }
+
     } catch (err) {
       console.error("Reverse geocoding error:", err);
     }
