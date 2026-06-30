@@ -13,15 +13,22 @@ const InstallationPhotosTab = ({ ctx }) => {
 
   const [uploading, setUploading] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
-  const fileInputRef = useRef(null);
+  const fileInputCameraRef = useRef(null);
+  const fileInputGalleryRef = useRef(null);
 
   // Parse existing installation photos from normalized.documents
   const allDocs = Object.entries(normalized.documents || {});
   const installationPhotos = allDocs.filter(([name]) => name.startsWith("INSTALLATION_PHOTO::"));
 
   const triggerCamera = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+    if (fileInputCameraRef.current) {
+      fileInputCameraRef.current.click();
+    }
+  };
+
+  const triggerGallery = () => {
+    if (fileInputGalleryRef.current) {
+      fileInputGalleryRef.current.click();
     }
   };
 
@@ -318,42 +325,80 @@ const InstallationPhotosTab = ({ ctx }) => {
             type="file" 
             accept="image/*" 
             capture="environment" 
-            ref={fileInputRef} 
+            ref={fileInputCameraRef} 
+            onChange={handleCapture} 
+            style={{ display: "none" }} 
+          />
+          <input 
+            type="file" 
+            accept="image/*" 
+            ref={fileInputGalleryRef} 
             onChange={handleCapture} 
             style={{ display: "none" }} 
           />
           
-          <button
-            onClick={triggerCamera}
-            disabled={uploading || geoLoading || !canUpdate}
-            style={{
-              marginTop: "8px",
-              padding: "10px 20px",
-              background: "linear-gradient(135deg, #4f46e5, #3b82f6)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              fontWeight: 600,
-              fontSize: "13px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              cursor: (uploading || geoLoading || !canUpdate) ? "not-allowed" : "pointer",
-              opacity: (uploading || geoLoading || !canUpdate) ? 0.7 : 1,
-              transition: "transform 0.15s",
-            }}
-          >
-            {geoLoading ? (
-              <>Fetching GPS...</>
-            ) : uploading ? (
-              <>Uploading...</>
-            ) : (
-              <>
-                <Camera size={18} />
-                Open GPS Camera
-              </>
-            )}
-          </button>
+          <div style={{ display: "flex", gap: "10px", marginTop: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+            <button
+              onClick={triggerCamera}
+              disabled={uploading || geoLoading || !canUpdate}
+              style={{
+                padding: "10px 20px",
+                background: "linear-gradient(135deg, #4f46e5, #3b82f6)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                fontWeight: 600,
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                cursor: (uploading || geoLoading || !canUpdate) ? "not-allowed" : "pointer",
+                opacity: (uploading || geoLoading || !canUpdate) ? 0.7 : 1,
+                transition: "transform 0.15s",
+              }}
+            >
+              {geoLoading ? (
+                <>Fetching GPS...</>
+              ) : uploading ? (
+                <>Uploading...</>
+              ) : (
+                <>
+                  <Camera size={18} />
+                  Camera
+                </>
+              )}
+            </button>
+            <button
+              onClick={triggerGallery}
+              disabled={uploading || geoLoading || !canUpdate}
+              style={{
+                padding: "10px 20px",
+                background: "#f1f5f9",
+                color: "#334155",
+                border: "1px solid #cbd5e1",
+                borderRadius: "8px",
+                fontWeight: 600,
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                cursor: (uploading || geoLoading || !canUpdate) ? "not-allowed" : "pointer",
+                opacity: (uploading || geoLoading || !canUpdate) ? 0.7 : 1,
+                transition: "transform 0.15s",
+              }}
+            >
+              {geoLoading ? (
+                <>Fetching GPS...</>
+              ) : uploading ? (
+                <>Uploading...</>
+              ) : (
+                <>
+                  <UploadCloud size={18} />
+                  Gallery
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
