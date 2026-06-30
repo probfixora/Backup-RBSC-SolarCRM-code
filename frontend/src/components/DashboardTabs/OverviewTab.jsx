@@ -791,6 +791,7 @@ const OverviewTab = ({ ctx }) => {
                         "Electrical Verification Done",
                         "Plant Activated",
                         "TQA Verified",
+                        "Final Payment Collection",
                         "Accounts Verified",
                         "Sent to Subsidy",
                         "Subsidy Registration Completed",

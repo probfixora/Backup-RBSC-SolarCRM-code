@@ -974,6 +974,32 @@ const FinanceTab = ({ ctx }) => {
                   )}
 
 
+                  {/* Final Payment Collection Banner */}
+                  {normalized.currentStage === "Final Payment Collection" && (
+                    <div
+                      style={{
+                        marginTop: "20px",
+                        padding: "16px",
+                        background: "#fffbeb",
+                        border: "1px solid #fcd34d",
+                        borderRadius: "10px",
+                        display: "flex",
+                        gap: "12px",
+                      }}
+                    >
+                      <AlertTriangle size={24} color="#d97706" style={{ flexShrink: 0 }} />
+                      <div>
+                        <h4 style={{ margin: "0 0 6px 0", color: "#92400e", fontSize: "14px", fontWeight: 700 }}>
+                          Final Payment Collection (30%)
+                        </h4>
+                        <p style={{ margin: 0, color: "#b45309", fontSize: "13px", lineHeight: 1.5 }}>
+                          The Technical QA inspection is complete. Please collect the remaining final payment (30%).
+                          Upload the payment proof document in the "Upload Document" tab (or above), and ensure you add the exact received amount in the <strong>Payment Tracker</strong> below before moving to the next stage.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Payment History Tracker (B.10) */}
                   {role !== "registration" && (
                     <PaymentTracker caseId={normalized.caseId} userRole={role} />

@@ -1433,7 +1433,7 @@ const UpdateTab = ({ ctx }) => {
 
                   {/* ── ADMIN: Special Case — Transfer directly to Subsidy ── */}
                   {role === "admin" && !isCompleted && (
-                    ["TQA Verified", "Accounts Verified", "Plant Activated"].includes(normalized.currentStage)
+                    ["TQA Verified", "Final Payment Collection", "Accounts Verified", "Plant Activated"].includes(normalized.currentStage)
                   ) && (
                     <SpecialCaseBypassSection
                       normalized={normalized}
