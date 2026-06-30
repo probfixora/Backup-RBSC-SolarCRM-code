@@ -256,7 +256,7 @@ serve(async (req: Request) => {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data: activeSessions } = await supabaseAdmin
       .from("active_sessions")
-      .select("device_id")
+      .select("device_id, last_active")
       .eq("user_id", user.id)
       .gte("last_active", oneHourAgo);
 
@@ -264,12 +264,17 @@ serve(async (req: Request) => {
       const otherDevices = activeSessions.filter(
         (s: { device_id: string }) => s.device_id !== deviceId
       );
+      
+      // If limit is reached, evict the oldest session instead of blocking login
       if (otherDevices.length >= 3) {
-        await supabaseAdmin.auth.admin.signOut(session.access_token);
-        return jsonResponse({
-          success: false,
-          message: "Maximum of 3 devices are already logged in. Please log out from another device first.",
-        });
+        otherDevices.sort((a: any, b: any) => new Date(a.last_active).getTime() - new Date(b.last_active).getTime());
+        const oldestDeviceId = otherDevices[0].device_id;
+        
+        await supabaseAdmin
+          .from("active_sessions")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("device_id", oldestDeviceId);
       }
     }
 

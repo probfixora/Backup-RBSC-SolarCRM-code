@@ -16,7 +16,8 @@ import {
   ChevronDown,
   Key,
   Save,
-  ArrowLeft
+  ArrowLeft,
+  MonitorSmartphone
 } from "lucide-react";
 import { SkeletonProfilePage } from "./SkeletonComponents";
 
@@ -37,6 +38,7 @@ const Profile = ({ onLogout }) => {
   const [confirmPw, setConfirmPw] = useState("");
 
   const [user, setUser] = useState({});
+  const [activeSessionsList, setActiveSessionsList] = useState([]);
   const [form, setForm] = useState({
     employeeId: "",
     email: "",
@@ -94,6 +96,18 @@ const Profile = ({ onLogout }) => {
         ifscCode: profile.ifsc_code || "",
         profilePhotoUrl: profile.profile_photo_url || "",
       });
+
+      // Fetch active sessions
+      const { data: sessions, error: sessionsErr } = await supabase
+        .from("active_sessions")
+        .select("*")
+        .eq("user_id", authUser.id)
+        .order("last_active", { ascending: false });
+      
+      if (!sessionsErr && sessions) {
+        setActiveSessionsList(sessions);
+      }
+      
     } catch (err) {
       console.error("Error fetching profile:", err);
       toast.error("Failed to load profile");
@@ -367,6 +381,7 @@ const Profile = ({ onLogout }) => {
             </p>
             {navItem("profile", User, "Edit Profile")}
             {navItem("bank", CreditCard, "Bank Information")}
+            {navItem("sessions", MonitorSmartphone, "Active Sessions")}
             
             <div style={{ flex: 1 }} />
             
@@ -536,6 +551,62 @@ const Profile = ({ onLogout }) => {
                     </button>
                   </div>
                 </form>
+              )}
+
+              {activeTab === "sessions" && (
+                <div>
+                  <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#111827", margin: "0 0 20px", textAlign: "center" }}>
+                    Active Sessions
+                  </h3>
+                  
+                  <div style={{ display: "flex", gap: "10px", padding: "14px 18px", borderRadius: "8px", background: "#f0f9ff", border: "1px solid #bae6fd", marginBottom: "24px" }}>
+                    <MonitorSmartphone style={{ width: "16px", height: "16px", color: "#0369a1", flexShrink: 0, marginTop: "2px" }} />
+                    <p style={{ fontSize: "13px", color: "#075985", lineHeight: 1.5, margin: 0 }}>
+                      This shows the devices currently logged into your account. Up to 3 devices can be active at a time. The system will automatically log out your oldest device if you exceed this limit.
+                    </p>
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {activeSessionsList.length === 0 ? (
+                      <p style={{ fontSize: "13px", color: "#6b7280", textAlign: "center" }}>No active sessions found.</p>
+                    ) : (
+                      activeSessionsList.map((session, index) => {
+                        const isCurrentDevice = session.device_id === localStorage.getItem("deviceId");
+                        return (
+                          <div key={session.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px", borderRadius: "8px", border: isCurrentDevice ? "2px solid #2563eb" : "1px solid #e5e7eb", background: isCurrentDevice ? "#eff6ff" : "#fff" }}>
+                            <div>
+                              <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 600, color: "#111827", display: "flex", alignItems: "center", gap: "8px" }}>
+                                Device {index + 1}
+                                {isCurrentDevice && <span style={{ fontSize: "11px", background: "#2563eb", color: "#fff", padding: "2px 6px", borderRadius: "4px" }}>Current</span>}
+                              </p>
+                              <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>
+                                Last active: {new Date(session.last_active).toLocaleString()}
+                              </p>
+                            </div>
+                            {!isCurrentDevice && (
+                              <button
+                                onClick={async () => {
+                                  if (window.confirm("Log out this device?")) {
+                                    try {
+                                      await supabase.from("active_sessions").delete().eq("id", session.id);
+                                      setActiveSessionsList(prev => prev.filter(s => s.id !== session.id));
+                                      toast.success("Device logged out successfully");
+                                    } catch(err) {
+                                      toast.error("Failed to log out device");
+                                    }
+                                  }
+                                }}
+                                style={{ background: "#fff1f2", color: "#be123c", border: "1px solid #fecdd3", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}
+                              >
+                                Log out
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
               )}
 
             </div>
