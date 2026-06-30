@@ -445,12 +445,9 @@ const AccountsTab = ({ ctx }) => {
                         : "—",
                     ],
                     [
-                      "EMI Amount",
-                      normalized.emiAmount
-                        ? `₹${Number(normalized.emiAmount).toLocaleString("en-IN")}`
-                        : "—",
+                      "Bank",
+                      normalized.bankName || "—",
                     ],
-                    ["Bank", normalized.bankName || "—"],
                   ].map(([label, val]) => (
                     <div key={label} style={{ fontSize: 12 }}>
                       <span style={{ color: "#64748b" }}>{label}: </span>

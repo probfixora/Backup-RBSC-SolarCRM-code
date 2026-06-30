@@ -1513,7 +1513,7 @@ serve(async (req: Request) => {
       if (!["admin", "accounts", "banking"].includes(user.role)) {
         return jsonResponse({ message: "Unauthorized" }, 403);
       }
-      const { caseId, paymentDate, amount, paymentType: pType, notes } = body;
+      const { caseId, paymentDate, amount, paymentType: pType, notes, paymentMode } = body;
       if (!caseId || !paymentDate || !amount) {
         return jsonResponse(
           { message: "caseId, paymentDate, and amount are required" },
@@ -1536,11 +1536,18 @@ serve(async (req: Request) => {
 
       if (pmtErr) throw pmtErr;
 
+      if (paymentMode) {
+        await supabase
+          .from("cases")
+          .update({ payment_mode: paymentMode })
+          .eq("id", caseId);
+      }
+
       await supabase.from("case_history").insert({
         case_id: caseId,
         updated_by: user.name,
         action_type: "payment_recorded",
-        remarks: `Payment of ₹${Number(amount).toLocaleString("en-IN")} recorded (${pType || "installment"}) on ${paymentDate}.`,
+        remarks: `Payment of ₹${Number(amount).toLocaleString("en-IN")} recorded (${pType || "installment"}) on ${paymentDate}. ${paymentMode ? `Mode: ${paymentMode}` : ""}`,
       });
 
       return jsonResponse(newPayment);

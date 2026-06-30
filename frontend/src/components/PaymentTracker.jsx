@@ -12,6 +12,7 @@ export default function PaymentTracker({ caseId, userRole, onRefresh }) {
     amount: "",
     paymentDate: new Date().toISOString().split("T")[0],
     paymentType: "first_installment",
+    paymentMode: "",
     notes: "",
   });
   const [saving, setSaving] = useState(false);
@@ -228,6 +229,37 @@ export default function PaymentTracker({ caseId, userRole, onRefresh }) {
               >
                 <option value="first_installment">First Installment</option>
                 <option value="final_installment">Final Installment</option>
+              </select>
+            </div>
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: "#065f46",
+                  marginBottom: "4px",
+                }}
+              >
+                Mode
+              </label>
+              <select
+                value={paymentData.paymentMode || ""}
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    paymentMode: e.target.value,
+                  })
+                }
+                className="input"
+              >
+                <option value="" disabled>Select</option>
+                <option value="Cash">Cash</option>
+                <option value="Cheque">Cheque</option>
+                <option value="Debit Card">Debit Card</option>
+                <option value="Credit Card">Credit Card</option>
+                <option value="UPI">UPI</option>
+                <option value="Bank Transfer">Bank Transfer</option>
               </select>
             </div>
             <div>
