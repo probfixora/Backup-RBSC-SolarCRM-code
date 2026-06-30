@@ -264,6 +264,7 @@ const UpdateTab = ({ ctx }) => {
     handleUpdateSubmit,
     hasDocError,
     hasFinanceError,
+    hasInstallationPhotoError,
     hasQuotationError,
     history,
     inventoryList,
@@ -871,7 +872,7 @@ const UpdateTab = ({ ctx }) => {
                       className="input"
                       style={{ minHeight: "100px", resize: "vertical" }}
                     />
-                    {hasDocError && (
+                    {hasInstallationPhotoError && (
                       <div
                         style={{
                           marginTop: "14px",
@@ -894,7 +895,7 @@ const UpdateTab = ({ ctx }) => {
                             flexShrink: 0,
                           }}
                         />
-                        Document not verified kindly verify first then proceed
+                        Kindly upload installation photos before proceeding.
                       </div>
                     )}
 
@@ -1313,16 +1314,16 @@ const UpdateTab = ({ ctx }) => {
                       <button
                         type="submit"
                         disabled={
-                          updateLoading || hasDocError || hasFinanceError
+                          updateLoading || hasDocError || hasFinanceError || hasInstallationPhotoError
                         }
                         className="btn btn-primary"
                         style={{
                           width: "100%",
                           display: "flex",
                           justifyContent: "center",
-                          opacity: hasDocError || hasFinanceError ? 0.6 : 1,
+                          opacity: hasDocError || hasFinanceError || hasInstallationPhotoError ? 0.6 : 1,
                           cursor:
-                            hasDocError || hasFinanceError
+                            hasDocError || hasFinanceError || hasInstallationPhotoError
                               ? "not-allowed"
                               : "pointer",
                         }}

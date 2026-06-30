@@ -639,8 +639,11 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     allDocsObj[d.doc_name] = d.doc_url;
   });
 
+  const hasDocsTab = TABS.some(t => t.id === "docs");
+
   const unverifiedDocs = Object.keys(allDocsObj).filter((docName) => {
     if (role === "admin") return false;
+    if (!hasDocsTab) return false;
 
     let isVisible = false;
     if (role === "banking") {
@@ -673,6 +676,10 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   });
 
   const hasDocError = unverifiedDocs.length > 0;
+
+  const hasInstallationPhotosTab = TABS.some(t => t.id === "installation_photos");
+  const installationPhotosCount = Object.keys(allDocsObj).filter(k => k.startsWith("INSTALLATION_PHOTO::")).length;
+  const hasInstallationPhotoError = hasInstallationPhotosTab && installationPhotosCount === 0;
   
   // Quotation must be verified before proceeding from registration stages
   const hasQuotationError = (isRegStage || isPhoneVerificationStage) && !normalized.quotationVerified;
@@ -724,6 +731,10 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       } else {
         toast.error("Please ensure all documents are verified before proceeding.");
       }
+      return;
+    }
+    if (hasInstallationPhotoError) {
+      toast.error("Please upload at least one installation photo before proceeding.");
       return;
     }
     if (hasQuotationError) {
@@ -1321,6 +1332,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
     hasDocError,
     hasFinanceError,
     hasQuotationError,
+    hasInstallationPhotoError,
     history,
     inventoryList,
     isBankingStage,
