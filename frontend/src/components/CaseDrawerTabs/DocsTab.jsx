@@ -240,24 +240,11 @@ const DocsTab = ({ ctx }) => {
                     return docName.includes("Loan Approved Document");
                   }
 
-                  if (docName.startsWith("FINANCE_DOC::")) {
-                    return role === "banking";
+                  if (role === "banking") {
+                    return docName.startsWith("FINANCE_DOC::") || docName.includes("Loan Approved Document");
                   }
 
                   const name = docName.toLowerCase();
-                  if (role === "banking")
-                    return (
-                      name.includes("pan") ||
-                      name.includes("aadhar") ||
-                      name.includes("bank") ||
-                      name.includes("cheque") ||
-                      name.includes("electricity") ||
-                      name.includes("finance") ||
-                      name.includes("loan") ||
-                      name.includes("receipt") ||
-                      name.includes("bill") ||
-                      docName.includes("Loan Approved Document")
-                    );
                   if (role === "field_installation")
                     return (
                       name.includes("photo") ||
