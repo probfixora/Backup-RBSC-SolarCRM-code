@@ -95,12 +95,11 @@ const LoanApprovedDocsTab = ({ ctx }) => {
         ? [...currentDocs, { name: docName, url: urlData.publicUrl, status: "Uploaded", uploaded_at: new Date().toISOString() }]
         : { ...currentDocs, [docName]: urlData.publicUrl };
 
-      const { error: dbError } = await supabase
-        .from("cases")
-        .update({ documents: newDocs })
-        .eq("id", caseId);
-
-      if (dbError) throw dbError;
+      await edgeFetch(EDGE.workflow, {
+        action: "update_details",
+        caseId,
+        documents: newDocs,
+      });
 
       // Mutate caseData directly so it survives tab switches without waiting for refresh cache
       if (caseData) {
@@ -139,12 +138,11 @@ const LoanApprovedDocsTab = ({ ctx }) => {
         delete newDocs[docNameToDelete];
       }
 
-      const { error: dbError } = await supabase
-        .from("cases")
-        .update({ documents: newDocs })
-        .eq("id", caseId);
-
-      if (dbError) throw dbError;
+      await edgeFetch(EDGE.workflow, {
+        action: "update_details",
+        caseId,
+        documents: newDocs,
+      });
 
       // Mutate caseData directly
       if (caseData) {
