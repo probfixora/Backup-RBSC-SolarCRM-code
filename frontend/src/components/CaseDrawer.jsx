@@ -61,6 +61,7 @@ import CustomerServiceTab from "./CaseDrawerTabs/CustomerServiceTab";
 import CustomerPortalTab from "./CaseDrawerTabs/CustomerPortalTab";
 import LoanApprovedDocsTab from "./CaseDrawerTabs/LoanApprovedDocsTab";
 import UploadDocumentTab from "./CaseDrawerTabs/UploadDocumentTab";
+import ItemDetailsTab from "./CaseDrawerTabs/ItemDetailsTab";
 
 const normalizeCase = (c) => ({
   ...c,
@@ -175,7 +176,7 @@ const getTabs = (role, currentStage, isSpecialCase) => {
   if (role === "electrical" || role === "admin" || role === "technical") {
     tabs.push({ id: "upload_document", icon: UploadCloud, label: "Upload Document" });
   }
-  if (role === "banking" || role === "admin" || (role === "registration" && currentStage === "Phone Verification Done")) {
+  if (role === "banking" || role === "admin") {
     tabs.push({ id: "loan_approved_docs", icon: FileCheck, label: "Loan Approved Document" });
   }
   if (role === "admin") {
@@ -192,6 +193,7 @@ const getTabs = (role, currentStage, isSpecialCase) => {
   }
   if (role === "inventory" || role === "admin") {
     tabs.push({ id: "dispatch", icon: Package, label: "Dispatch" });
+    tabs.push({ id: "item_details", icon: ClipboardList, label: "Item Details" });
   }
   if (role === "subsidy" || role === "admin") {
     tabs.push({ id: "subsidy", icon: FileCheck, label: "Subsidy" });
@@ -1550,6 +1552,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
           {activeTab === "history" && <HistoryTab ctx={ctx} />}
           {activeTab === "finance" && <FinanceTab ctx={ctx} />}
           {activeTab === "dispatch" && <DispatchTab ctx={ctx} />}
+          {activeTab === "item_details" && <ItemDetailsTab ctx={ctx} />}
           {activeTab === "subsidy" && <SubsidyTab ctx={ctx} />}
           {activeTab === "work_order" && <WorkOrderTab ctx={ctx} />}
           {activeTab === "feedback" && <FeedbackTab ctx={ctx} />}

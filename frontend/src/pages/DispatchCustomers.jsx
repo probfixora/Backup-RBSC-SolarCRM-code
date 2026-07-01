@@ -86,10 +86,13 @@ export default function DispatchCustomers({ onLogout }) {
         (t.transaction_type === "stock_out" && !t.dispatch_type),
     )
     .forEach((tx) => {
-      const nameStr = tx.notes?.replace("B2C dispatch for ", "") || "";
-      const name =
-        nameStr.split(" - ")[0] || tx.case_id || "Residential Customer";
       const caseInfo = tx.case_id ? b2cDetails[tx.case_id] : null;
+      // Prefer actual customer_name from cases table; fall back to notes parsing
+      const name =
+        caseInfo?.customer_name ||
+        tx.notes?.replace("B2C dispatch for ", "").split(" - ")[0] ||
+        tx.case_id ||
+        "Residential Customer";
 
       if (!b2cCustomers[name])
         b2cCustomers[name] = { txns: [], totalQty: 0, caseInfo };

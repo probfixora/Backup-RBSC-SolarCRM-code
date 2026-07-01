@@ -1,7 +1,6 @@
 import React from "react";
 import {
   Package,
-  DollarSign,
   TrendingDown,
   AlertTriangle,
   Truck,
@@ -21,7 +20,6 @@ const TopCards = ({ ctx }) => {
 
   const cardsData = [
     { label: "Total Items", value: totalItems, icon: Package, color: "#2563EB" },
-    { label: "Stock Value", value: `₹${totalStockValue.toLocaleString()}`, icon: DollarSign, color: "#10b981" },
     { label: "Low Stock", value: lowStockItems.length, icon: TrendingDown, color: "#f59e0b" },
     { label: "Out of Stock", value: outOfStockItems.length, icon: AlertTriangle, color: "#ef4444" },
     { label: "B2C Dispatches", value: b2cDispatches, icon: Truck, color: "#8b5cf6" },

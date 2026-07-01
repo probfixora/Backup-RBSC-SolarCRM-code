@@ -14,27 +14,37 @@ export default function B2CDispatchPortal({ onLogout }) {
   const fetchDispatchCases = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("cases")
+      // Fetch from inventory_dispatches (where dispatches are actually saved)
+      const { data: dispatches, error: dErr } = await supabase
+        .from("inventory_dispatches")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      
-      // Dispatched History: dispatched_items is an array with items
-      const dispatchedData = data.filter(c => {
-        if (!c.dispatched_items) return false;
-        if (Array.isArray(c.dispatched_items) && c.dispatched_items.length > 0) return true;
-        // In case it's a string
-        if (typeof c.dispatched_items === "string" && c.dispatched_items.length > 5) return true;
-        return false;
-      }).sort((a, b) => {
-        const dateA = a.dispatch_date ? new Date(a.dispatch_date).getTime() : 0;
-        const dateB = b.dispatch_date ? new Date(b.dispatch_date).getTime() : 0;
-        return dateB - dateA; // Descending
+      if (dErr) throw dErr;
+
+      // Fetch all cases to get customer info for each dispatch
+      const { data: casesData } = await supabase
+        .from("cases")
+        .select("id, tracking_id, customer_name, current_stage, assigned_to, phone, address");
+
+      const caseMap = {};
+      (casesData || []).forEach((c) => {
+        caseMap[c.id] = c;
       });
 
-      setDispatchedCases(dispatchedData);
+      // Merge dispatch records with case info
+      const merged = (dispatches || []).map((d) => {
+        const caseInfo = d.case_id ? caseMap[d.case_id] : null;
+        return {
+          ...d,
+          tracking_id: caseInfo?.tracking_id || d.case_id || "—",
+          customer_name: caseInfo?.customer_name || "B2C Customer",
+          current_stage: caseInfo?.current_stage || "—",
+          assigned_to: caseInfo?.assigned_to || "—",
+        };
+      });
+
+      setDispatchedCases(merged);
     } catch (err) {
       toast.error("Failed to load dispatch data");
       console.error(err);
@@ -177,28 +187,28 @@ export default function B2CDispatchPortal({ onLogout }) {
                             {c.customer_name}
                           </td>
                           <td style={{ fontWeight: 500, color: "var(--text-2)" }}>
-                            {c.assigned_to || c.assignedTo || "—"}
+                             {c.dispatched_by || c.assigned_to || "—"}
                           </td>
                           <td>
-                            <span
-                              style={{
-                                padding: "4px 8px",
-                                borderRadius: 12,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                background: "#eff6ff",
-                                color: "#1d4ed8",
-                              }}
-                            >
-                              {c.current_stage || c.currentStage || "—"}
-                            </span>
-                          </td>
-                          <td style={{ fontWeight: 500, color: "var(--text-2)" }}>
-                            {c.dispatch_date ? new Date(c.dispatch_date).toLocaleDateString() : "N/A"}
-                          </td>
-                          <td style={{ fontSize: "13px" }}>
-                            <div>{c.dispatch_vehicle || "No Vehicle"}</div>
-                            <div style={{ color: "var(--text-3)", fontSize: "12px", marginTop: "2px" }}>{c.dispatch_driver || "No Driver"}</div>
+                             <span
+                               style={{
+                                 padding: "4px 8px",
+                                 borderRadius: 12,
+                                 fontSize: 11,
+                                 fontWeight: 700,
+                                 background: c.status === "Dispatched" ? "#dcfce7" : "#eff6ff",
+                                 color: c.status === "Dispatched" ? "#16a34a" : "#1d4ed8",
+                               }}
+                             >
+                               {c.status || c.current_stage || "Dispatched"}
+                             </span>
+                           </td>
+                           <td style={{ fontWeight: 500, color: "var(--text-2)" }}>
+                             {c.created_at ? new Date(c.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "N/A"}
+                           </td>
+                           <td style={{ fontSize: "13px" }}>
+                             <div>{c.vehicle_number || "No Vehicle"}</div>
+                             <div style={{ color: "var(--text-3)", fontSize: "12px", marginTop: "2px" }}>{c.driver_name || "No Driver"}</div>
                           </td>
                           <td style={{ textAlign: "right" }}>
                             <button
@@ -253,11 +263,11 @@ export default function B2CDispatchPortal({ onLogout }) {
                                     </table>
                                   </div>
                                 )}
-                                {c.dispatch_notes && (
-                                  <div style={{ marginTop: "16px", padding: "10px 12px", background: "#fef9c3", borderRadius: "6px", fontSize: "13px", color: "#854d0e", border: "1px solid #fde047" }}>
-                                    <strong style={{ display: "block", marginBottom: "4px" }}>Notes:</strong> {c.dispatch_notes}
-                                  </div>
-                                )}
+                                {c.notes && (
+                                   <div style={{ marginTop: "16px", padding: "10px 12px", background: "#fef9c3", borderRadius: "6px", fontSize: "13px", color: "#854d0e", border: "1px solid #fde047" }}>
+                                     <strong style={{ display: "block", marginBottom: "4px" }}>Notes:</strong> {c.notes}
+                                   </div>
+                                 )}
                               </div>
                             </td>
                           </tr>

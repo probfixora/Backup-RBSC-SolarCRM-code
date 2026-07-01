@@ -8,7 +8,6 @@ import {
   Package,
   TrendingDown,
   AlertTriangle,
-  DollarSign,
   Building,
   Truck,
   CheckCircle,
@@ -166,13 +165,6 @@ export default function ProcurementDashboard({ onLogout }) {
       icon: Package,
       color: "#2563EB",
       bg: "#eff6ff",
-    },
-    {
-      label: "Stock Value",
-      value: `₹${totalValue.toLocaleString("en-IN")}`,
-      icon: DollarSign,
-      color: "#10b981",
-      bg: "#ecfdf5",
     },
     {
       label: "In Stock",
