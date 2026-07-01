@@ -146,26 +146,88 @@ const HistoryTab = ({ ctx }) => {
     updateLoading
   } = ctx;
 
+  const handleDownloadCustomerHistory = () => {
+    if (!history || history.length === 0) {
+      toast.error("No history to download.");
+      return;
+    }
+    const headers = [
+      "Timestamp",
+      "Action",
+      "Stage",
+      "Department",
+      "Employee",
+      "Notes"
+    ];
+    
+    const rows = history.map((entry) => {
+      const ts = entry.created_at || entry.timestamp;
+      const dateStr = ts ? new Date(ts).toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      }) : "";
+      
+      const action = entry.action_type || "stage_update";
+      const stage = entry.stage || "";
+      const dept = entry.department || "System";
+      const emp = entry.updated_by || entry.updatedBy || "Unknown";
+      const notes = entry.remarks || entry.notes || "";
+      
+      return [
+        dateStr,
+        action,
+        stage,
+        dept,
+        emp,
+        notes.replace(/"/g, '""')
+      ].map(v => `"${v}"`);
+    });
+    
+    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const custId = normalized.customerId || normalized.caseId || "unknown";
+    link.download = `Case_History_${custId}_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("History downloaded successfully");
+  };
+
   return (
     <div>
-              <p
-                style={{
-                  fontSize: "11.5px",
-                  fontWeight: 700,
-                  color: "var(--text-4)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                  marginBottom: "16px",
-                }}
-              >
-                Full stage history
-              </p>
-              <CaseTimeline
-                caseId={normalized.caseId}
-                history={history}
-                currentStage={normalized.currentStage}
-              />
-            </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <p
+          style={{
+            fontSize: "11.5px",
+            fontWeight: 700,
+            color: "var(--text-4)",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            margin: 0,
+          }}
+        >
+          Full stage history
+        </p>
+        <button
+          onClick={handleDownloadCustomerHistory}
+          className="btn btn-secondary btn-sm"
+          style={{ display: "flex", alignItems: "center", gap: "6px" }}
+        >
+          <Download size={14} /> Download History
+        </button>
+      </div>
+      <CaseTimeline
+        caseId={normalized.caseId}
+        history={history}
+        currentStage={normalized.currentStage}
+      />
+    </div>
   );
 };
 

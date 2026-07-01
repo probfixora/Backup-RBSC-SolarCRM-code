@@ -191,6 +191,11 @@ function App() {
           .eq("device_id", deviceId)
           .maybeSingle();
         
+        if (error) {
+          console.error("Heartbeat error (ignored):", error);
+          return;
+        }
+
         if (!activeSession) {
           await supabase.auth.signOut();
           const savedDeviceId = localStorage.getItem("deviceId");
@@ -211,6 +216,7 @@ function App() {
         
       } catch (err) {
         // Silent fail - network issues shouldn't force logout
+        console.error("Heartbeat catch error:", err);
       }
     };
 

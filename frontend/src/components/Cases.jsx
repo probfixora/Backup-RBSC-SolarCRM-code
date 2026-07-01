@@ -330,14 +330,19 @@ const Cases = ({ onLogout }) => {
     toast.loading("Preparing export…", { id: "csv-export" });
     try {
       // Fetch case_history for all visible cases in one query
-      const caseIds = filteredCases.map((c) => c.id || c.case_id).filter(Boolean);
+      const caseIds = filteredCases.map((c) => c.caseId || c.id || c.case_id).filter(Boolean);
       let historyMap = {};
       if (caseIds.length > 0) {
-        const { data: histRows } = await supabase
+        const { data: histRows, error } = await supabase
           .from("case_history")
-          .select("case_id, stage, department, updated_by, action_type, remarks, created_at")
+          .select("case_id, stage, department, updated_by, action_type, notes, timestamp")
           .in("case_id", caseIds)
-          .order("created_at", { ascending: true });
+          .order("timestamp", { ascending: true });
+        
+        if (error) {
+          console.error("Error fetching case history:", error);
+        }
+
         (histRows || []).forEach((h) => {
           if (!historyMap[h.case_id]) historyMap[h.case_id] = [];
           historyMap[h.case_id].push(h);
@@ -361,15 +366,15 @@ const Cases = ({ onLogout }) => {
 
       const rows = [];
       for (const c of filteredCases) {
-        const cid = c.id || c.case_id;
+        const cid = c.caseId || c.id || c.case_id;
         const history = historyMap[cid] || [];
         
         let historyStr = "";
         if (history.length > 0) {
           historyStr = history
             .map((h) => {
-              const updateDate = h.created_at
-                ? new Date(h.created_at).toLocaleString("en-IN", {
+              const updateDate = h.timestamp
+                ? new Date(h.timestamp).toLocaleString("en-IN", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
@@ -381,7 +386,7 @@ const Cases = ({ onLogout }) => {
               const dept = h.department || "System";
               const emp = h.updated_by || "Unknown";
               const action = h.action_type || h.stage || "";
-              const remark = h.remarks ? ` - ${h.remarks}` : "";
+              const remark = h.notes ? ` - ${h.notes}` : "";
               return `[${dept}] ${action} by ${emp} on ${updateDate}${remark}`;
             })
             .join("  |  ");
