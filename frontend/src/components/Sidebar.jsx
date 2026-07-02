@@ -59,9 +59,14 @@ const getMobileNav = (role, dashPath) => {
     icon: "ti ti-circle-plus",
   };
   const dispatch = {
-    name: "Dispatch",
+    name: "Dispatch (B2C)",
     path: "/b2c-dispatch",
     icon: "ti ti-truck-delivery",
+  };
+  const dispatchB2B = {
+    name: "Dispatch (B2B)",
+    path: "/dispatch-customers",
+    icon: "ti ti-truck-loading",
   };
   const procure = {
     name: "Procure",
@@ -86,7 +91,7 @@ const getMobileNav = (role, dashPath) => {
     sales: [home, quote, quotes, clients],
     registration: [home, newCase, clients, support],
     banking: [home, finance, clients, support],
-    inventory: [home, dispatch, procure, clients],
+    inventory: [home, dispatch, dispatchB2B, procure, clients],
     field_installation: [home, clients, track, support],
     electrical: [home, clients, support, support],
     subsidy: [home, clients, support, support],
@@ -127,7 +132,8 @@ const NAV = {
       group: "ERP",
       items: [
         { name: "Procurement", path: "/procurement-portal" },
-        { name: "Dispatch", path: "/b2c-dispatch" },
+        { name: "Dispatch (B2C)", path: "/b2c-dispatch" },
+        { name: "Dispatch (B2B)", path: "/dispatch-customers" },
         { name: "Audit Log", path: "/audit-log" },
       ],
     },
@@ -224,7 +230,8 @@ const getRoleGroups = (role) => {
         items: [
           { name: "Dashboard", path: dashMap[role] || "/admin-dashboard" },
           { name: "Customers", path: "/cases" },
-          { name: "Dispatch", path: "/b2c-dispatch" },
+          { name: "Dispatch (B2C)", path: "/b2c-dispatch" },
+          { name: "Dispatch (B2B)", path: "/dispatch-customers" },
           { name: "Procurement", path: "/procurement-portal" },
           { name: "Tracking", path: "/track", external: true },
         ],
