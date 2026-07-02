@@ -258,6 +258,46 @@ function buildItemsFromSpecs(specs) {
     });
   }
 
+  rows.push({
+    description: "Wiring",
+    brand: "",
+    capacity: s.wiring || s.wireCoreM || "4 Square MM (Polycab/Havells/KEI) (Copper - Armoured)",
+    quantity: "-",
+    warranty: "-",
+  });
+
+  rows.push({
+    description: "Earthing",
+    brand: "",
+    capacity: s.earthing ? String(s.earthing) : "2.5",
+    quantity: "-",
+    warranty: "-",
+  });
+
+  rows.push({
+    description: "Earth Cable",
+    brand: "",
+    capacity: s.earthCable || s.earth_cable || "2.5 sq mm",
+    quantity: "-",
+    warranty: "-",
+  });
+
+  rows.push({
+    description: "Installation and Net Metering",
+    brand: "",
+    capacity: s.installation || "Included",
+    quantity: "-",
+    warranty: "-",
+  });
+
+  rows.push({
+    description: "BOS (Balance of System)",
+    brand: "",
+    capacity: s.bos || "Complete Set",
+    quantity: "Set 1",
+    warranty: "-",
+  });
+
   return rows;
 }
 
@@ -303,6 +343,46 @@ function buildItemsFromQuotation(q) {
       warranty: "-",
     });
   }
+
+  rows.push({
+    description: "Wiring",
+    brand: "",
+    capacity: q.wiring || "4 Square MM (Polycab/Havells/KEI) (Copper - Armoured)",
+    quantity: "-",
+    warranty: "-",
+  });
+
+  rows.push({
+    description: "Earthing",
+    brand: "",
+    capacity: q.earthing ? String(q.earthing) : "2.5",
+    quantity: "-",
+    warranty: "-",
+  });
+
+  rows.push({
+    description: "Earth Cable",
+    brand: "",
+    capacity: q.earthCable || q.earth_cable || "2.5 sq mm",
+    quantity: "-",
+    warranty: "-",
+  });
+
+  rows.push({
+    description: "Installation and Net Metering",
+    brand: "",
+    capacity: q.installation || "Included",
+    quantity: "-",
+    warranty: "-",
+  });
+
+  rows.push({
+    description: "BOS (Balance of System)",
+    brand: "",
+    capacity: q.bos || "Complete Set",
+    quantity: "Set 1",
+    warranty: "-",
+  });
 
   return rows;
 }
