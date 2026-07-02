@@ -52,25 +52,26 @@ const getKw = (q) => {
   return 0;
 };
 
-const getLoanRequiredDocs = (kw, profile) => {
-  if (kw <= 3) return LOAN_BASE_DOCS;
-  return [
-    ...LOAN_BASE_DOCS,
-    ...(profile === "Business" ? LOAN_PROFILE_BIZ_DOCS : LOAN_PROFILE_JOB_DOCS),
-  ];
-};
+const getLoanBaseDocs = () => LOAN_BASE_DOCS;
+
+const getLoanProfileDocs = (profile) =>
+  profile === "Business" ? LOAN_PROFILE_BIZ_DOCS : LOAN_PROFILE_JOB_DOCS;
 
 // Determine mandatory docs based on payment mode
+// For loan >3kW: base mandatory + all profile docs are mandatory
 const getMandatoryDocs = (paymentMode, kw, profile) => {
   if (paymentMode === "Cash") return CASH_MANDATORY_DOCS;
-  return getLoanRequiredDocs(kw, profile).filter(
-    (d) => !LOAN_OPTIONAL_DOCS.includes(d),
-  );
+  const baseMandatory = LOAN_BASE_DOCS.filter((d) => !LOAN_OPTIONAL_DOCS.includes(d));
+  if (kw > 3) {
+    return [...baseMandatory, ...getLoanProfileDocs(profile)];
+  }
+  return baseMandatory;
 };
 
-const getAllDocs = (paymentMode, kw, profile) => {
+// Base docs only — profile docs are rendered in a separate section below
+const getAllBaseDocs = (paymentMode) => {
   if (paymentMode === "Cash") return [...CASH_MANDATORY_DOCS, ...CASH_OPTIONAL_DOCS];
-  return getLoanRequiredDocs(kw, profile);
+  return LOAN_BASE_DOCS;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -136,8 +137,8 @@ const ApprovedQuotations = ({ onLogout }) => {
 
   // Derived
   const kw = selectedQuotation ? getKw(selectedQuotation) : 0;
-  const isAbove4kw = kw >= 4;
-  const allDocs = paymentMode ? getAllDocs(paymentMode, kw, profile) : [];
+  const isAbove3kw = kw > 3; // profile docs required above 3kW
+  const baseDocs = paymentMode ? getAllBaseDocs(paymentMode) : [];
   const mandatoryDocs = paymentMode ? getMandatoryDocs(paymentMode, kw, profile) : [];
 
   const uploaded = mandatoryDocs.filter(
@@ -814,8 +815,8 @@ const ApprovedQuotations = ({ onLogout }) => {
               {/* ── Documents Section (only shown after payment mode selected) ── */}
               {paymentMode && (
                 <>
-                  {/* Loan: Profile Selector (4kW+) */}
-                  {paymentMode === "Loan" && isAbove4kw && (
+                  {/* Loan: Profile Selector (>3kW) */}
+                  {paymentMode === "Loan" && isAbove3kw && (
                     <div
                       style={{
                         marginBottom: "16px",
@@ -897,7 +898,7 @@ const ApprovedQuotations = ({ onLogout }) => {
                       marginBottom: "20px",
                     }}
                   >
-                    {allDocs.map((doc, idx) => {
+                    {baseDocs.map((doc, idx) => {
                       const isMandatory = mandatoryDocs.includes(doc);
                       return (
                         <DocRow
@@ -917,8 +918,8 @@ const ApprovedQuotations = ({ onLogout }) => {
                       );
                     })}
 
-                    {/* Loan: profile-specific docs (>4kW) */}
-                    {paymentMode === "Loan" && isAbove4kw && (
+                    {/* Loan: profile-specific docs (>3kW) */}
+                    {paymentMode === "Loan" && isAbove3kw && (
                       <>
                         <p
                           style={{
