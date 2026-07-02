@@ -1624,6 +1624,45 @@ serve(async (req: Request) => {
       return jsonResponse({ inventory: invData, quotationSpecs });
     }
 
+    // ── GET B2C DISPATCHES ──────────────────────────────────────────────────
+    if (action === "get_b2c_dispatches") {
+      if (
+        user.role !== "admin" &&
+        user.role !== "store" &&
+        user.role !== "inventory"
+      ) {
+        return jsonResponse({ message: "Unauthorized" }, 403);
+      }
+
+      const { data: dispatches, error: dErr } = await supabase
+        .from("inventory_dispatches")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (dErr) throw dErr;
+
+      const { data: casesData } = await supabase
+        .from("cases")
+        .select("id, tracking_id, customer_name, current_stage, assigned_to, phone, address");
+
+      const caseMap: Record<string, any> = {};
+      (casesData || []).forEach((c) => {
+        caseMap[c.id] = c;
+      });
+
+      const merged = (dispatches || []).map((d) => {
+        const caseInfo = d.case_id ? caseMap[d.case_id] : null;
+        return {
+          ...d,
+          tracking_id: caseInfo?.tracking_id || d.case_id || "—",
+          customer_name: caseInfo?.customer_name || "B2C Customer",
+          current_stage: caseInfo?.current_stage || "—",
+          assigned_to: caseInfo?.assigned_to || "—",
+        };
+      });
+
+      return jsonResponse(merged);
+    }
+
     // ── DISPATCH MATERIALS ──────────────────────────────────────────────────
     if (action === "dispatch_materials") {
       if (

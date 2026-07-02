@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase, edgeFetch, EDGE } from "../lib/supabaseClient";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -14,40 +14,12 @@ export default function B2CDispatchPortal({ onLogout }) {
   const fetchDispatchCases = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch from inventory_dispatches (where dispatches are actually saved)
-      const { data: dispatches, error: dErr } = await supabase
-        .from("inventory_dispatches")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (dErr) throw dErr;
-
-      // Fetch all cases to get customer info for each dispatch
-      const { data: casesData } = await supabase
-        .from("cases")
-        .select("id, tracking_id, customer_name, current_stage, assigned_to, phone, address");
-
-      const caseMap = {};
-      (casesData || []).forEach((c) => {
-        caseMap[c.id] = c;
-      });
-
-      // Merge dispatch records with case info
-      const merged = (dispatches || []).map((d) => {
-        const caseInfo = d.case_id ? caseMap[d.case_id] : null;
-        return {
-          ...d,
-          tracking_id: caseInfo?.tracking_id || d.case_id || "—",
-          customer_name: caseInfo?.customer_name || "B2C Customer",
-          current_stage: caseInfo?.current_stage || "—",
-          assigned_to: caseInfo?.assigned_to || "—",
-        };
-      });
-
+      const merged = await edgeFetch(EDGE.workflow, { action: "get_b2c_dispatches" });
       setDispatchedCases(merged);
     } catch (err) {
       toast.error("Failed to load dispatch data");
       console.error(err);
+      setDispatchedCases([]);
     } finally {
       setLoading(false);
     }
