@@ -1096,6 +1096,7 @@ serve(async (req: any) => {
           // ── Quotation reference & amount auto-filled from quotation ─────────
           quotation_id_ref: q.quotation_id || q.id || "",
           quotation_amount: Number(q.product_price || q.total_amount || 0),
+          quotation_pdf_url: q.pdf_url || "",
           // ────────────────────────────────────────────────────────────────────
         })
         .select()

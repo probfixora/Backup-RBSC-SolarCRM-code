@@ -109,6 +109,7 @@ const normalizeCase = (c) => ({
     c.product_price ??
     0,
   quotationIdRef: c.quotation_id_ref ?? c.quotationIdRef ?? "",
+  quotationPdfUrl: c.quotation_pdf_url ?? c.quotationPdfUrl ?? "",
   quotationVerified: c.quotation_verified ?? c.quotationVerified ?? false,
   financeVerified: c.finance_verified ?? c.financeVerified ?? false,
   accountsVerified: c.accounts_verified ?? c.accountsVerified ?? false,
@@ -1461,6 +1462,21 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
             </div>
             
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              {/* Quotation PDF download — shown when case has a quotation reference */}
+              {(normalized.quotationPdfUrl || normalized.quotationIdRef) && (
+                <a
+                  href={
+                    normalized.quotationPdfUrl ||
+                    `https://rgipmrviqapxxilsiclm.supabase.co/storage/v1/object/public/Quotations/${normalized.quotationIdRef}/Quotation_${normalized.quotationIdRef}.pdf`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: "flex", alignItems: "center", gap: "4px", backgroundColor: "rgba(99,102,241,0.25)", border: "1px solid rgba(165,180,252,0.4)", color: "#c7d2fe", padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", textDecoration: "none" }}
+                  title={`Download Quotation — ${normalized.quotationIdRef}`}
+                >
+                  <Download size={14} /> Quotation
+                </a>
+              )}
               <button style={{ display: "flex", alignItems: "center", gap: "4px", backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#ffffff", padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }} onClick={handleDownloadPDF}>
                 <Download size={14} /> PDF
               </button>
