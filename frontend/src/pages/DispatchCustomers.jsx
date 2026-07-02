@@ -19,7 +19,7 @@ import autoTable from "jspdf-autotable";
 export default function DispatchCustomers({ onLogout }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); // 'all' | 'b2b' | 'b2c'
+  const [filter, setFilter] = useState("b2b"); // Hardcoded to 'b2b' for B2B portal
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   // For B2C cases details
@@ -262,41 +262,14 @@ export default function DispatchCustomers({ onLogout }) {
                   display: "flex",
                   background: "var(--surface-2)",
                   borderRadius: 10,
-                  padding: 4,
+                  padding: 8,
                   gap: 2,
+                  justifyContent: "center",
                 }}
               >
-                {[
-                  { key: "all", label: "All" },
-                  { key: "b2b", label: "B2B" },
-                  { key: "b2c", label: "B2C" },
-                ].map(({ key, label }) => (
-                  <button
-                    key={key}
-                    onClick={() => setFilter(key)}
-                    style={{
-                      flex: 1,
-                      padding: "8px",
-                      borderRadius: 8,
-                      border: "none",
-                      cursor: "pointer",
-                      fontWeight: 700,
-                      fontSize: 13,
-                      background:
-                        filter === key
-                          ? key === "b2b"
-                            ? "#8b5cf6"
-                            : key === "b2c"
-                              ? "#0ea5e9"
-                              : "var(--color-primary)"
-                          : "transparent",
-                      color: filter === key ? "#fff" : "var(--text-3)",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
+                <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-1)" }}>
+                  B2B Dispatch Customers
+                </span>
               </div>
             </div>
 
