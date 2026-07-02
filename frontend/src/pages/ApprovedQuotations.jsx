@@ -1127,161 +1127,117 @@ const ApprovedQuotations = ({ onLogout }) => {
               )}
             </div>
 
+            {/* Inline Handoff Note Box — always visible above Send button */}
+            <div
+              style={{
+                borderTop: "1px solid var(--border)",
+                padding: "16px 24px 0",
+              }}
+            >
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#0f172a",
+                  marginBottom: "8px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                }}
+              >
+                ✏️ Hand-off Note (Remarks)
+                <span
+                  style={{
+                    background: "#fef08a",
+                    color: "#713f12",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  MANDATORY
+                </span>
+              </label>
+              <p style={{ fontSize: "11.5px", color: "#64748b", marginBottom: "8px", fontStyle: "italic" }}>
+                The sales employee must type a note before the case can move forward.
+              </p>
+              <textarea
+                value={handoffNote}
+                onChange={(e) => setHandoffNote(e.target.value)}
+                placeholder={
+                  paymentMode === "Loan"
+                    ? "e.g. Loan approved via HDFC Bank, EMI starts next month, customer to sign at registration..."
+                    : "e.g. Customer paid full cash. Priority installation next week. Any special instructions..."
+                }
+                rows={3}
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  border: `2px solid ${handoffNote.trim() ? "#16a34a" : "#e2e8f0"}`,
+                  fontSize: "13px",
+                  resize: "vertical",
+                  outline: "none",
+                  fontFamily: "inherit",
+                  transition: "border-color 0.2s",
+                  background: handoffNote.trim() ? "#f0fdf4" : "#f8fafc",
+                  color: "#0f172a",
+                  boxSizing: "border-box",
+                }}
+              />
+              {!handoffNote.trim() && (
+                <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "5px", fontWeight: 600 }}>
+                  * Yeh note required hai — bina note ke case forward nahi hoga.
+                </p>
+              )}
+            </div>
+
             {/* Modal Footer */}
             <div
               className="modal-footer"
               style={{
                 justifyContent: "space-between",
                 alignItems: "center",
-                borderTop: "1px solid var(--border)",
-                paddingTop: "16px",
+                borderTop: "none",
+                paddingTop: "12px",
               }}
             >
               <span
                 style={{
                   fontSize: "13px",
                   fontWeight: 600,
-                  color: isReadyToSend
+                  color: isReadyToSend && handoffNote.trim()
                     ? "var(--color-accent)"
                     : "var(--color-text-muted)",
                 }}
               >
                 {!paymentMode
                   ? "⚠️ Select payment mode to begin"
-                  : isReadyToSend
-                  ? "✅ All mandatory documents ready!"
-                  : `⏳ ${mandatoryDocs.length - uploaded} mandatory document(s) remaining`}
+                  : !isReadyToSend
+                  ? `⏳ ${mandatoryDocs.length - uploaded} mandatory document(s) remaining`
+                  : !handoffNote.trim()
+                  ? "✍️ Add a hand-off note to proceed"
+                  : "✅ Ready to send to Registration!"}
               </span>
               <button
                 id="send-to-registration-btn"
-                disabled={!isReadyToSend || sendingToReg}
-                onClick={handleSendToRegClick}
+                disabled={!isReadyToSend || !handoffNote.trim() || sendingToReg}
+                onClick={handleSendToReg}
                 className={
-                  isReadyToSend && !sendingToReg
+                  isReadyToSend && handoffNote.trim() && !sendingToReg
                     ? "btn btn-primary"
                     : "btn btn-secondary"
                 }
                 style={{
                   cursor:
-                    !isReadyToSend || sendingToReg ? "not-allowed" : "pointer",
-                  opacity: !isReadyToSend ? 0.55 : 1,
+                    !isReadyToSend || !handoffNote.trim() || sendingToReg ? "not-allowed" : "pointer",
+                  opacity: (!isReadyToSend || !handoffNote.trim()) ? 0.55 : 1,
                 }}
               >
-                {sendingToReg ? "Processing…" : "Verify Documents & Send to Registration →"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Handoff Note Modal ── */}
-      {showHandoffModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            background: "rgba(15,23,42,0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "16px",
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowHandoffModal(false);
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: "16px",
-              maxWidth: "480px",
-              width: "100%",
-              padding: "28px",
-              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-              <div>
-                <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#0f172a", margin: 0 }}>
-                  ✏️ Handoff Note
-                </h3>
-                <p style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>
-                  Required before sending to Registration
-                </p>
-              </div>
-              <button
-                onClick={() => setShowHandoffModal(false)}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}
-              >
-                <X style={{ width: "18px", height: "18px" }} />
-              </button>
-            </div>
-
-            <div
-              style={{
-                padding: "12px 14px",
-                background: paymentMode === "Loan" ? "#eff6ff" : "#f0fdf4",
-                border: `1px solid ${paymentMode === "Loan" ? "#bfdbfe" : "#86efac"}`,
-                borderRadius: "8px",
-                marginBottom: "16px",
-                fontSize: "12px",
-                color: paymentMode === "Loan" ? "#1e40af" : "#166534",
-                fontWeight: 500,
-              }}
-            >
-              {paymentMode === "Loan"
-                ? "🏦 Loan case — please mention the bank name and any loan-related details."
-                : "💵 Cash case — please add a note for the Registration team (e.g. installation timeline, special instructions)."}
-            </div>
-
-            <textarea
-              value={handoffNote}
-              onChange={(e) => setHandoffNote(e.target.value)}
-              placeholder={
-                paymentMode === "Loan"
-                  ? "e.g. Loan approved via HDFC Bank. EMI starts next month. Customer to sign at registration..."
-                  : "e.g. Customer paid full cash. Priority installation requested for next week..."
-              }
-              rows={5}
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                borderRadius: "8px",
-                border: `2px solid ${handoffNote.trim() ? "#16a34a" : "#e2e8f0"}`,
-                fontSize: "13px",
-                resize: "vertical",
-                outline: "none",
-                fontFamily: "inherit",
-                transition: "border-color 0.2s",
-                background: "#f8fafc",
-              }}
-            />
-            {!handoffNote.trim() && (
-              <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "6px", fontWeight: 600 }}>
-                * This note is mandatory before sending.
-              </p>
-            )}
-
-            <div style={{ display: "flex", gap: "10px", marginTop: "20px", justifyContent: "flex-end" }}>
-              <button
-                onClick={() => setShowHandoffModal(false)}
-                className="btn btn-secondary"
-                style={{ fontSize: "13px" }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSendToReg}
-                disabled={!handoffNote.trim() || sendingToReg}
-                className={handoffNote.trim() && !sendingToReg ? "btn btn-primary" : "btn btn-secondary"}
-                style={{
-                  cursor: !handoffNote.trim() || sendingToReg ? "not-allowed" : "pointer",
-                  opacity: !handoffNote.trim() ? 0.55 : 1,
-                  fontSize: "13px",
-                }}
-              >
-                {sendingToReg ? "Sending…" : "Confirm & Send to Registration →"}
+                {sendingToReg ? "Processing…" : "Send to Registration →"}
               </button>
             </div>
           </div>
@@ -1290,6 +1246,7 @@ const ApprovedQuotations = ({ onLogout }) => {
     </div>
   );
 };
+
 
 // ── Reusable Document Row ─────────────────────────────────────────────────────
 const DocRow = ({
