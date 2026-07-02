@@ -4,7 +4,9 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import toast from "react-hot-toast";
-import { Truck, CheckCircle, ArrowRight, Loader, PackageCheck, ChevronDown, ChevronUp } from "lucide-react";
+import { Truck, CheckCircle, ArrowRight, Loader, PackageCheck, ChevronDown, ChevronUp, Copy, Download } from "lucide-react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function B2CDispatchPortal({ onLogout }) {
   const [dispatchedCases, setDispatchedCases] = useState([]);
@@ -24,6 +26,71 @@ export default function B2CDispatchPortal({ onLogout }) {
       setLoading(false);
     }
   }, []);
+
+  const handleGenerateInvoice = (c) => {
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor("#1e3a8a");
+    doc.text("RBSC Solar", 14, 22);
+
+    doc.setFontSize(10);
+    doc.setTextColor("#64748b");
+    doc.text("B2C Dispatch Invoice / Delivery Challan", 14, 30);
+
+    doc.setDrawColor("#e2e8f0");
+    doc.line(14, 35, 196, 35);
+
+    // Customer Info
+    doc.setFontSize(12);
+    doc.setTextColor("#0f172a");
+    doc.text("Bill To / Dispatched To:", 14, 45);
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(c.customer_name || "Unknown Customer", 14, 53);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("Customer Type: B2C Residential", 14, 60);
+    doc.text(`Tracking ID: ${c.tracking_id || "N/A"}`, 14, 67);
+
+    // Invoice Info
+    doc.setFontSize(10);
+    doc.text(`Date: ${new Date().toLocaleDateString("en-IN")}`, 140, 45);
+    doc.text(`Doc No: DC-${Date.now().toString().slice(-6)}`, 140, 52);
+    if (c.vehicle_number) doc.text(`Vehicle: ${c.vehicle_number}`, 140, 59);
+    if (c.driver_name) doc.text(`Driver: ${c.driver_name}`, 140, 66);
+
+    // Items Table
+    const tableData = (c.dispatched_items || []).map((item, index) => [
+      index + 1,
+      item._name || item.name || "Unknown Item",
+      `${item.quantity} ${item._unit || ""}`.trim(),
+    ]);
+
+    autoTable(doc, {
+      startY: 85,
+      head: [["S.No", "Item Name", "Quantity"]],
+      body: tableData,
+      theme: "grid",
+      headStyles: { fillColor: "#1e3a8a", textColor: "#ffffff" },
+      styles: { fontSize: 9 },
+    });
+
+    // Footer
+    const finalY = doc.lastAutoTable.finalY + 20;
+    
+    doc.setFontSize(9);
+    doc.setTextColor("#64748b");
+    doc.text("This is an auto-generated delivery challan.", 14, finalY);
+
+    doc.autoPrint();
+    const blob = doc.output("blob");
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+  };
 
   useEffect(() => {
     fetchDispatchCases();
@@ -152,8 +219,25 @@ export default function B2CDispatchPortal({ onLogout }) {
                     {dispatchedCases.map((c) => (
                       <React.Fragment key={c.id}>
                         <tr>
-                          <td style={{ fontFamily: "monospace", fontWeight: 600, color: "#3B82F6" }}>
+                          <td style={{ fontFamily: "monospace", fontWeight: 600, color: "#3B82F6", display: "flex", alignItems: "center", gap: "6px" }}>
                             {c.tracking_id}
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(c.tracking_id);
+                                toast.success("Tracking ID copied!");
+                              }}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                color: "#94a3b8",
+                                padding: "2px",
+                                display: "flex"
+                              }}
+                              title="Copy Tracking ID"
+                            >
+                              <Copy size={14} />
+                            </button>
                           </td>
                           <td style={{ fontWeight: 600, color: "var(--text-1)" }}>
                             {c.customer_name}
@@ -208,7 +292,27 @@ export default function B2CDispatchPortal({ onLogout }) {
                           <tr>
                             <td colSpan="7" style={{ background: "#f8fafc", padding: "16px" }}>
                               <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "16px" }}>
-                                <h4 style={{ fontSize: "14px", fontWeight: 700, margin: "0 0 12px 0", color: "#334155" }}>Dispatched Items</h4>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                                <h4 style={{ fontSize: "14px", fontWeight: 700, margin: 0, color: "#334155" }}>Dispatched Items</h4>
+                                <button
+                                  onClick={() => handleGenerateInvoice(c)}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "6px 12px",
+                                    backgroundColor: "#3b82f6",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    fontSize: "13px",
+                                    fontWeight: 600,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  <Download size={14} /> Download Invoice
+                                </button>
+                              </div>
                                 {(!c.dispatched_items || c.dispatched_items.length === 0) ? (
                                   <p style={{ fontSize: "13px", color: "var(--text-3)", margin: 0 }}>No items details recorded.</p>
                                 ) : (
