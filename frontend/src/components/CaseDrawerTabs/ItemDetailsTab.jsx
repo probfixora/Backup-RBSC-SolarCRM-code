@@ -192,13 +192,13 @@ const ItemDetailsTab = ({ ctx }) => {
                     )}
                   </td>
                   <td style={{ padding: "10px 14px", textAlign: "center", fontWeight: 600, color: "#2563eb", fontSize: "12.5px" }}>
-                    {item.capacity || "—"}
+                    {item.capacity || "-"}
                   </td>
                   <td style={{ padding: "10px 14px", textAlign: "center", fontWeight: 800, color: "#0f172a", fontSize: "14px" }}>
-                    {item.quantity ?? "—"}
+                    {item.quantity ?? "-"}
                   </td>
                   <td style={{ padding: "10px 14px", textAlign: "center", fontSize: "12px", color: "#16a34a", fontWeight: 600 }}>
-                    {item.warranty || "—"}
+                    {item.warranty || "-"}
                   </td>
                 </tr>
               ))}
@@ -222,9 +222,9 @@ function buildItemsFromSpecs(specs) {
     rows.push({
       description: s.productName || "Solar Panel",
       brand: s.productBrand || "",
-      capacity: s.panelUnit || (s.totalWatt ? `${s.totalWatt} W` : "—"),
+      capacity: s.panelUnit || (s.totalWatt ? `${s.totalWatt} W` : "-"),
       quantity: s.panelCount,
-      warranty: s.panelWarranty || "—",
+      warranty: s.panelWarranty || "-",
     });
   }
 
@@ -232,9 +232,9 @@ function buildItemsFromSpecs(specs) {
     rows.push({
       description: `${s.inverterBrand || "GTI"} Inverter`,
       brand: "",
-      capacity: s.inverterKw || "—",
+      capacity: s.inverterKw || "-",
       quantity: 1,
-      warranty: s.inverterWarranty ? `${s.inverterWarranty} Yrs` : "—",
+      warranty: s.inverterWarranty ? `${s.inverterWarranty} Yrs` : "-",
     });
   }
 
@@ -242,9 +242,9 @@ function buildItemsFromSpecs(specs) {
     rows.push({
       description: `${s.batteryBrand || "Battery"}`,
       brand: "",
-      capacity: s.batteryCapacity ? `${s.batteryCapacity} Ah` : "—",
+      capacity: s.batteryCapacity ? `${s.batteryCapacity} Ah` : "-",
       quantity: s.batteryCount,
-      warranty: s.batteryWarranty || "—",
+      warranty: s.batteryWarranty || "-",
     });
   }
 
@@ -252,9 +252,9 @@ function buildItemsFromSpecs(specs) {
     rows.push({
       description: "Structure",
       brand: s.structure,
-      capacity: "—",
+      capacity: "-",
       quantity: 1,
-      warranty: "—",
+      warranty: "-",
     });
   }
 
@@ -268,9 +268,9 @@ function buildItemsFromQuotation(q) {
     rows.push({
       description: q.product_name || "Solar Panel",
       brand: q.product_brand || "",
-      capacity: q.panel_unit || (q.total_watt ? `${q.total_watt} W` : "—"),
+      capacity: q.panel_unit || (q.total_watt ? `${q.total_watt} W` : "-"),
       quantity: q.panel_count,
-      warranty: q.panel_warranty || "—",
+      warranty: q.panel_warranty || "-",
     });
   }
 
@@ -278,9 +278,9 @@ function buildItemsFromQuotation(q) {
     rows.push({
       description: `${q.inverter_brand || "GTI"} Inverter`,
       brand: "",
-      capacity: q.inverter_kw || "—",
+      capacity: q.inverter_kw || "-",
       quantity: 1,
-      warranty: q.inverter_warranty ? `${q.inverter_warranty} Yrs` : "—",
+      warranty: q.inverter_warranty ? `${q.inverter_warranty} Yrs` : "-",
     });
   }
 
@@ -288,9 +288,9 @@ function buildItemsFromQuotation(q) {
     rows.push({
       description: `${q.battery_brand || "Battery"}`,
       brand: "",
-      capacity: q.battery_capacity ? `${q.battery_capacity} Ah` : "—",
+      capacity: q.battery_capacity ? `${q.battery_capacity} Ah` : "-",
       quantity: q.battery_count,
-      warranty: q.battery_warranty || "—",
+      warranty: q.battery_warranty || "-",
     });
   }
 
@@ -298,9 +298,9 @@ function buildItemsFromQuotation(q) {
     rows.push({
       description: "Structure",
       brand: q.structure,
-      capacity: "—",
+      capacity: "-",
       quantity: 1,
-      warranty: "—",
+      warranty: "-",
     });
   }
 
