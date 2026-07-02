@@ -1468,7 +1468,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
                 <a
                   href={
                     normalized.quotationPdfUrl ||
-                    `https://rgipmrviqapxxilsiclm.supabase.co/storage/v1/object/public/Quotations/${normalized.quotationIdRef}/Quotation_${normalized.quotationIdRef}.pdf`
+                    `https://rgipmrviqapxxilsiclm.supabase.co/storage/v1/object/public/Quotations/Quotation_${normalized.quotationIdRef}.pdf`
                   }
                   target="_blank"
                   rel="noopener noreferrer"

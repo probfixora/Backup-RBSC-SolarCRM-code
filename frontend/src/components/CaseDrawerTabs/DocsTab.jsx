@@ -613,7 +613,7 @@ const DocsTab = ({ ctx }) => {
                     {/* Download Quotation button — for Registration & Admin */}
                     {normalized.quotationIdRef && (
                       <a
-                        href={`https://rgipmrviqapxxilsiclm.supabase.co/storage/v1/object/public/Quotations/${normalized.quotationIdRef}/Quotation_${normalized.quotationIdRef}.pdf`}
+                        href={normalized.quotationPdfUrl || `https://rgipmrviqapxxilsiclm.supabase.co/storage/v1/object/public/Quotations/Quotation_${normalized.quotationIdRef}.pdf`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
