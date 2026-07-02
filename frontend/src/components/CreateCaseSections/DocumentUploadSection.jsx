@@ -29,94 +29,131 @@ const DocumentUploadSection = ({ ctx }) => {
       </div>
 
       <div style={{ padding: "22px 24px" }}>
-        {/* ── Profile Selection ──────────────────────────────────────────── */}
-        <div
-          style={{
-            marginBottom: "24px",
-            background: "var(--color-info-light)",
-            border: "1px solid #BFDBFE",
-            borderRadius: "var(--radius-xl)",
-            padding: "16px",
-            display: "flex",
-            gap: "12px",
-          }}
-        >
-          <div style={{ marginTop: "2px" }}>
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-                background: "var(--surface)",
-                borderRadius: "50%",
-                boxShadow: "var(--shadow-sm)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <span style={{ color: "var(--color-info)", fontWeight: 800, fontSize: "14px" }}>1</span>
-            </div>
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: "block", fontSize: "14px", fontWeight: 700, color: "#1E3A8A", marginBottom: "4px" }}>
-              Customer Profile
-            </label>
-
-            {/* 1–3 kW: No profile needed */}
-            {getSystemKw() > 0 && getSystemKw() < 4 && (
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "10px", marginTop: "4px" }}>
-                <span style={{ fontSize: "18px" }}>✅</span>
-                <div>
-                  <p style={{ fontSize: "13px", fontWeight: 700, color: "#166534" }}>No Profile Required</p>
-                  <p style={{ fontSize: "12px", color: "#4ade80" }}>
-                    {getSystemKw()} kW — Only 6 basic documents needed (no profile docs)
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* 4 kW+: Show profile selection */}
-            {getSystemKw() >= 4 && (
-              <>
-                <p style={{ fontSize: "12px", color: "#1D4ED8", opacity: 0.8, marginBottom: "12px" }}>
-                  {getSystemKw()} kW — Profile documents required. Select the customer's occupation:
-                </p>
-                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "4px" }}>
-                  {[
-                    { key: "Job/Service", label: "💼 Job / Service" },
-                    { key: "Business", label: "🏢 Business" },
-                  ].map(({ key, label }) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setOccupation(key)}
-                      style={{
-                        padding: "8px 18px",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        border: `2px solid ${occupation === key ? "var(--color-accent)" : "#BFDBFE"}`,
-                        background: occupation === key ? "var(--color-accent)" : "var(--surface)",
-                        color: occupation === key ? "#fff" : "#1E3A8A",
-                        fontWeight: 700,
-                        fontSize: "13px",
-                        transition: "all 0.2s",
-                      }}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {/* No kW selected yet */}
-            {getSystemKw() === 0 && (
-              <p style={{ fontSize: "12px", color: "#64748b", fontStyle: "italic", marginTop: "6px" }}>
-                Select the Electrical Load above to determine profile requirements.
-              </p>
-            )}
+        {/* ── Payment Mode Selection ─────────────────────────────────────── */}
+        <div style={{ marginBottom: "24px" }}>
+          <label style={{ display: "block", fontSize: "14px", fontWeight: 700, color: "var(--text-2)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Payment Mode <span style={{ color: "#ef4444" }}>*</span>
+          </label>
+          <div style={{ display: "flex", gap: "12px" }}>
+            {["Cash", "Loan"].map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => ctx.setPaymentMode(mode)}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: "var(--radius-lg)",
+                  border: `2px solid ${ctx.paymentMode === mode ? "var(--color-primary)" : "var(--border-2)"}`,
+                  background: ctx.paymentMode === mode ? "var(--color-primary-light)" : "var(--surface)",
+                  color: ctx.paymentMode === mode ? "var(--color-primary)" : "var(--text-3)",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `4px solid ${ctx.paymentMode === mode ? "var(--color-primary)" : "var(--border-2)"}`, background: ctx.paymentMode === mode ? "#fff" : "transparent" }} />
+                {mode}
+              </button>
+            ))}
           </div>
         </div>
+
+        {/* ── Profile Selection ──────────────────────────────────────────── */}
+        {ctx.paymentMode === "Loan" && (
+          <div
+            style={{
+              marginBottom: "24px",
+              background: "var(--color-info-light)",
+              border: "1px solid #BFDBFE",
+              borderRadius: "var(--radius-xl)",
+              padding: "16px",
+              display: "flex",
+              gap: "12px",
+            }}
+          >
+            <div style={{ marginTop: "2px" }}>
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  background: "var(--surface)",
+                  borderRadius: "50%",
+                  boxShadow: "var(--shadow-sm)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ color: "var(--color-info)", fontWeight: 800, fontSize: "14px" }}>1</span>
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: "block", fontSize: "14px", fontWeight: 700, color: "#1E3A8A", marginBottom: "4px" }}>
+                Customer Profile
+              </label>
+
+              {/* 1–3 kW: No profile needed */}
+              {getSystemKw() > 0 && getSystemKw() < 4 && (
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "10px", marginTop: "4px" }}>
+                  <span style={{ fontSize: "18px" }}>✅</span>
+                  <div>
+                    <p style={{ fontSize: "13px", fontWeight: 700, color: "#166534" }}>No Profile Required</p>
+                    <p style={{ fontSize: "12px", color: "#4ade80" }}>
+                      {getSystemKw()} kW — Only 6 basic documents needed (no profile docs)
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* 4 kW+: Show profile selection */}
+              {getSystemKw() >= 4 && (
+                <>
+                  <p style={{ fontSize: "12px", color: "#1D4ED8", opacity: 0.8, marginBottom: "12px" }}>
+                    {getSystemKw()} kW — Profile documents required. Select the customer's occupation:
+                  </p>
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "4px" }}>
+                    {[
+                      { key: "Job/Service", label: "💼 Job / Service" },
+                      { key: "Business", label: "🏢 Business" },
+                    ].map(({ key, label }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setOccupation(key)}
+                        style={{
+                          padding: "8px 18px",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          border: `2px solid ${occupation === key ? "var(--color-accent)" : "#BFDBFE"}`,
+                          background: occupation === key ? "var(--color-accent)" : "var(--surface)",
+                          color: occupation === key ? "#fff" : "#1E3A8A",
+                          fontWeight: 700,
+                          fontSize: "13px",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* No kW selected yet */}
+              {getSystemKw() === 0 && (
+                <p style={{ fontSize: "12px", color: "#64748b", fontStyle: "italic", marginTop: "6px" }}>
+                  Select the Electrical Load above to determine profile requirements.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ── Documents Checklist Header ────────────────────────────────── */}
         <div style={{ marginBottom: "12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>

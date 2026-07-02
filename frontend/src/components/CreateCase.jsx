@@ -129,14 +129,23 @@ export default function CreateCase({ onLogout }) {
     setDocs({ ...docs, [key]: e.target.files[0] });
   };
 
-  // ── Document rules ────────────────────────────────────────────────────────
-  const BASE_DOCS_CC = [
+  // ── Document rules (Matched with ApprovedQuotations) ─────────────────────
+  const CASH_MANDATORY_DOCS = [
+    "Aadhar Card Front Photo",
+    "Bank Details (Cancelled Cheque / Passbook)",
+    "Electricity Bill",
+    "GPS photo of site",
+  ];
+  const CASH_OPTIONAL_DOCS = ["Aadhar Card Back Photo"];
+
+  const LOAN_BASE_DOCS = [
     "Electricity Bill (Last 2 Months)",
-    "Aadhar Card Copy (Electricity Bill Owner)",
+    "Aadhar Card Front Photo",
+    "Aadhar Card Back Photo",
     "PAN Card (Electricity Bill Owner)",
     "Bank Details (Cancelled Cheque / Account Number)",
     "Property Proof (House Tax Receipt / Registry Copy)",
-    "Verification 4 Photo (Customer House GPS Pic)",
+    "GPS photo of site",
   ];
 
   const PROFILE_JOB_DOCS_CC = [
@@ -152,18 +161,29 @@ export default function CreateCase({ onLogout }) {
     "GST Certificate",
   ];
 
+  const LOAN_OPTIONAL_DOCS = ["Aadhar Card Back Photo"];
+
+  const [paymentMode, setPaymentMode] = useState("Cash");
+
   const getMandatoryDocs = () => {
+    if (paymentMode === "Cash") return CASH_MANDATORY_DOCS;
+    
+    // Loan Mode
     const kw = getSystemKw();
+    const baseDocs = LOAN_BASE_DOCS.filter(d => d !== "Aadhar Card Back Photo"); // Aadhar back is optional for loan
+    
     if (kw >= 4) {
-      const profileDocs =
-        occupation === "Business" ? PROFILE_BIZ_DOCS_CC : PROFILE_JOB_DOCS_CC;
-      return [...BASE_DOCS_CC, ...profileDocs];
+      const profileDocs = occupation === "Business" ? PROFILE_BIZ_DOCS_CC : PROFILE_JOB_DOCS_CC;
+      return [...baseDocs, ...profileDocs];
     }
-    return BASE_DOCS_CC;
+    return baseDocs;
+  };
+
+  const getOptionalDocuments = () => {
+    return paymentMode === "Cash" ? CASH_OPTIONAL_DOCS : LOAN_OPTIONAL_DOCS;
   };
 
   const MANDATORY_DOCS = getMandatoryDocs();
-  const getOptionalDocuments = () => [];
 
   // ── Computed flags ─────────────────────────────────────────────────────────
   const priceOk =
@@ -277,6 +297,7 @@ export default function CreateCase({ onLogout }) {
         address: f.address,
         loadRequired: parseKw(f.electricalLoad),
         customerOccupation: occupation,
+        paymentType: paymentMode, // Cash vs Loan
         systemSpecs,
         documents: uploadedUrls,
       };
@@ -302,6 +323,7 @@ export default function CreateCase({ onLogout }) {
     onPanelUnit, onPanelCount, onInverterKw,
     updateBatteryVals, handleFileChange,
     getSystemKw, MANDATORY_DOCS, getOptionalDocuments,
+    paymentMode, setPaymentMode,
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
