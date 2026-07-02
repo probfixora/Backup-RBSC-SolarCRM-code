@@ -240,7 +240,7 @@ function buildItemsFromSpecs(specs) {
 
   if (Number(s.batteryCount) > 0) {
     rows.push({
-      description: `${s.batteryBrand || "Battery"}`,
+      description: s.batteryBrand ? `Battery: ${s.batteryBrand}` : "Battery",
       brand: "",
       capacity: s.batteryCapacity ? `${s.batteryCapacity} Ah` : "-",
       quantity: s.batteryCount,
@@ -286,7 +286,7 @@ function buildItemsFromQuotation(q) {
 
   if (Number(q.battery_count) > 0) {
     rows.push({
-      description: `${q.battery_brand || "Battery"}`,
+      description: q.battery_brand ? `Battery: ${q.battery_brand}` : "Battery",
       brand: "",
       capacity: q.battery_capacity ? `${q.battery_capacity} Ah` : "-",
       quantity: q.battery_count,
