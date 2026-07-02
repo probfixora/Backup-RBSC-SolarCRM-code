@@ -527,14 +527,17 @@ serve(async (req) => {
         const enriched = await Promise.all(
           (quotes || []).map(async (q: any) => {
             let caseData = null;
-            if (q.case_id || q.linked_case_id) {
+            const refs = [];
+            if (q.quotation_id) refs.push(`quotation_id_ref.eq.${q.quotation_id}`);
+            if (q.id) refs.push(`quotation_id_ref.eq.${q.id}`);
+            if (refs.length > 0) {
               const { data: c } = await supabase
                 .from("cases")
                 .select(
                   "case_id, tracking_id, current_stage, status, customer_name, created_at",
                 )
-                .eq("case_id", q.case_id || q.linked_case_id)
-                .single();
+                .or(refs.join(","))
+                .maybeSingle();
               caseData = c;
             }
 

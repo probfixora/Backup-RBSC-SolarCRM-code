@@ -15,7 +15,10 @@ const PIPELINE_STAGES = [
   { key: "Bank & Finance", label: "Banking", color: "#0ea5e9" },
   { key: "Sent to Store", label: "Inventory", color: "#f59e0b" },
   { key: "Installation Done", label: "Installation", color: "#10b981" },
+  { key: "Electrical Verification Done", label: "Electrical", color: "#14b8a6" },
   { key: "Plant Activated", label: "Plant Active", color: "#059669" },
+  { key: "TQA Verified", label: "Technical QA", color: "#8b5cf6" },
+  { key: "Accounts Verified", label: "Accounts", color: "#f43f5e" },
   { key: "Sent to Subsidy", label: "Subsidy", color: "#ec4899" },
   {
     key: "Subsidy Registration Completed",
