@@ -1462,8 +1462,9 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
             </div>
             
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              {/* Quotation PDF download — shown when case has a quotation reference */}
-              {(normalized.quotationPdfUrl || normalized.quotationIdRef) && (
+              {/* Quotation PDF download — only for Registration & Admin */}
+              {(role === "registration" || role === "admin") &&
+                (normalized.quotationPdfUrl || normalized.quotationIdRef) && (
                 <a
                   href={
                     normalized.quotationPdfUrl ||
