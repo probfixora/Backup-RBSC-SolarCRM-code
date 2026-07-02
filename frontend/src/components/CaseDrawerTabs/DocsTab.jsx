@@ -597,18 +597,48 @@ const DocsTab = ({ ctx }) => {
                     paddingTop: "20px",
                   }}
                 >
-                  <p
-                    style={{
-                      fontSize: "11.5px",
-                      fontWeight: 700,
-                      color: "var(--text-4)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    Quotation Amount
-                  </p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                    <p
+                      style={{
+                        fontSize: "11.5px",
+                        fontWeight: 700,
+                        color: "var(--text-4)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                        margin: 0,
+                      }}
+                    >
+                      Quotation Amount
+                    </p>
+                    {/* Download Quotation button — for Registration & Admin */}
+                    {normalized.quotationIdRef && (
+                      <a
+                        href={`https://rgipmrviqapxxilsiclm.supabase.co/storage/v1/object/public/Quotations/${normalized.quotationIdRef}/Quotation_${normalized.quotationIdRef}.pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "6px 14px",
+                          borderRadius: "8px",
+                          background: "linear-gradient(135deg, #1d4ed8, #2563eb)",
+                          color: "#fff",
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          textDecoration: "none",
+                          boxShadow: "0 2px 6px rgba(37, 99, 235, 0.3)",
+                          transition: "all 0.2s",
+                        }}
+                        title={`Download quotation PDF for ${normalized.quotationIdRef}`}
+                        onMouseOver={(e) => { e.currentTarget.style.background = "linear-gradient(135deg, #1e40af, #1d4ed8)"; }}
+                        onMouseOut={(e) => { e.currentTarget.style.background = "linear-gradient(135deg, #1d4ed8, #2563eb)"; }}
+                      >
+                        <Download style={{ width: "13px", height: "13px" }} />
+                        Download Quotation PDF
+                      </a>
+                    )}
+                  </div>
                   <div
                     style={{
                       padding: "14px 16px",
@@ -672,6 +702,12 @@ const DocsTab = ({ ctx }) => {
                       </p>
                     </div>
                   </div>
+                  {/* Fallback: also allow fetching via edge function */}
+                  {!normalized.quotationIdRef && (
+                    <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "8px", fontStyle: "italic" }}>
+                      No quotation PDF linked to this case.
+                    </p>
+                  )}
                 </div>
               )}
             </div>

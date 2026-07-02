@@ -1084,7 +1084,7 @@ serve(async (req: any) => {
           email: q.customer_email,
           address: q.customer_address,
           load_required: Number(q.total_watt || 0),
-          payment_type: "cash", // Default fallback
+          payment_type: (body.payment_mode || "cash").toLowerCase() === "loan" ? "Loan" : "Cash",
           assigned_team: "Registration",
           status: "In Progress",
           current_stage: "Registration Done",
@@ -1113,7 +1113,7 @@ serve(async (req: any) => {
         stage: "Registration Done",
         department: "Registration",
         updated_by: user?.name || portalTokenRow?.customer_name || "Customer",
-        remarks: "Sent to Registration from Sales",
+        remarks: body.remarks ? `Sales Handoff Note: ${body.remarks}` : "Sent to Registration from Sales",
       });
 
       const { error: updErr } = await supabase
