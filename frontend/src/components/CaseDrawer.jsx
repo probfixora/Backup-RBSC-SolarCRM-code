@@ -1466,10 +1466,11 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
               {(role === "registration" || role === "admin") &&
                 (normalized.quotationPdfUrl || normalized.quotationIdRef) && (
                 <a
-                  href={
-                    normalized.quotationPdfUrl ||
-                    `https://rgipmrviqapxxilsiclm.supabase.co/storage/v1/object/public/Quotations/Quotation_${normalized.quotationIdRef}.pdf`
-                  }
+                  href={(() => {
+                    if (normalized.quotationPdfUrl) return normalized.quotationPdfUrl;
+                    const { data } = supabase.storage.from("Quotations").getPublicUrl(`Quotation_${normalized.quotationIdRef}.pdf`);
+                    return data?.publicUrl || "#";
+                  })()}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ display: "flex", alignItems: "center", gap: "4px", backgroundColor: "rgba(99,102,241,0.25)", border: "1px solid rgba(165,180,252,0.4)", color: "#c7d2fe", padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", textDecoration: "none" }}

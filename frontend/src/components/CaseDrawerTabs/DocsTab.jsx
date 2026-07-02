@@ -613,7 +613,11 @@ const DocsTab = ({ ctx }) => {
                     {/* Download Quotation button — for Registration & Admin */}
                     {normalized.quotationIdRef && (
                       <a
-                        href={normalized.quotationPdfUrl || `https://rgipmrviqapxxilsiclm.supabase.co/storage/v1/object/public/Quotations/Quotation_${normalized.quotationIdRef}.pdf`}
+                        href={(() => {
+                          if (normalized.quotationPdfUrl) return normalized.quotationPdfUrl;
+                          const { data } = supabase.storage.from("Quotations").getPublicUrl(`Quotation_${normalized.quotationIdRef}.pdf`);
+                          return data?.publicUrl || "#";
+                        })()}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
