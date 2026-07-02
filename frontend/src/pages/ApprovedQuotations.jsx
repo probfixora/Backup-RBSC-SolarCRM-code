@@ -1125,73 +1125,76 @@ const ApprovedQuotations = ({ onLogout }) => {
                   </div>
                 </>
               )}
-            </div>
 
-            {/* Inline Handoff Note Box — always visible above Send button */}
-            <div
-              style={{
-                borderTop: "1px solid var(--border)",
-                padding: "16px 24px 0",
-              }}
-            >
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: "#0f172a",
-                  marginBottom: "8px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                }}
-              >
-                ✏️ Hand-off Note (Remarks)
-                <span
+              {/* ── Hand-off Note — inside scrollable body, below all docs ── */}
+              {paymentMode && (
+                <div
                   style={{
-                    background: "#fef08a",
-                    color: "#713f12",
-                    fontSize: "10px",
-                    fontWeight: 700,
-                    padding: "2px 6px",
-                    borderRadius: "4px",
+                    marginTop: "20px",
+                    borderTop: "1px dashed var(--border)",
+                    paddingTop: "16px",
                   }}
                 >
-                  MANDATORY
-                </span>
-              </label>
-              <p style={{ fontSize: "11.5px", color: "#64748b", marginBottom: "8px", fontStyle: "italic" }}>
-                The sales employee must type a note before the case can move forward.
-              </p>
-              <textarea
-                value={handoffNote}
-                onChange={(e) => setHandoffNote(e.target.value)}
-                placeholder={
-                  paymentMode === "Loan"
-                    ? "e.g. Loan approved via HDFC Bank, EMI starts next month, customer to sign at registration..."
-                    : "e.g. Customer paid full cash. Priority installation next week. Any special instructions..."
-                }
-                rows={3}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  border: `2px solid ${handoffNote.trim() ? "#16a34a" : "#e2e8f0"}`,
-                  fontSize: "13px",
-                  resize: "vertical",
-                  outline: "none",
-                  fontFamily: "inherit",
-                  transition: "border-color 0.2s",
-                  background: handoffNote.trim() ? "#f0fdf4" : "#f8fafc",
-                  color: "#0f172a",
-                  boxSizing: "border-box",
-                }}
-              />
-              {!handoffNote.trim() && (
-                <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "5px", fontWeight: 600 }}>
-                  * Yeh note required hai — bina note ke case forward nahi hoga.
-                </p>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      color: "#0f172a",
+                      marginBottom: "8px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    ✏️ Hand-off Note (Remarks)
+                    <span
+                      style={{
+                        background: "#fef08a",
+                        color: "#713f12",
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      MANDATORY
+                    </span>
+                  </label>
+                  <p style={{ fontSize: "11.5px", color: "#64748b", marginBottom: "8px", fontStyle: "italic" }}>
+                    The sales employee must type a note before the case can move forward.
+                  </p>
+                  <textarea
+                    value={handoffNote}
+                    onChange={(e) => setHandoffNote(e.target.value)}
+                    placeholder={
+                      paymentMode === "Loan"
+                        ? "e.g. Loan approved via HDFC Bank, EMI starts next month, customer to sign at registration..."
+                        : "e.g. Customer paid full cash. Priority installation next week. Any special instructions..."
+                    }
+                    rows={3}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      border: `2px solid ${handoffNote.trim() ? "#16a34a" : "#e2e8f0"}`,
+                      fontSize: "13px",
+                      resize: "vertical",
+                      outline: "none",
+                      fontFamily: "inherit",
+                      transition: "border-color 0.2s",
+                      background: handoffNote.trim() ? "#f0fdf4" : "#f8fafc",
+                      color: "#0f172a",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  {!handoffNote.trim() && (
+                    <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "5px", fontWeight: 600 }}>
+                      * Yeh note required hai — bina note ke case forward nahi hoga.
+                    </p>
+                  )}
+                </div>
               )}
             </div>
 
@@ -1201,8 +1204,8 @@ const ApprovedQuotations = ({ onLogout }) => {
               style={{
                 justifyContent: "space-between",
                 alignItems: "center",
-                borderTop: "none",
-                paddingTop: "12px",
+                borderTop: "1px solid var(--border)",
+                paddingTop: "14px",
               }}
             >
               <span
