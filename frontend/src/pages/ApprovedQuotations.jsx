@@ -13,7 +13,7 @@ const CASH_MANDATORY_DOCS = [
   "Aadhar Card Front Photo",
   "Bank Details (Cancelled Cheque / Passbook)",
   "Electricity Bill",
-  "Site Photo with GPS",
+  "GPS photo of site",
 ];
 const CASH_OPTIONAL_DOCS = [
   "Aadhar Card Back Photo",
@@ -27,7 +27,7 @@ const LOAN_BASE_DOCS = [
   "PAN Card (Electricity Bill Owner)",
   "Bank Details (Cancelled Cheque / Account Number)",
   "Property Proof (House Tax Receipt / Registry Copy)",
-  "Verification 4 Photo (Customer House GPS Pic)",
+  "GPS photo of site",
 ];
 const LOAN_PROFILE_JOB_DOCS = [
   "3 Months Salary Slip",
