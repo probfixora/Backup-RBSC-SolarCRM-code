@@ -646,6 +646,25 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                                 {stage}
                               </p>
                             )}
+                            {c.status === "Delayed" && (c.delayReason || c.delay_reason) && (
+                              <p
+                                style={{
+                                  fontSize: "10.5px",
+                                  color: "#be123c",
+                                  margin: 0,
+                                  paddingLeft: "2px",
+                                  lineHeight: 1.3,
+                                  fontStyle: "italic",
+                                  maxWidth: "180px",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                                title={c.delayReason || c.delay_reason}
+                              >
+                                💬 {c.delayReason || c.delay_reason}
+                              </p>
+                            )}
                           </div>
                         );
                       })()}
@@ -991,6 +1010,23 @@ const CaseTable = ({ cases, onUpdateClick, onRefresh, hideCustomerId, showQuotat
                           style={{ fontSize: "10px", color: "var(--text-4)" }}
                         >
                           📍 {dept}
+                        </span>
+                      )}
+                      {c.status === "Delayed" && (c.delayReason || c.delay_reason) && (
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            color: "#be123c",
+                            fontStyle: "italic",
+                            maxWidth: "130px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            display: "block",
+                          }}
+                          title={c.delayReason || c.delay_reason}
+                        >
+                          💬 {c.delayReason || c.delay_reason}
                         </span>
                       )}
                     </div>

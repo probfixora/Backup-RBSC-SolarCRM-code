@@ -614,7 +614,7 @@ serve(async (req: Request) => {
           consumer_id: body.consumerId || "",
           pin_code: body.pinCode || "",
           load_required: body.loadRequired,
-          payment_type: body.paymentType || "cash",
+          payment_type: (body.paymentType || "cash").toLowerCase(),
           current_stage: "Registration Done",
           assigned_team: "Registration",
           stage_start_time: new Date().toISOString(),

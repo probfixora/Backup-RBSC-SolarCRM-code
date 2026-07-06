@@ -691,11 +691,9 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
   const hasQuotationError = (isRegStage || isPhoneVerificationStage) && !normalized.quotationVerified;
   
   const hasPaymentModeError = isPhoneVerificationStage && (
-    // Payment type must always be selected
-    !pType ||
-    // For Cash: paymentMode is also required
-    // For Loan: paymentMode is NOT required (banking team handles it)
-    (pType === "cash" && (!normalized.paymentMode || normalized.paymentMode.trim() === "") && (!fData.paymentMode || fData.paymentMode.trim() === ""))
+    // Payment type must always be selected (Cash or Loan)
+    !pType
+    // paymentMode (UPI/Cheque/etc.) is a secondary detail recorded by finance team — not required here
   );
 
   const hasLoanApprovedDoc = Array.isArray(normalized.documents)
@@ -748,11 +746,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       return;
     }
     if (hasPaymentModeError) {
-      if (!normalized.paymentType) {
-        toast.error("Please select a Payment Type (Cash or Loan) in the Finance tab before proceeding.");
-      } else if (pType === "cash") {
-        toast.error("Please select a Payment Mode (UPI/Cash/Cheque etc.) in the Finance tab before proceeding.");
-      }
+      toast.error("Please select a Payment Type (Cash or Loan) in the Finance tab before proceeding.");
       return;
     }
     if (hasFinanceError) {

@@ -103,6 +103,7 @@ const INIT = {
   customerId: "",
   customerName: "",
   mobile: "",
+  alternatePhone: "",
   email: "",
   address: "",
   electricalDivision: "",
@@ -531,6 +532,7 @@ export default function QuotationForm() {
         customerId: "",
         customerName: "",
         mobile: "",
+        alternatePhone: "",
         email: "",
         address: "",
       }));
@@ -543,6 +545,7 @@ export default function QuotationForm() {
         customerId: "",
         customerName: "",
         mobile: "",
+        alternatePhone: "",
         email: "",
         address: "",
       }));
@@ -555,6 +558,7 @@ export default function QuotationForm() {
       customerId: id,
       customerName: c?.name || "",
       mobile: c?.mobile || "",
+      alternatePhone: "",
       email: c?.email || "",
       address: c?.address || "",
     }));
@@ -623,6 +627,7 @@ export default function QuotationForm() {
           action: "create",
           customerName: f.customerName,
           customerMobile: f.mobile,
+          customerAltMobile: f.alternatePhone || "",
           customerEmail: f.email,
           customerAddress: f.address,
           electricalDivision: f.electricalDivision,
@@ -723,6 +728,15 @@ export default function QuotationForm() {
                 onChange={(e) => set("mobile", e.target.value)}
                 required
                 readOnly={f.customerMode === "existing"}
+              />
+            </F>
+            <F label="Alternate Mobile Number">
+              <input
+                style={S.inp}
+                type="tel"
+                placeholder="Optional"
+                value={f.alternatePhone}
+                onChange={(e) => set("alternatePhone", e.target.value)}
               />
             </F>
           </div>
