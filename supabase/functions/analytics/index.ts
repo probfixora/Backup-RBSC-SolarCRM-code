@@ -534,7 +534,7 @@ serve(async (req) => {
               const { data: c } = await supabase
                 .from("cases")
                 .select(
-                  "case_id, tracking_id, current_stage, status, customer_name, created_at",
+                  "case_id, tracking_id, current_stage, status, customer_name, created_at, delay_reason",
                 )
                 .or(refs.join(","))
                 .maybeSingle();
@@ -560,6 +560,7 @@ serve(async (req) => {
                 (q.status === "Approved" ? "Registration Done" : "Sales"),
               stageIndex: stageIndex >= 0 ? stageIndex : 0,
               caseStatus: caseData?.status || q.status,
+              delayReason: caseData?.delay_reason || "",
               pipeline: pipelineStages.map((ps, i) => ({
                 ...ps,
                 reached: i <= (stageIndex >= 0 ? stageIndex : -1),
@@ -587,7 +588,7 @@ serve(async (req) => {
 
       const { data: myCases } = await supabase
         .from("cases")
-        .select("case_id, customer_name, current_stage, status, created_at")
+        .select("case_id, customer_name, current_stage, status, created_at, delay_reason")
         .in("case_id", caseIds)
         .order("created_at", { ascending: false });
 
@@ -602,6 +603,7 @@ serve(async (req) => {
           currentStage: c.current_stage,
           caseStatus: c.status,
           createdAt: c.created_at,
+          delayReason: c.delay_reason || "",
           stageIndex,
           pipeline: pipelineStages.map((ps, i) => ({
             ...ps,

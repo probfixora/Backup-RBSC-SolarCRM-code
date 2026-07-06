@@ -396,6 +396,41 @@ const LeadCard = ({ lead }) => {
               </div>
             )}
           </div>
+
+          {/* Delay reason — shown only when case is Delayed */}
+          {lead.caseStatus === "Delayed" && lead.delayReason && (
+            <div
+              style={{
+                marginTop: "10px",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                background: "#fef2f2",
+                border: "1px solid #fecdd3",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "6px",
+              }}
+            >
+              <span style={{ fontSize: "13px", flexShrink: 0 }}>⚠️</span>
+              <div>
+                <p
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    color: "#be123c",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    marginBottom: "2px",
+                  }}
+                >
+                  Delay Reason
+                </p>
+                <p style={{ fontSize: "12px", color: "#9f1239", margin: 0 }}>
+                  {lead.delayReason}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
