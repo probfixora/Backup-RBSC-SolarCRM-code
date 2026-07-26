@@ -1645,11 +1645,11 @@ serve(async (req: Request) => {
         .select("id, tracking_id, customer_name, current_stage, assigned_to, phone, address");
 
       const caseMap: Record<string, any> = {};
-      (casesData || []).forEach((c) => {
+      (casesData || []).forEach((c: any) => {
         caseMap[c.id] = c;
       });
 
-      const merged = (dispatches || []).map((d) => {
+      const merged = (dispatches || []).map((d: any) => {
         const caseInfo = d.case_id ? caseMap[d.case_id] : null;
         return {
           ...d,
