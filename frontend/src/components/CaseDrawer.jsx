@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   User,
   Phone,
+  Mail,
   MapPin,
   Zap,
   FileText,
@@ -1127,10 +1128,11 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
       ${row2("Customer Name", `<strong>${normalized.customerName}</strong>`, "Status", normalized.status)}
       ${row2("Current Stage", normalized.currentStage, "Assigned Team", normalized.assignedTeam || "—")}
       ${isReg || isInst ? row2("Phone", normalized.phone, "Alternate Phone", normalized.alternatePhone || "—") : ""}
+      ${row2("Email ID", normalized.email || caseData.email || "—", "Consumer ID", normalized.consumerId || "—")}
       ${isReg || isInst ? row2("Address", normalized.address, "Load Required", normalized.loadRequired ? normalized.loadRequired + " kW" : "—") : ""}
-      ${isReg ? row2("Payment Type", normalized.paymentType, "Consumer ID", normalized.consumerId || "—") : ""}
-      ${isReg ? row2("Company", normalized.companyName || "—", "Project Type", normalized.projectType || "—") : ""}
-      ${isReg ? row2("Sales Person", normalized.salesPerson || "—", "GSTIN", normalized.gstin || "N/A") : ""}
+      ${isReg ? row2("Payment Type", normalized.paymentType, "Project Type", normalized.projectType || "—") : ""}
+      ${isReg ? row2("Company", normalized.companyName || "—", "Sales Person", normalized.salesPerson || "—") : ""}
+      ${isReg ? row2("GSTIN", normalized.gstin || "N/A", "", "") : ""}
     `;
 
     // Finance section
@@ -1484,6 +1486,7 @@ const CaseDrawer = ({ caseData, onClose, onRefresh }) => {
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", color: "#94a3b8", fontSize: "12px", fontWeight: 500 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}><Phone size={14} style={{ color: "#64748b" }} /> {caseData.phone || "N/A"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}><Mail size={14} style={{ color: "#64748b" }} /> {caseData.email || normalized.email || "N/A"}</div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}><MapPin size={14} style={{ color: "#64748b" }} /> {[caseData.city, caseData.district, caseData.state].filter(Boolean).join(", ") || caseData.address || caseData.pinCode || "N/A"}</div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}><Zap size={14} style={{ color: "#64748b" }} /> {caseData.plant_capacity || caseData.system_size_kw || caseData.kw_capacity || caseData.load_required || caseData.loadRequired || caseData.system_capacity || caseData.system_specs?.inverterKw || caseData.system_specs?.systemCapacity || "0"} kW</div>
           </div>
